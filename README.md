@@ -1,46 +1,42 @@
-# Astro Starter Kit: Basics
+# 🍳 Рецепты (Frontend)
 
-```sh
-npm create astro@latest -- --template basics
-```
+Это современное фронтенд-приложение для обмена кулинарными рецептами. Проект построен на **Astro** с использованием **Tailwind CSS**.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## 🛠 Технологический стек
+- **Framework:** [Astro](https://astro.build/)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Language:** TypeScript/JavaScript
 
-## 🚀 Project Structure
+## 🚀 Как запустить проект
 
-Inside of your Astro project, you'll see the following folders and files:
+1. **Клонируйте репозиторий:**
+   ```bash
+   git clone https://github.com/KbrYbk/recipe-frontend
+   cd recipe-frontend
+   ```
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+2. **Установите зависимости:**
+   ```bash
+   npm install
+   ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+3. **Запустите сервер разработки:**
+   ```bash
+   npm run dev
+   ```
 
-## 🧞 Commands
+## 📂 Структура данных
+Сейчас проект использует локальные JSON-файлы в `src/data/`.
+В будущем здесь будет реализован `fetch` данных с вашего API.
 
-All commands are run from the root of the project, from a terminal:
+- `src/data/recipes.json` — текущая «база данных» рецептов.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- `src/pages/recipe/[id].astro` — динамический шаблон страницы рецепта.
 
-## 👀 Want to learn more?
+## 🤝 Взаимодействие
+Проект работает по принципу API-first.
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- Фронтенд ожидает JSON-структуру с полями:
+`id`, `title`, `description`, `time`, `difficulty`, `ingredients`, `instructions`.
+
+- Пожалуйста, при создании API-эндпоинтов ориентируйтесь на эту структуру.

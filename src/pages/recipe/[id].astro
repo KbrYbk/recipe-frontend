@@ -1,0 +1,91 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import recipes from "../../data/recipes.json";
+
+export function getStaticPaths() {
+    return recipes.map((recipe) => ({
+        params: { id: recipe.id.toString() },
+        props: { recipe },
+    }));
+}
+
+const { recipe } = Astro.props;
+---
+
+<Layout title={`${recipe.title} | РецептыДома`}>
+    <main class="py-12 px-4">
+        <a
+            href="/"
+            class="inline-flex items-center text-slate-500 hover:text-orange-600 transition-colors mb-8 font-medium"
+        >
+            <span class="mr-2">←</span> Вернуться к списку
+        </a>
+
+        <article
+            class="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-slate-100"
+        >
+            <header class="mb-10 text-center">
+                <h1
+                    class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight"
+                >
+                    {recipe.title}
+                </h1>
+
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span
+                        class="inline-flex items-center bg-orange-50 text-orange-700 px-4 py-2 rounded-full font-semibold border border-orange-100"
+                    >
+                        ⏱ {recipe.time} минут
+                    </span>
+                    <span
+                        class="inline-flex items-center bg-slate-100 text-slate-700 px-4 py-2 rounded-full font-semibold border border-slate-200"
+                    >
+                        Сложность: {recipe.difficulty}
+                    </span>
+                </div>
+            </header>
+
+            <div class="prose prose-lg max-w-none text-slate-700">
+                <p class="text-xl text-slate-600 mb-10 italic">
+                    {recipe.description}
+                </p>
+
+                <div
+                    class="bg-slate-50 p-6 md:p-8 rounded-2xl border border-slate-100"
+                >
+                    {
+                        recipe.instructions && (
+                            <>
+                                <h2 class="text-2xl font-bold text-slate-900 mt-10 mb-5">
+                                    Приготовление
+                                </h2>
+                                <ol class="list-decimal pl-5 space-y-3 text-slate-700">
+                                    {recipe.instructions.map((step) => (
+                                        <li>{step}</li>
+                                    ))}
+                                </ol>
+                            </>
+                        )
+                    }
+                    <h2 class="text-2xl font-bold text-slate-900 mt-0 mb-5">
+                        Ингредиенты
+                    </h2>
+                    <ul class="space-y-3">
+                        {
+                            recipe.ingredients?.map((i) => (
+                                <li class="flex items-center">
+                                    <span class="w-2 h-2 bg-orange-500 rounded-full mr-3" />
+                                    {i}
+                                </li>
+                            )) || (
+                                <li class="text-slate-400">
+                                    Список ингредиентов скоро появится...
+                                </li>
+                            )
+                        }
+                    </ul>
+                </div>
+            </div>
+        </article>
+    </main>
+</Layout>
