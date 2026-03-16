@@ -1,0 +1,46 @@
+---
+interface Props {
+    src?: string;
+    alt: string;
+    class?: string;
+}
+
+const { src, alt, class: className } = Astro.props;
+// Убираем авто-замену расширения, чтобы не плодить 404
+const hasImage = !!src;
+---
+
+<div
+    class={`relative flex items-center justify-center bg-slate-100 overflow-hidden ${className}`}
+>
+    {
+        hasImage ? (
+            <img
+                src={src}
+                alt={alt}
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-0 animate-fade-in"
+                onload="this.classList.remove('opacity-0')"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.fallback').style.display='flex';"
+                loading="lazy"
+            />
+        ) : null
+    }
+
+    <div class={`fallback text-4xl ${hasImage ? "hidden" : "flex"} items-center justify-center`}>
+        &#x1F373;
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-in forwards;
+    }
+</style>

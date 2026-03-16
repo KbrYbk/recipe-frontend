@@ -30,23 +30,13 @@ const {
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
 			rel="stylesheet"
 		/>
-		<style is:global>
-			@tailwind base;
-			@tailwind components;
-			@tailwind utilities;
-		</style>
 	</head>
 	<body class="bg-slate-50 text-slate-900 antialiased min-h-screen">
-		<div
-			class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-[18px] sm:text-[20px]"
-		>
-			<slot />
-		</div>
+		<slot />
 	</body>
 </html>
 
 <style is:global>
-	/* Убираем лишние анимации для людей с чувствительным вестибулярным аппаратом */
 	@media (prefers-reduced-motion: reduce) {
 		* {
 			animation-duration: 0.01ms !important;
