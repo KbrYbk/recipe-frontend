@@ -1,0 +1,73 @@
+---
+interface Props {
+  recipe: {
+    id: string | number;
+    title: string;
+    description: string;
+    image?: string;
+    time: number | string;
+  };
+}
+
+const { recipe } = Astro.props;
+const { id, title, description, image, time } = recipe;
+
+const hasImage = !!image;
+const imageAlt = `Фото блюда: ${title}`;
+---
+
+<a href={`/recipe/${id}`} class="group focus:ring-primary block w-full overflow-hidden rounded-3xl focus:ring-2 focus:ring-offset-2 focus:outline-none">
+  <article class="flex h-full flex-col border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-800">
+    <div class={`relative w-full h-48 overflow-hidden bg-slate-100 flex items-center justify-center`}>
+      {
+        hasImage ? (
+          <img
+            src={image}
+            alt={imageAlt}
+            width={400}
+            height={300}
+            class="animate-fade-in h-full w-full object-cover opacity-0 transition-transform duration-500 group-hover:scale-110"
+            onload="this.classList.remove('opacity-0')"
+            onerror="this.style.display='none'; this.parentElement?.querySelector('.fallback')?.style.display='flex';"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : null
+      }
+
+      <div class={`fallback text-5xl ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">&#x1F373;</div>
+    </div>
+
+    <!-- Контент карточки -->
+    <div class="flex flex-grow flex-col p-6">
+      <h2 class="mb-4 line-clamp-2 text-2xl font-bold text-slate-900 transition-colors group-hover:text-orange-600 dark:text-slate-100">
+        {title}
+      </h2>
+
+      <p class="mb-6 line-clamp-3 flex-grow text-slate-600 dark:text-slate-400">
+        {description}
+      </p>
+
+      <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
+        <span class="font-medium text-slate-500 dark:text-gray-300">
+          ⏱ {time} мин
+        </span>
+        <span class="font-semibold text-orange-600"> Смотреть → </span>
+      </div>
+    </div>
+  </article>
+</a>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in forwards;
+  }
+</style>

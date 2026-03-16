@@ -1,1 +1,84 @@
 @import "tailwindcss";
+
+/* Правильный синтаксис для классовой dark-стратегии */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-bg: #fdfdfd;
+  --color-bg-dark: #111827; /* gray-900 */
+
+  --color-primary: #ff6900;
+  --color-primary-dark: #ca3500;
+
+  --color-text: #111827;
+  --color-text-dark: #f3f4f6;
+
+  --color-muted: #6b7280;
+  --color-muted-dark: #9ca3af;
+
+  --color-border: #e5e7eb;
+  --color-border-dark: #374151;
+}
+
+@layer base {
+  :root {
+    --bg: var(--color-bg);
+    --text: var(--color-text);
+    --muted: var(--color-muted);
+    --border: var(--color-border);
+  }
+
+  .dark {
+    --bg: var(--color-bg-dark);
+    --text: var(--color-text-dark);
+    --muted: var(--color-muted-dark);
+    --border: var(--color-border-dark);
+  }
+
+  @layer base {
+    body {
+      /* Цвета по умолчанию (светлая тема) */
+      background-color: #fdfdfd;
+      color: #111827;
+      transition:
+        background-color 0.3s ease,
+        color 0.3s ease; /* Чтобы тема менялась плавно */
+    }
+
+    /* Когда у <html> появляется класс .dark, включаем эти цвета */
+    .dark body {
+      background-color: #111827; /* Темно-серый/черный */
+      color: #f3f4f6; /* Светлый текст */
+    }
+  }
+  * {
+    transition:
+      background-color 0.2s ease-in-out,
+      border-color 0.2s ease-in-out;
+  }
+  /* Убираем @apply для body — чтобы избежать конфликтов */
+  h1,
+  h2,
+  h3 {
+    font-weight: bold;
+    letter-spacing: -0.025em;
+    color: var(--text);
+  }
+
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-dark);
+  }
+
+  .text-muted {
+    color: var(--muted);
+  }
+
+  .border-muted {
+    border-color: var(--border);
+  }
+}

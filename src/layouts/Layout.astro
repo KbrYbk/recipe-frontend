@@ -1,48 +1,65 @@
 ---
-// Подключаем стили Tailwind
 import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 
 interface Props {
-	title: string;
-	description?: string;
+  title: string;
+  description?: string;
 }
 
-const {
-	title,
-	description = "Лучшие рецепты для каждого: просто, вкусно и понятно.",
-} = Astro.props;
+const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно." } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="ru">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
+<html lang="ru" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-		<title>{title}</title>
-		<meta name="description" content={description} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
 
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
-			rel="stylesheet"
-		/>
-	</head>
-	<body class="bg-slate-50 text-slate-900 antialiased min-h-screen">
-		<slot />
-	</body>
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:site_name" content="РецептыДома" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script is:inline>
+      // Функция, которая проверяет, какую тему ставить
+      const getTheme = () => {
+        if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+          return localStorage.getItem("theme");
+        }
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      };
+
+      const theme = getTheme();
+
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    </script>
+  </head>
+
+  <body class="flex min-h-screen flex-col antialiased">
+    <Header />
+    <main id="main-content" class="flex-grow px-4 py-8 md:px-8 lg:px-12">
+      <slot />
+    </main>
+    <Footer />
+    <script is:inline>
+      const theme = localStorage.getItem("theme") || "light";
+      if (theme === "dark") document.documentElement.classList.add("dark");
+    </script>
+  </body>
 </html>
-
-<style is:global>
-	@media (prefers-reduced-motion: reduce) {
-		* {
-			animation-duration: 0.01ms !important;
-			animation-iteration-count: 1 !important;
-			transition-duration: 0.01ms !important;
-			scroll-behavior: auto !important;
-		}
-	}
-</style>
