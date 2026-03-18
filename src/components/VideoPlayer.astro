@@ -1,0 +1,60 @@
+---
+const { videoUrl } = Astro.props;
+import { Icon } from "astro-icon/components";
+---
+
+{
+  videoUrl && (
+    <div class="video-section mb-10">
+      <div class="mb-6 flex max-w-sm rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+        <button id="showText" class="tab-btn active-tab flex-1 rounded-xl bg-white px-4 py-2 font-medium shadow-sm dark:bg-slate-700 dark:text-white">
+          <Icon name="lucide:file-text" class="h-4 w-4" /> Текст
+        </button>
+        <button id="showVideo" class="tab-btn flex-1 px-4 py-2 font-medium text-slate-500 transition-colors hover:text-slate-700 dark:hover:text-slate-300">
+          <Icon name="lucide:play-circle" class="h-4 w-4" /> Видео
+        </button>
+      </div>
+
+      <div id="videoContainer" class="hidden aspect-video overflow-hidden rounded-3xl bg-black shadow-xl">
+        <iframe width="100%" height="100%" src={videoUrl} allowfullscreen class="border-0" />
+      </div>
+    </div>
+  )
+}
+
+<script>
+  function initVideoTabs() {
+    const showTextBtn = document.getElementById("showText");
+    const showVideoBtn = document.getElementById("showVideo");
+    const videoContainer = document.getElementById("videoContainer");
+    const textSteps = document.getElementById("textSteps");
+
+    if (!showTextBtn || !showVideoBtn || !videoContainer || !textSteps) return;
+
+    const toggle = (showVideo: boolean) => {
+      // Переключаем видимость контента
+      videoContainer.classList.toggle("hidden", !showVideo);
+      textSteps.classList.toggle("hidden", showVideo);
+
+      // Меняем стили кнопок
+      if (showVideo) {
+        showVideoBtn.classList.add("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
+        showVideoBtn.classList.remove("text-slate-500");
+        showTextBtn.classList.remove("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
+        showTextBtn.classList.add("text-slate-500");
+      } else {
+        showTextBtn.classList.add("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
+        showTextBtn.classList.remove("text-slate-500");
+        showVideoBtn.classList.remove("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
+        showVideoBtn.classList.add("text-slate-500");
+      }
+    };
+
+    showVideoBtn.addEventListener("click", () => toggle(true));
+    showTextBtn.addEventListener("click", () => toggle(false));
+  }
+
+  // Запуск при загрузке и при смене страниц Astro
+  initVideoTabs();
+  document.addEventListener("astro:after-swap", initVideoTabs);
+</script>

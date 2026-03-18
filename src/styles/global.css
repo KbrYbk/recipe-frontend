@@ -51,6 +51,21 @@
       color: #f3f4f6; /* Светлый текст */
     }
   }
+  @media print {
+  /* Скрываем всё лишнее при печати */
+  .print\:hidden, header, footer, aside, button, nav {
+    display: none !important;
+  }
+  /* Расширяем контент на всю ширину */
+  article {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  /* Делаем текст черным для экономии краски */
+  h1, p, li {
+    color: black !important;
+  }
+}
   * {
     transition:
       background-color 0.2s ease-in-out,

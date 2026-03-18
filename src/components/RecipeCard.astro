@@ -1,4 +1,6 @@
 ---
+import { Icon } from "astro-icon/components";
+
 interface Props {
   recipe: {
     id: string | number;
@@ -35,7 +37,9 @@ const imageAlt = `Фото блюда: ${title}`;
         ) : null
       }
 
-      <div class={`fallback text-5xl ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">&#x1F373;</div>
+      <div class={`fallback text-5xl ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">
+        <Icon name="lucide:utensils-crossed" class="h-20 w-20 opacity-20" />
+      </div>
     </div>
 
     <!-- Контент карточки -->
@@ -48,11 +52,18 @@ const imageAlt = `Фото блюда: ${title}`;
         {description}
       </p>
 
-      <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-        <span class="font-medium text-slate-500 dark:text-gray-300">
-          ⏱ {time} мин
-        </span>
-        <span class="font-semibold text-orange-600"> Смотреть → </span>
+      <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 text-sm dark:border-slate-700">
+        <div class="flex items-center gap-1.5 font-medium text-slate-500 dark:text-gray-300">
+          <Icon name="lucide:clock" class="h-4 w-4 shrink-0" />
+          <span class="flex items-center text-center leading-none">
+            {time} мин
+          </span>
+        </div>
+
+        <div class="text-primary flex items-center gap-1 font-semibold">
+          <span class="leading-none">Смотреть</span>
+          <Icon name="lucide:arrow-right" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+        </div>
       </div>
     </div>
   </article>

@@ -1,12 +1,14 @@
 ---
 const pathname = new URL(Astro.request.url).pathname;
 const currentPath = pathname.slice(1);
+import { Icon } from "astro-icon/components";
+
 ---
 
 <header class="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
     <a href="/" class="text-primary flex items-center gap-2 text-3xl font-bold md:text-4xl" aria-label="Главная страница Рецепты Дома">
-      <span aria-hidden="true">&#129367</span> Рецепты Дома
+      <span aria-hidden="true"><Icon name="lucide:cooking-pot" class="w-8 h-8 text-primary" /></span> Рецепты Дома
     </a>
     <nav class="hidden items-center gap-8 md:flex">
       <a href="/recipes" class="hover:text-primary py-2 transition-colors">Рецепты</a>
@@ -14,8 +16,8 @@ const currentPath = pathname.slice(1);
 
       <div class="h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
       <button id="themeToggle" class="..." aria-label="Toggle Theme">
-        <span class="dark:hidden">🌙</span>
-        <span class="hidden dark:inline">☀️</span>
+        <span class="dark:hidden"><Icon name="lucide:moon" class="w-5 h-5" /></span>
+        <span class="hidden dark:inline"><Icon name="lucide:sun" class="w-5 h-5" /></span>
       </button>
     </nav>
 

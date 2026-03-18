@@ -1,10 +1,11 @@
 export interface Recipe {
   id: number;
   title: string;
-  image: string;
   description: string;
+  image?: string;
   time: number;
-  difficulty: "Легко" | "Средне" | "Сложно";
+  difficulty?: string;
   ingredients: string[];
-  steps: string[];
+  videoUrl?: string;
+  steps: (string | { text: string; image?: string })[];
 }
