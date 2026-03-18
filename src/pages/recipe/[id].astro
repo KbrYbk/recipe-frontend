@@ -63,8 +63,13 @@ const { title, description, image, time, ingredients, steps, difficulty, videoUr
     </header>
 
     <div class="relative mb-12 flex aspect-video items-center justify-center overflow-hidden rounded-[2rem] bg-slate-200 shadow-2xl dark:bg-slate-800">
-      <Icon name="lucide:utensils-crossed" class="h-20 w-20 opacity-20" />
-      {image ? <img src={image} alt={title} class="h-full w-full object-cover" /> : <div class="text-9xl opacity-20" />}
+      {image ? (
+        <img src={image} alt={title} class="h-full w-full object-cover" />
+      ) : (
+        <div class="flex items-center justify-center h-full w-full">
+           <Icon name="lucide:utensils-crossed" class="h-20 w-20 opacity-20" />
+        </div>
+      )}
     </div>
 
     <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
@@ -80,7 +85,7 @@ const { title, description, image, time, ingredients, steps, difficulty, videoUr
           <h2 class="mb-8 text-3xl font-bold text-slate-900 dark:text-white">Приготовление</h2>
           <div id="textSteps" class="space-y-12">
             {
-              steps.map((step, index) => (
+              (steps || []).map((step, index) =>(
                 <div class="group">
                   <div class="mb-4 flex gap-6">
                     <div class="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-bold text-white">{index + 1}</div>
