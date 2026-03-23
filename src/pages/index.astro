@@ -23,10 +23,10 @@ const recipes: Recipe[] = (raw as any)?.default ?? [];
     <section aria-labelledby="categories-heading" class="mb-12">
       <h2 id="categories-heading" class="sr-only">Популярные категории</h2>
       <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-        <CategoryCard iconName="lucide:coffee" title="Завтраки" href="/category/zavtrak" />
-        <CategoryCard iconName="lucide:soup" title="Обеды" href="/category/obed" />
-        <CategoryCard iconName="lucide:drumstick" title="Ужины" href="/category/uzhin" />
-        <CategoryCard iconName="lucide:croissant" title="Выпечка" href="/category/vypechka" />
+        <CategoryCard iconName="lucide:coffee" title="Завтраки" href="/category/breakfast" />
+        <CategoryCard iconName="lucide:soup" title="Обеды" href="/category/lunch" />
+        <CategoryCard iconName="lucide:drumstick" title="Ужины" href="/category/dinner" />
+        <CategoryCard iconName="lucide:croissant" title="Выпечка" href="/category/bakery" />
       </div>
     </section>
 
@@ -40,7 +40,7 @@ const recipes: Recipe[] = (raw as any)?.default ?? [];
       </div>
 
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {recipes.map((recipe) => <RecipeCard recipe={recipe} />)}
+        {recipes.slice(0, 3).map((recipe) => <RecipeCard recipe={recipe} />)}
       </div>
     </section>
   </div>

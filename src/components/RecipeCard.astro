@@ -8,6 +8,7 @@ interface Props {
     description: string;
     image?: string;
     time: number | string;
+    category: string;
   };
 }
 
@@ -18,7 +19,7 @@ const hasImage = !!image;
 const imageAlt = `Фото блюда: ${title}`;
 ---
 
-<a href={`/recipe/${id}`} class="group block w-full overflow-hidden rounded-3xl focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
+<a href={`/recipe/${id}`} data-category={recipe.category} data-title={title.toLowerCase()} class="group block w-full overflow-hidden rounded-3xl focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
   <article class="flex h-full flex-col border border-line bg-card-bg shadow-sm transition-all duration-300 hover:shadow-xl">
     
     <div class="relative flex h-48 w-full items-center justify-center overflow-hidden bg-page-bg">

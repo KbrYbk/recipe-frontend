@@ -5,6 +5,7 @@ export interface Recipe {
   image?: string;
   time: number;
   difficulty?: string;
+  category: string;
   ingredients: string[];
   videoUrl?: string;
   steps: (string | { text: string; image?: string })[];
