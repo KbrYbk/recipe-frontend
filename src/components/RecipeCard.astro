@@ -18,9 +18,10 @@ const hasImage = !!image;
 const imageAlt = `Фото блюда: ${title}`;
 ---
 
-<a href={`/recipe/${id}`} class="group focus:ring-primary block w-full overflow-hidden rounded-3xl focus:ring-2 focus:ring-offset-2 focus:outline-none">
-  <article class="flex h-full flex-col border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-800">
-    <div class={`relative w-full h-48 overflow-hidden bg-slate-100 flex items-center justify-center`}>
+<a href={`/recipe/${id}`} class="group block w-full overflow-hidden rounded-3xl focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
+  <article class="flex h-full flex-col border border-line bg-card-bg shadow-sm transition-all duration-300 hover:shadow-xl">
+    
+    <div class="relative flex h-48 w-full items-center justify-center overflow-hidden bg-page-bg">
       {
         hasImage ? (
           <img
@@ -30,37 +31,34 @@ const imageAlt = `Фото блюда: ${title}`;
             height={300}
             class="animate-fade-in h-full w-full object-cover opacity-0 transition-transform duration-500 group-hover:scale-110"
             onload="this.classList.remove('opacity-0')"
-            onerror="this.style.display='none'; this.parentElement?.querySelector('.fallback')?.style.display='flex';"
+            onerror="this.style.display='none'; this.parentElement?.querySelector('.fallback')?.classList.remove('hidden');"
             loading="lazy"
             decoding="async"
           />
         ) : null
       }
 
-      <div class={`fallback text-5xl ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">
-        <Icon name="lucide:utensils-crossed" class="h-20 w-20 opacity-20" />
+      <div class={`fallback ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">
+        <Icon name="lucide:utensils-crossed" class="h-16 w-16 text-text-muted opacity-20" />
       </div>
     </div>
 
-    <!-- Контент карточки -->
-    <div class="flex flex-grow flex-col p-6">
-      <h2 class="mb-4 line-clamp-2 text-2xl font-bold text-slate-900 transition-colors group-hover:text-orange-600 dark:text-slate-100">
+    <div class="flex grow flex-col p-6">
+      <h2 class="text-text-main mb-3 line-clamp-2 text-xl font-bold transition-colors group-hover:text-brand md:text-2xl">
         {title}
       </h2>
 
-      <p class="mb-6 line-clamp-3 flex-grow text-slate-600 dark:text-slate-400">
+      <p class="text-text-muted mb-6 line-clamp-3 grow text-sm leading-relaxed">
         {description}
       </p>
 
-      <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 text-sm dark:border-slate-700">
-        <div class="flex items-center gap-1.5 font-medium text-slate-500 dark:text-gray-300">
+      <div class="mt-auto flex items-center justify-between border-t border-line pt-4 text-sm">
+        <div class="text-text-muted flex items-center gap-1.5 font-medium">
           <Icon name="lucide:clock" class="h-4 w-4 shrink-0" />
-          <span class="flex items-center text-center leading-none">
-            {time} мин
-          </span>
+          <span class="leading-none">{time} мин</span>
         </div>
 
-        <div class="text-primary flex items-center gap-1 font-semibold">
+        <div class="text-brand flex items-center gap-1 font-bold">
           <span class="leading-none">Смотреть</span>
           <Icon name="lucide:arrow-right" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </div>
@@ -71,12 +69,8 @@ const imageAlt = `Фото блюда: ${title}`;
 
 <style>
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in forwards;

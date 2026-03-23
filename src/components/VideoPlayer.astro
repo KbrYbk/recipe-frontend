@@ -5,17 +5,17 @@ import { Icon } from "astro-icon/components";
 
 {
   videoUrl && (
-    <div class="video-section mb-10">
-      <div class="mb-6 flex max-w-sm rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
-        <button id="showText" class="tab-btn active-tab flex-1 rounded-xl bg-white px-4 py-2 font-medium shadow-sm dark:bg-slate-700 dark:text-white">
+    <div class="video-section mb-10 no-print">
+      <div class="bg-page-bg border-line mb-6 flex max-w-70 rounded-xl border p-1">
+        <button id="showText" class="tab-btn active-tab flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-all">
           <Icon name="lucide:file-text" class="h-4 w-4" /> Текст
         </button>
-        <button id="showVideo" class="tab-btn flex-1 px-4 py-2 font-medium text-slate-500 transition-colors hover:text-slate-700 dark:hover:text-slate-300">
+        <button id="showVideo" class="tab-btn text-text-muted hover:text-text-main flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-all">
           <Icon name="lucide:play-circle" class="h-4 w-4" /> Видео
         </button>
       </div>
 
-      <div id="videoContainer" class="hidden aspect-video overflow-hidden rounded-3xl bg-black shadow-xl">
+      <div id="videoContainer" class="border-line hidden aspect-video overflow-hidden rounded-4xl border bg-black shadow-2xl">
         <iframe width="100%" height="100%" src={videoUrl} allowfullscreen class="border-0" />
       </div>
     </div>
@@ -31,30 +31,32 @@ import { Icon } from "astro-icon/components";
 
     if (!showTextBtn || !showVideoBtn || !videoContainer || !textSteps) return;
 
-    const toggle = (showVideo: boolean) => {
-      // Переключаем видимость контента
-      videoContainer.classList.toggle("hidden", !showVideo);
-      textSteps.classList.toggle("hidden", showVideo);
+    const setActive = (isVideo: boolean) => {
+      // 1. Управляем видимостью контента
+      videoContainer.classList.toggle("hidden", !isVideo);
+      textSteps.classList.toggle("hidden", isVideo);
 
-      // Меняем стили кнопок
-      if (showVideo) {
-        showVideoBtn.classList.add("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
-        showVideoBtn.classList.remove("text-slate-500");
-        showTextBtn.classList.remove("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
-        showTextBtn.classList.add("text-slate-500");
+      // 2. Управляем классами кнопок
+      if (isVideo) {
+        showVideoBtn.classList.add("active-tab");
+        showVideoBtn.classList.remove("text-text-muted");
+
+        showTextBtn.classList.remove("active-tab");
+        showTextBtn.classList.add("text-text-muted");
       } else {
-        showTextBtn.classList.add("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
-        showTextBtn.classList.remove("text-slate-500");
-        showVideoBtn.classList.remove("bg-white", "dark:bg-slate-700", "shadow-sm", "dark:text-white");
-        showVideoBtn.classList.add("text-slate-500");
+        showTextBtn.classList.add("active-tab");
+        showTextBtn.classList.remove("text-text-muted");
+
+        showVideoBtn.classList.remove("active-tab");
+        showVideoBtn.classList.add("text-text-muted");
       }
     };
 
-    showVideoBtn.addEventListener("click", () => toggle(true));
-    showTextBtn.addEventListener("click", () => toggle(false));
+    showVideoBtn.addEventListener("click", () => setActive(true));
+    showTextBtn.addEventListener("click", () => setActive(false));
   }
 
-  // Запуск при загрузке и при смене страниц Astro
+  // Инициализация
   initVideoTabs();
   document.addEventListener("astro:after-swap", initVideoTabs);
 </script>

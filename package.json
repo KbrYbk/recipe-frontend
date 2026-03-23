@@ -17,6 +17,7 @@
     "astro-icon": "^1.1.5"
   },
   "devDependencies": {
+    "@prettier/plugin-xml": "^3.4.2",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.1",
     "prettier": "^3.8.1",

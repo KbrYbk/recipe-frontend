@@ -1,15 +1,19 @@
----
-
----
-
 <div class="mx-auto max-w-3xl">
-  <form role="search" class="flex flex-col gap-4 sm:flex-row">
-    <input
-      type="search"
-      placeholder="Например: курица, картошка, суп..."
-      class="focus:border-primary focus:ring-primary/20 flex-1 rounded-xl border-2 border-gray-300 px-6 py-5 text-xl focus:ring-4 focus:outline-none"
-      aria-label="Поиск рецепта по названию или ингредиентам"
-    />
-    <button type="submit" class="bg-primary hover:bg-primary-dark min-w-[180px] rounded-xl px-10 py-5 text-xl font-medium text-white transition"> Найти рецепт </button>
+  <form role="search" class="flex flex-col gap-4 sm:flex-row" onsubmit="event.preventDefault()">
+    <div class="relative flex-1">
+      <input
+        type="search"
+        placeholder="Курица, картошка, суп..."
+        class="bg-card-bg border-line text-text-main placeholder:text-text-muted focus:border-brand focus:ring-brand/20 w-full rounded-2xl border-2 px-6 py-4 text-lg transition-all focus:ring-4 focus:outline-none md:py-5 md:text-xl"
+        aria-label="Поиск рецепта"
+      />
+    </div>
+    
+    <button 
+      type="submit" 
+      class="bg-brand hover:bg-brand-hover active:scale-95 min-w-40 rounded-2xl px-8 py-4 text-lg font-bold text-white shadow-lg shadow-brand/20 transition-all md:py-5 md:text-xl"
+    >
+      Найти
+    </button>
   </form>
 </div>

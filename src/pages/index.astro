@@ -7,22 +7,22 @@ import RecipeCard from "../components/RecipeCard.astro";
 import type { Recipe } from "../types/recipe";
 
 const raw = await import.meta.glob("../data/recipes.json", { eager: true })["../data/recipes.json"];
-const recipes: Recipe[] = raw?.default ?? [];
+const recipes: Recipe[] = (raw as any)?.default ?? [];
 ---
 
-<Layout title="РецептыДома — Твоя уютная кухня">
+<Layout title="Рецепты Дома — Твоя уютная кухня">
   <div class="mx-auto max-w-6xl">
     <section class="py-12 text-center md:py-16">
-      <h1 class="mb-6 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl lg:text-6xl dark:text-slate-100">
-        Что <span class="text-primary">приготовим</span> сегодня?
+      <h1 class="mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl text-text-main m">
+        Что <span class="text-brand">приготовим</span> сегодня?
       </h1>
-      <p class="mx-auto mb-10 max-w-3xl text-xl text-gray-700 md:text-2xl dark:text-gray-300">Выбирай из наших лучших рецептов</p>
+      <p class="mx-auto mb-10 max-w-3xl text-xl md:text-2xl text-text-muted ">Выбирай из наших лучших рецептов</p>
       <SearchBar />
     </section>
 
-    <section aria-labelledby="categories-heading" class="my-12">
+    <section aria-labelledby="categories-heading" class="mb-12">
       <h2 id="categories-heading" class="sr-only">Популярные категории</h2>
-      <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
+      <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
         <CategoryCard iconName="lucide:coffee" title="Завтраки" href="/category/zavtrak" />
         <CategoryCard iconName="lucide:soup" title="Обеды" href="/category/obed" />
         <CategoryCard iconName="lucide:drumstick" title="Ужины" href="/category/uzhin" />
@@ -30,10 +30,17 @@ const recipes: Recipe[] = raw?.default ?? [];
       </div>
     </section>
 
-    <section aria-labelledby="recipes-heading" class="my-12">
-      <h2 id="recipes-heading" class="mb-10 text-center text-3xl font-bold">Популярные рецепты</h2>
+    <section aria-labelledby="recipes-heading" class="mb-20">
+      <div class="mb-10 flex items-end justify-between">
+        <div>
+          <h2 id="recipes-heading" class="text-text-main text-3xl font-bold md:text-4xl">Популярные рецепты</h2>
+          <div class="bg-brand mt-2 h-1.5 w-20 rounded-full"></div>
+        </div>
+        <a href="/recipes" class="text-brand hidden font-semibold hover:underline md:block"> Все рецепты &rarr; </a>
+      </div>
+
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {recipes.map((recipe) => <RecipeCard key={recipe.id} recipe={recipe} />)}
+        {recipes.map((recipe) => <RecipeCard recipe={recipe} />)}
       </div>
     </section>
   </div>
