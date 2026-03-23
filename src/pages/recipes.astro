@@ -9,7 +9,6 @@ import type { Recipe } from "../types/recipe";
 const raw = await import.meta.glob("../data/recipes.json", { eager: true })["../data/recipes.json"];
 const allRecipes: Recipe[] = (raw as any)?.default ?? [];
 
-const categories = ["Все", ...new Set(allRecipes.map((r) => r.category).filter(Boolean))];
 ---
 
 <Layout title="Все рецепты — Рецепты Дома">
@@ -49,42 +48,34 @@ const categories = ["Все", ...new Set(allRecipes.map((r) => r.category).filte
               <h3 class="text-text-muted mb-4 text-sm font-semibold tracking-wider uppercase">Категория</h3>
               <ul class="space-y-2" id="category-filters">
                 <li>
-                  <button class="filter-btn active bg-brand flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm text-white transition-colors" data-category="all">
-                    Все
-                  </button>
+                  <a href=href="/recipes" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Все </a>
                 </li>
                 <li>
-                  <button
-                    class="filter-btn text-text-muted hover:bg-brand/10 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors"
-                    data-category="breakfast"
-                  >
-                    Завтраки
-                  </button>
+                  <a href="/recipes?category=breakfast" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Завтраки </a>
                 </li>
                 <li>
-                  <button class="filter-btn text-text-muted hover:bg-brand/10 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors" data-category="lunch">
-                    Обеды
-                  </button>
+                  <a href="/recipes?category=lunch" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Обеды </a>
                 </li>
                 <li>
-                  <button class="filter-btn text-text-muted hover:bg-brand/10 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors" data-category="dinner">
-                    Ужины
-                  </button>
+                  <a href="/recipes?category=dinner" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Ужины </a>
                 </li>
                 <li>
-                  <button class="filter-btn text-text-muted hover:bg-brand/10 flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors" data-category="bakery">
-                    Выпечка
-                  </button>
+                  <a href="/recipes?category=bakery" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Выпечка </a>
                 </li>
               </ul>
             </div>
 
             <div>
               <h3 class="text-text-muted mb-4 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex flex-wrap gap-2" id="difficulty-filters">
                 {
-                  ["Легко", "Средне", "Сложно"].map((diff) => (
-                    <button class="border-line text-text-muted hover:border-brand hover:text-brand rounded-full border px-4 py-1 text-xs font-medium">{diff}</button>
+                  ["Все", "Легко", "Средне", "Сложно"].map((diff) => (
+                    <a
+                      href={diff === "Все" ? "/recipes" : `/recipes?difficulty=${diff}`}
+                      class="border-line text-text-muted hover:border-brand hover:text-brand rounded-full border px-4 py-1 text-xs font-medium transition-colors"
+                    >
+                      {diff}
+                    </a>
                   ))
                 }
               </div>
@@ -103,7 +94,7 @@ const categories = ["Все", ...new Set(allRecipes.map((r) => r.category).filte
             <div class="py-20 text-center">
               <Icon name="lucide:search-x" class="text-text-muted mx-auto mb-4 h-16 w-16 opacity-20" />
               <h3 class="text-text-main text-xl font-bold">Ничего не нашли</h3>
-              <p class="text-text-muted mt-2">Попробуй изменить параметры поиска</p>
+              <p class="text-text-muted mt-2">Попробуй изменить параметры поиска или категорию</p>
             </div>
           )
         }
@@ -111,28 +102,3 @@ const categories = ["Все", ...new Set(allRecipes.map((r) => r.category).filte
     </div>
   </div>
 </Layout>
-<script>
-  const filterButtons = document.querySelectorAll('.filter-btn');
-  const recipeCards = document.querySelectorAll('.group.block.w-full'); // Находим все обертки карточек
-
-  filterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const category = button.getAttribute('data-category');
-
-      // 1. Управляем активным стилем кнопок
-      filterButtons.forEach(btn => {
-        btn.classList.remove('bg-brand', 'text-white');
-        btn.classList.add('text-text-muted');
-      });
-      button.classList.add('bg-brand', 'text-white');
-      button.classList.remove('text-text-muted');
-
-      // 2. Логика фильтрации карточек
-      recipeCards.forEach(card => {
-        // Нам нужно как-то понять категорию карточки. 
-        // В идеале в RecipeCard.astro добавить data-category={recipe.category}
-        // Но пока можно просто искать текст или добавить атрибут в компонент.
-      });
-    });
-  });
-</script>

@@ -1,8 +1,10 @@
 <div class="mx-auto max-w-3xl">
-  <form role="search" class="flex flex-col gap-4 sm:flex-row" onsubmit="event.preventDefault()">
+  <form action="/recipes" method="GET" role="search" class="flex flex-col gap-4 sm:flex-row">
     <div class="relative flex-1">
       <input
         type="search"
+        name="q" 
+        transition:persist
         placeholder="Курица, картошка, суп..."
         class="bg-card-bg border-line text-text-main placeholder:text-text-muted focus:border-brand focus:ring-brand/20 w-full rounded-2xl border-2 px-6 py-4 text-lg transition-all focus:ring-4 focus:outline-none md:py-5 md:text-xl"
         aria-label="Поиск рецепта"

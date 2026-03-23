@@ -309,3 +309,20 @@
     box-shadow: none !important;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  .animate-fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}

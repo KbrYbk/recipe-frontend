@@ -2,7 +2,7 @@
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-
+import { ClientRouter } from "astro:transitions";
 interface Props {
   title: string;
   description?: string;
@@ -33,20 +33,30 @@ const { title, description = "Лучшие рецепты для каждого:
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script is:inline>
-      const theme = (() => {
-        if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
-          return localStorage.getItem("theme");
-        }
-        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      })();
+      const setTheme = () => {
+        const theme = (() => {
+          if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+            return localStorage.getItem("theme");
+          }
+          return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        })();
 
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-      window.localStorage.setItem("theme", theme);
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+        window.localStorage.setItem("theme", theme);
+      };
+
+      // Запускаем сразу
+      setTheme();
+
+      // Запускаем повторно после смены страницы (для ClientRouter)
+      document.addEventListener("astro:after-swap", setTheme);
     </script>
+
+    <ClientRouter />
   </head>
   <body class="flex min-h-screen flex-col antialiased">
     <Header />

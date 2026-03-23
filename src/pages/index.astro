@@ -23,10 +23,10 @@ const recipes: Recipe[] = (raw as any)?.default ?? [];
     <section aria-labelledby="categories-heading" class="mb-12">
       <h2 id="categories-heading" class="sr-only">Популярные категории</h2>
       <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-        <CategoryCard iconName="lucide:coffee" title="Завтраки" href="/category/breakfast" />
-        <CategoryCard iconName="lucide:soup" title="Обеды" href="/category/lunch" />
-        <CategoryCard iconName="lucide:drumstick" title="Ужины" href="/category/dinner" />
-        <CategoryCard iconName="lucide:croissant" title="Выпечка" href="/category/bakery" />
+        <CategoryCard iconName="lucide:coffee" title="Завтраки" href="/recipes?category=breakfast" />
+        <CategoryCard iconName="lucide:soup" title="Обеды" href="/recipes?category=lunch" />
+        <CategoryCard iconName="lucide:drumstick" title="Ужины" href="/recipes?category=dinner" />
+        <CategoryCard iconName="lucide:croissant" title="Выпечка" href="/recipes?category=bakery" />
       </div>
     </section>
 
