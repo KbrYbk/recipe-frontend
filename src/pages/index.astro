@@ -3,20 +3,57 @@ import Layout from "../layouts/Layout.astro";
 import SearchBar from "../components/SearchBar.astro";
 import CategoryCard from "../components/CategoryCard.astro";
 import RecipeCard from "../components/RecipeCard.astro";
+import localRecipes from "../data/recipes.json";
+import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
 
-import type { Recipe } from "../types/recipe";
+try {
+  const ipCheck = await fetch('https://api.ipify.org?format=json');
+  const ipData = await ipCheck.json();
+  console.log("Мой сервер делает запрос с этого IP:", ipData.ip);
+} catch (e) {
+  console.log("Не удалось определить IP");
+}
 
-const raw = await import.meta.glob("../data/recipes.json", { eager: true })["../data/recipes.json"];
-const recipes: Recipe[] = (raw as any)?.default ?? [];
+
+let errorMessage = "";
+const { list, ok, status } = await fetchRecipesFromApi();
+
+if (!ok && status === 403) {
+  errorMessage = "Бэкенд: доступ запрещен (IP Whitelist). Покажу только локальные рецепты.";
+} else if (!ok && status !== 0) {
+  errorMessage = "Не удалось загрузить рецепты с сервера. Показаны локальные данные.";
+} else if (!ok) {
+  errorMessage = "Бэкенд недоступен. Использую резервные данные.";
+}
+
+const processedBackend = (list as Record<string, unknown>[]).map((r) => mapBackendRecipe(r));
+
+// Для локальных рецептов просто добавляем префикс к ID
+const processedLocal = localRecipes.map((r) => ({
+  ...r,
+  id: `local-${r.id}`,
+}));
+
+// Соединяем
+const allRecipes = [...processedBackend, ...processedLocal];
 ---
 
 <Layout title="Рецепты Дома — Твоя уютная кухня">
   <div class="mx-auto max-w-6xl">
+    {
+      errorMessage && (
+        <div class="my-8 rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
+          <p class="font-bold">Проблема с бэкендом:</p>
+          <p>{errorMessage}</p>
+        </div>
+      )
+    }
+
     <section class="py-12 text-center md:py-16">
-      <h1 class="mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl text-text-main m">
+      <h1 class="text-text-main m mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
         Что <span class="text-brand">приготовим</span> сегодня?
       </h1>
-      <p class="mx-auto mb-10 max-w-3xl text-xl md:text-2xl text-text-muted ">Выбирай из наших лучших рецептов</p>
+      <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">Выбирай из наших лучших рецептов</p>
       <SearchBar />
     </section>
 
@@ -40,7 +77,7 @@ const recipes: Recipe[] = (raw as any)?.default ?? [];
       </div>
 
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {recipes.slice(0, 3).map((recipe) => <RecipeCard recipe={recipe} />)}
+        {allRecipes.slice(0, 3).map((recipe) => <RecipeCard recipe={recipe} />)}
       </div>
     </section>
   </div>

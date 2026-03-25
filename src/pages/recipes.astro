@@ -1,14 +1,66 @@
 ---
+export const prerender = false;
 import Layout from "../layouts/Layout.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import SearchBar from "../components/SearchBar.astro";
 import { Icon } from "astro-icon/components";
+import localRecipes from "../data/recipes.json";
+import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
 
-import type { Recipe } from "../types/recipe";
+const { list } = await fetchRecipesFromApi();
 
-const raw = await import.meta.glob("../data/recipes.json", { eager: true })["../data/recipes.json"];
-const allRecipes: Recipe[] = (raw as any)?.default ?? [];
+const processedBackend = (list as Record<string, unknown>[]).map((r) => mapBackendRecipe(r));
 
+const processedLocal = localRecipes.map((r) => ({
+  ...r,
+  id: `local-${r.id}`,
+}));
+
+const allRecipes = [...processedBackend, ...processedLocal];
+
+const categoryFilter = Astro.url.searchParams.get("category")?.trim() || "";
+const difficultyFilter = Astro.url.searchParams.get("difficulty")?.trim() || "";
+const q = Astro.url.searchParams.get("q")?.trim().toLowerCase() || "";
+
+function recipesHref(overrides: Record<string, string | undefined>): string {
+  const p = new URLSearchParams(Astro.url.searchParams);
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === undefined || value === "") p.delete(key);
+    else p.set(key, value);
+  }
+  const s = p.toString();
+  return s ? `/recipes?${s}` : "/recipes";
+}
+
+const filteredRecipes = allRecipes.filter((r) => {
+  const rec = r as Record<string, unknown>;
+  if (categoryFilter && String(rec.category ?? "") !== categoryFilter) return false;
+  if (difficultyFilter && difficultyFilter !== "all" && String(rec.difficulty ?? "") !== difficultyFilter) return false;
+  if (!q) return true;
+  const title = String(rec.title ?? "").toLowerCase();
+  const desc = String(rec.description ?? "").toLowerCase();
+  return title.includes(q) || desc.includes(q);
+});
+
+// Словарь для фильтров сложности (чтобы сопоставить API и UI)
+const difficultyMap = [
+  { label: "Все", value: "all" },
+  { label: "Легко", value: "easy" },
+  { label: "Средне", value: "medium" },
+  { label: "Сложно", value: "hard" },
+];
+
+const categoryNav = [
+  { label: "Все", value: "" },
+  { label: "Завтраки", value: "breakfast" },
+  { label: "Обеды", value: "lunch" },
+  { label: "Ужины", value: "dinner" },
+  { label: "Выпечка", value: "bakery" },
+];
+
+const searchPreserve: Record<string, string> = {};
+if (categoryFilter) searchPreserve.category = categoryFilter;
+if (difficultyFilter && difficultyFilter !== "all") searchPreserve.difficulty = difficultyFilter;
 ---
 
 <Layout title="Все рецепты — Рецепты Дома">
@@ -25,12 +77,12 @@ const allRecipes: Recipe[] = (raw as any)?.default ?? [];
             Наша <span class="text-brand">коллекция</span>
           </h1>
           <p class="text-text-muted mt-4 text-lg">
-            Найдено {allRecipes.length} потрясающих блюд
+            Найдено {filteredRecipes.length} из {allRecipes.length} рецептов
           </p>
         </div>
 
         <div class="w-full md:w-96">
-          <SearchBar />
+          <SearchBar preserveParams={searchPreserve} initialQuery={Astro.url.searchParams.get("q") ?? ""} />
         </div>
       </div>
     </header>
@@ -47,21 +99,22 @@ const allRecipes: Recipe[] = (raw as any)?.default ?? [];
             <div>
               <h3 class="text-text-muted mb-4 text-sm font-semibold tracking-wider uppercase">Категория</h3>
               <ul class="space-y-2" id="category-filters">
-                <li>
-                  <a href=href="/recipes" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Все </a>
-                </li>
-                <li>
-                  <a href="/recipes?category=breakfast" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Завтраки </a>
-                </li>
-                <li>
-                  <a href="/recipes?category=lunch" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Обеды </a>
-                </li>
-                <li>
-                  <a href="/recipes?category=dinner" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Ужины </a>
-                </li>
-                <li>
-                  <a href="/recipes?category=bakery" class="text-text-muted hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors"> Выпечка </a>
-                </li>
+                {
+                  categoryNav.map((c) => (
+                    <li>
+                      <a
+                        href={c.value === "" ? recipesHref({ category: undefined }) : recipesHref({ category: c.value })}
+                        aria-current={categoryFilter === c.value || (c.value === "" && !categoryFilter) ? "page" : undefined}
+                        class:list={[
+                          "hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors",
+                          categoryFilter === c.value || (c.value === "" && !categoryFilter) ? "bg-brand/10 text-brand font-semibold" : "text-text-muted",
+                        ]}
+                      >
+                        {c.label}
+                      </a>
+                    </li>
+                  ))
+                }
               </ul>
             </div>
 
@@ -69,12 +122,18 @@ const allRecipes: Recipe[] = (raw as any)?.default ?? [];
               <h3 class="text-text-muted mb-4 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
               <div class="flex flex-wrap gap-2" id="difficulty-filters">
                 {
-                  ["Все", "Легко", "Средне", "Сложно"].map((diff) => (
+                  difficultyMap.map((diff) => (
                     <a
-                      href={diff === "Все" ? "/recipes" : `/recipes?difficulty=${diff}`}
-                      class="border-line text-text-muted hover:border-brand hover:text-brand rounded-full border px-4 py-1 text-xs font-medium transition-colors"
+                      href={diff.value === "all" ? recipesHref({ difficulty: undefined }) : recipesHref({ difficulty: diff.value })}
+                      aria-current={difficultyFilter === diff.value || (diff.value === "all" && !difficultyFilter) ? "page" : undefined}
+                      class:list={[
+                        "border-line hover:border-brand hover:text-brand rounded-full border px-4 py-1 text-xs font-medium transition-colors",
+                        difficultyFilter === diff.value || (diff.value === "all" && !difficultyFilter)
+                          ? "border-brand text-brand font-bold"
+                          : "text-text-muted",
+                      ]}
                     >
-                      {diff}
+                      {diff.label}
                     </a>
                   ))
                 }
@@ -86,7 +145,7 @@ const allRecipes: Recipe[] = (raw as any)?.default ?? [];
 
       <main class="grow">
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-          {allRecipes.map((recipe) => <RecipeCard recipe={recipe} />)}
+          {filteredRecipes.map((recipe) => <RecipeCard recipe={recipe} />)}
         </div>
 
         {
@@ -95,6 +154,19 @@ const allRecipes: Recipe[] = (raw as any)?.default ?? [];
               <Icon name="lucide:search-x" class="text-text-muted mx-auto mb-4 h-16 w-16 opacity-20" />
               <h3 class="text-text-main text-xl font-bold">Ничего не нашли</h3>
               <p class="text-text-muted mt-2">Попробуй изменить параметры поиска или категорию</p>
+            </div>
+          )
+        }
+
+        {
+          allRecipes.length > 0 && filteredRecipes.length === 0 && (
+            <div class="py-20 text-center">
+              <Icon name="lucide:search-x" class="text-text-muted mx-auto mb-4 h-16 w-16 opacity-20" />
+              <h3 class="text-text-main text-xl font-bold">Нет рецептов по выбранным условиям</h3>
+              <p class="text-text-muted mt-2">Сбросьте фильтры или измените запрос в поиске.</p>
+              <a href={recipesHref({ category: undefined, difficulty: undefined, q: undefined })} class="text-brand mt-6 inline-block font-semibold hover:underline">
+                Показать все рецепты
+              </a>
             </div>
           )
         }

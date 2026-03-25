@@ -1,20 +1,21 @@
 ---
 import { Icon } from "astro-icon/components";
-import { Image } from 'astro:assets';
+import { Image } from "astro:assets";
 interface Props {
   recipe: {
-    id: number;
+    id: number | string;
     title: string;
     description: string;
-    image?: string;
-    time: number;
+    main_image?: string;
+    cooking_time: number;
   };
 }
 
 const { recipe } = Astro.props;
-const { id, title, description, image, time } = recipe;
+const { id, title, description, main_image, cooking_time: rawTime } = recipe;
+const cooking_time = Number(rawTime) || 0;
 
-const hasImage = !!image;
+const hasImage = !!main_image && main_image !== "";
 const imageAlt = `Фото блюда: ${title}`;
 ---
 
@@ -23,17 +24,14 @@ const imageAlt = `Фото блюда: ${title}`;
     <div class="relative flex h-48 w-full items-center justify-center overflow-hidden bg-page-bg">
       {
         hasImage ? (
-          <Image
-            src={image}
+          <img
+            src={main_image}
             alt={imageAlt}
-            width={400}
-            height={300}
-            transition:name={`recipe-image-${id}`}
-            class="animate-fade-in h-full w-full object-cover opacity-0 transition-transform duration-500 group-hover:scale-110"
-            onload="this.classList.remove('opacity-0')"
-            onerror="this.style.display='none'; this.parentElement?.querySelector('.fallback')?.classList.remove('hidden');"
             loading="lazy"
             decoding="async"
+            class="animate-fade-in h-full w-full object-cover opacity-0 transition-transform duration-500 group-hover:scale-110"
+            onload="this.classList.remove('opacity-0')"
+            style={`view-transition-name: recipe-image-${id}`}
           />
         ) : null
       }
@@ -55,7 +53,7 @@ const imageAlt = `Фото блюда: ${title}`;
       <div class="mt-auto flex items-center justify-between border-t border-line pt-4 text-sm">
         <div class="text-text-muted flex items-center gap-1.5 font-medium">
           <Icon name="lucide:clock" class="h-4 w-4 shrink-0" />
-          <span class="leading-none">{time} мин</span>
+          <span class="leading-none">{cooking_time} мин</span>
         </div>
 
         <div class="text-brand flex items-center gap-1 font-bold">

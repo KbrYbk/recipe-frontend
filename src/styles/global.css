@@ -62,6 +62,32 @@
 }
 
 @layer components {
+  .skip-to-main {
+    position: absolute;
+    left: 1rem;
+    top: -6rem;
+    z-index: 100;
+    border-radius: 0.5rem;
+    background-color: var(--brand-primary);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    box-shadow:
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transition:
+      top 0.15s ease,
+      outline 0.15s ease;
+  }
+
+  .skip-to-main:focus {
+    top: 1rem;
+    outline: 2px solid var(--brand-hover);
+    outline-offset: 2px;
+  }
+
   .btn-primary {
     /* Используем имена из @theme (без префикса --color) */
     @apply bg-brand hover:bg-brand-hover shadow-brand/20 rounded-xl px-6 py-2 font-bold text-white shadow-lg transition-all active:scale-95;

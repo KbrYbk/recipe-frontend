@@ -33,34 +33,30 @@ const { title, description = "Лучшие рецепты для каждого:
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script is:inline>
-      const setTheme = () => {
-        const theme = (() => {
-          if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
-            return localStorage.getItem("theme");
-          }
-          return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        })();
-
+      const applyTheme = () => {
+        let theme;
+        if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+          theme = localStorage.getItem("theme");
+        } else {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
         if (theme === "dark") {
           document.documentElement.classList.add("dark");
         } else {
           document.documentElement.classList.remove("dark");
         }
-        window.localStorage.setItem("theme", theme);
       };
 
-      // Запускаем сразу
-      setTheme();
-
-      // Запускаем повторно после смены страницы (для ClientRouter)
-      document.addEventListener("astro:after-swap", setTheme);
+      applyTheme();
+      document.addEventListener("astro:after-swap", applyTheme);
     </script>
 
     <ClientRouter />
   </head>
   <body class="flex min-h-screen flex-col antialiased">
+    <a href="#main-content" class="skip-to-main"> К основному содержимому </a>
     <Header />
-    <main id="main-content" class="grow px-4 py-8 md:px-8 lg:px-12">
+    <main id="main-content" tabindex="-1" class="grow px-4 py-8 md:px-8 lg:px-12">
       <slot />
     </main>
     <Footer />

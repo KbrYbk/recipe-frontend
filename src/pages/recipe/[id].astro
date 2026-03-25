@@ -1,122 +1,179 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import recipesData from "../../data/recipes.json";
-import type { Recipe } from "../../types/recipe";
-import VideoPlayer from "../../components/VideoPlayer.astro";
-import IngredientsList from "../../components/IngredientsList.astro";
-import { Icon } from "astro-icon/components";
-import { Image } from "astro:assets";
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const recipes = recipesData as Recipe[];
-  return recipes.map((recipe) => ({
-    params: { id: recipe.id.toString() },
-    props: { recipe },
-  }));
+import Layout from "../../layouts/Layout.astro";
+import localRecipes from "../../data/recipes.json";
+import { Icon } from "astro-icon/components";
+import IngredientsList from "../../components/IngredientsList.astro";
+import VideoPlayer from "../../components/VideoPlayer.astro";
+import HttpNotFound from "../../components/HttpNotFound.astro";
+import { fetchRecipesFromApi, mapBackendRecipe } from "../../lib/api/recipes";
+import { normalizeIngredients } from "../../lib/normalizeIngredients";
+
+const { id } = Astro.params;
+
+let recipe: Record<string, unknown> | null = null;
+
+if (id?.startsWith("local-")) {
+  const cleanId = id.replace("local-", "");
+  const raw = localRecipes.find((r) => String(r.id) === cleanId);
+  if (raw) {
+    recipe = {
+      ...raw,
+      id: `local-${raw.id}`,
+    } as Record<string, unknown>;
+  }
+} else if (id?.startsWith("db-")) {
+  const { list, ok } = await fetchRecipesFromApi();
+  if (ok) {
+    const raw = (list as Record<string, unknown>[]).find((r) => `db-${r.id}` === id);
+    if (raw) recipe = mapBackendRecipe(raw) as Record<string, unknown>;
+  }
 }
 
-const { recipe } = Astro.props;
-const { id, title, description, image, time, ingredients, steps, difficulty, videoUrl } = recipe;
+if (!recipe) {
+  Astro.response.status = 404;
+}
+
+const title = String(recipe?.title ?? "");
+const description = String(recipe?.description ?? "");
+const main_image = recipe?.main_image != null ? String(recipe.main_image) : "";
+const cooking_time = Number(recipe?.cooking_time ?? 0);
+const ingredients = normalizeIngredients(recipe?.ingredients);
+const steps = (recipe?.steps as { order?: number; text?: string; image?: string }[] | undefined) ?? [];
+const difficulty = recipe?.difficulty != null ? String(recipe.difficulty) : "";
+const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
+const pageTitle = recipe ? `${title} — РецептыДома` : "Рецепт не найден — Рецепты Дома";
 ---
 
-<Layout title={`${title} — РецептыДома`}>
-  <article class="mx-auto max-w-4xl px-4 py-8 md:py-12">
-    <nav class="no-print mb-8">
-      <a href="/" class="group text-brand inline-flex items-center font-bold">
-        <Icon name="lucide:arrow-left" class="mr-2 h-5 w-5 transition-transform group-hover:-translate-x-1" />
-        Назад к рецептам
-      </a>
-    </nav>
+<Layout title={pageTitle}>
+  {
+    !recipe ? (
+      <HttpNotFound />
+    ) : (
+      <article class="mx-auto max-w-4xl px-4 py-8 md:py-12">
+        <nav class="no-print mb-8" aria-label="Навигация по разделу">
+          <a href="/recipes" class="group text-brand inline-flex items-center font-bold">
+            <Icon name="lucide:arrow-left" class="mr-2 h-5 w-5 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
+            Назад к рецептам
+          </a>
+        </nav>
 
-    <header class="mb-12">
-      <h1 class="text-text-main mb-6 text-4xl font-bold md:text-5xl lg:text-7xl">
-        {title}
-      </h1>
+        <header class="mb-12">
+          <h1 class="text-text-main mb-6 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
 
-      <div class="flex flex-col justify-between gap-6 sm:flex-row md:items-center">
-        <div class="flex flex-col gap-4 sm:flex-row">
-          <span class="bg-card-bg border-line text-text-main flex items-center justify-center gap-2 rounded-2xl border px-5 py-2">
-            <Icon name="lucide:clock" class="h-5 w-5" />
-            <span>{time} мин</span>
-          </span>
-          {
-            difficulty && (
-              <span class="bg-accent-soft text-brand flex items-center justify-center gap-2 rounded-2xl px-5 py-2 font-bold">
-                <Icon name="lucide:flame" class="h-5 w-5" />
-                {difficulty}
+          <div class="flex flex-col justify-between gap-6 sm:flex-row md:items-center">
+            <div class="flex flex-col gap-4 sm:flex-row">
+              <span class="bg-card-bg border-line text-text-main flex items-center justify-center gap-2 rounded-2xl border px-5 py-2">
+                <Icon name="lucide:clock" class="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span>{cooking_time} мин</span>
               </span>
+              {
+                difficulty && (
+                  <span class="bg-accent-soft text-brand flex items-center justify-center gap-2 rounded-2xl px-5 py-2 text-xs font-bold tracking-wider uppercase">
+                    <Icon name="lucide:flame" class="h-5 w-5 shrink-0" aria-hidden="true" />
+                    {difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : difficulty === "easy" ? "Легко" : difficulty}
+                  </span>
+                )
+              }
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onclick="window.print()"
+                class="bg-card-bg border-line text-text-main hover:border-brand no-print flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all active:scale-95"
+              >
+                <Icon name="lucide:printer" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>Печать</span>
+              </button>
+              <button
+                type="button"
+                id="shareBtn"
+                class="bg-brand hover:bg-brand-hover shadow-brand/20 flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-lg transition-all active:scale-95"
+              >
+                <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>Поделиться</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl">
+          {
+            main_image ? (
+              <img
+                src={main_image}
+                alt={`Фото готового блюда: ${title}`}
+                width={1200}
+                height={675}
+                class="h-full w-full object-cover"
+                loading="eager"
+                decoding="async"
+                style={`view-transition-name: recipe-image-${id}`}
+              />
+            ) : (
+              <div class="flex h-full w-full items-center justify-center">
+                <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
+              </div>
             )
           }
         </div>
 
-        <div class="flex flex-col gap-3 sm:flex-row">
-          <button
-            onclick="window.print()"
-            class="bg-card-bg border-line text-text-main hover:border-brand flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all active:scale-95"
-          >
-            <Icon name="lucide:printer" class="h-4 w-4" />
-            <span>Печать</span>
-          </button>
-          <button
-            id="shareBtn"
-            class="bg-brand hover:bg-brand-hover shadow-brand/20 flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-lg transition-all active:scale-95"
-          >
-            <Icon name="lucide:share-2" class="h-4 w-4" />
-            Поделиться
-          </button>
+        <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
+          <IngredientsList ingredients={ingredients} recipeSlug={id ?? "recipe"} />
+
+          <div class="lg:col-span-2">
+            <section aria-labelledby="about-heading">
+              <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold">
+                О рецепте
+              </h2>
+              <p class="text-text-muted mb-12 text-xl leading-relaxed italic">«{description}»</p>
+
+              <VideoPlayer videoUrl={video_url} />
+
+              <div
+                id="textSteps"
+                role={video_url ? "tabpanel" : undefined}
+                aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}
+              >
+                <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
+                  Приготовление
+                </h2>
+                <ol class="list-none space-y-12 p-0" aria-labelledby="steps-heading">
+                  {
+                    steps.map((step, index) => (
+                      <li class="group relative">
+                        <div class="mb-4 flex gap-6">
+                          <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
+                            {step.order ?? index + 1}
+                          </div>
+                          <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
+                        </div>
+
+                        {step.image ? (
+                          <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
+                            <img
+                              src={step.image}
+                              alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
+                              width={800}
+                              height={450}
+                              loading="lazy"
+                              decoding="async"
+                              class="h-auto w-full"
+                            />
+                          </div>
+                        ) : null}
+                      </li>
+                    ))
+                  }
+                </ol>
+              </div>
+            </section>
+          </div>
         </div>
-      </div>
-    </header>
-
-    <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl">
-      {
-        image ? (
-          <Image src={image} alt={title} width={1200} height={675} transition:name={`recipe-image-${id}`} class="h-full w-full object-cover" />
-        ) : (
-          <div class="flex h-full w-full items-center justify-center">
-            <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" />
-          </div>
-        )
-      }
-    </div>
-
-    <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
-      <IngredientsList ingredients={ingredients} />
-
-      <div class="lg:col-span-2">
-        <section>
-          <h2 class="text-text-main mb-6 text-3xl font-bold">О рецепте</h2>
-          <p class="text-text-muted mb-12 text-xl leading-relaxed italic">«{description}»</p>
-
-          <VideoPlayer videoUrl={videoUrl} />
-
-          <div id="textSteps">
-            <h2 class="text-text-main mt-12 mb-8 text-3xl font-bold">Приготовление</h2>
-
-            <div class="space-y-12">
-              {
-                (steps || []).map((step, index) => (
-                  <div class="group relative">
-                    <div class="mb-4 flex gap-6">
-                      <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white">{index + 1}</div>
-                      <p class="text-text-main pt-1 text-lg leading-relaxed">{typeof step === "string" ? step : step.text}</p>
-                    </div>
-
-                    {/* ВОТ ЭТОТ БЛОК НУЖНО ВЕРНУТЬ: */}
-                    {typeof step !== "string" && step.image && (
-                      <div class="ml-16 max-w-xl overflow-hidden rounded-2xl border shadow-md dark:border-slate-800">
-                        <Image src={step.image} alt={`Шаг ${index + 1}`} width={1200} height={675} class="h-auto w-full" />
-                      </div>
-                    )}
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  </article>
+      </article>
+    )
+  }
 </Layout>
 
 <script>

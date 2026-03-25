@@ -1,28 +1,49 @@
 ---
 import { Icon } from "astro-icon/components";
 
-interface Props {
-  ingredients: string[];
+interface Ingredient {
+  name: string;
+  amount?: string | number;
+  unit?: string;
 }
-const { ingredients } = Astro.props;
+
+interface Props {
+  ingredients: Ingredient[];
+  recipeSlug?: string;
+}
+
+const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 ---
 
-<aside class="lg:sticky lg:top-28 lg:col-span-1">
+<aside class="lg:sticky lg:top-28 lg:col-span-1" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
   <div class="border-line bg-card-bg rounded-4xl border p-8 shadow-sm transition-shadow hover:shadow-md">
-    <h2 class="text-text-main mb-6 flex items-center gap-2 text-2xl font-bold">
-      <Icon name="lucide:shopping-basket" class="h-6 w-6" /> Ингредиенты
+    <h2 id={`ingredients-heading-${recipeSlug}`} class="text-text-main mb-6 flex items-center gap-2 text-2xl font-bold">
+      <Icon name="lucide:shopping-basket" class="h-6 w-6 shrink-0" aria-hidden="true" /> Ингредиенты
     </h2>
     <ul class="space-y-4">
       {
-        (ingredients || []).map((item) => (
-          <li class="border-line text-text-main flex items-start gap-3 border-b pb-3 last:border-0">
-            <div class="flex h-6 items-center">
-              <input type="checkbox" class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded transition-colors" />
-            </div>
-            <span class="text-base leading-tight md:text-lg">{item}</span>
-          </li>
-        ))
+        ingredients.map((item, i) => {
+          const cbId = `ing-${recipeSlug}-${i}`;
+          return (
+            <li class="border-line/50 flex items-start gap-4 border-b pb-3 last:border-0">
+              <div class="flex h-6 shrink-0 items-center">
+                <input id={cbId} type="checkbox" class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded" />
+              </div>
+              <label
+                for={cbId}
+                class="text-text-main flex min-w-0 flex-1 cursor-pointer gap-3 text-base leading-tight md:text-lg"
+              >
+                <span class="min-w-0 flex-1 break-words font-medium">{item.name}</span>
+                {(item.amount || item.unit) && (
+                  <span class="text-text-muted shrink-0 text-right text-sm font-semibold italic"> {item.amount} {item.unit} </span>
+                )}
+              </label>
+            </li>
+          );
+        })
       }
     </ul>
+
+    {ingredients.length === 0 && <p class="text-text-muted text-sm italic">Ингредиенты не указаны</p>}
   </div>
 </aside>

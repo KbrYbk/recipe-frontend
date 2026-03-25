@@ -1,18 +1,35 @@
+---
+interface Props {
+  /** Сохранять фильтры при отправке поиска (например category, difficulty). */
+  preserveParams?: Record<string, string>;
+  initialQuery?: string;
+}
+
+const { preserveParams = {}, initialQuery = "" } = Astro.props;
+---
+
 <div class="mx-auto max-w-3xl">
   <form action="/recipes" method="GET" role="search" class="flex flex-col gap-4 sm:flex-row">
+    {
+      Object.entries(preserveParams).map(([name, value]) =>
+        value ? <input type="hidden" name={name} value={value} /> : null,
+      )
+    }
     <div class="relative flex-1">
       <input
         type="search"
-        name="q" 
+        name="q"
+        value={initialQuery}
         transition:persist
         placeholder="Курица, картошка, суп..."
         class="bg-card-bg border-line text-text-main placeholder:text-text-muted focus:border-brand focus:ring-brand/20 w-full rounded-2xl border-2 px-6 py-4 text-lg transition-all focus:ring-4 focus:outline-none md:py-5 md:text-xl"
         aria-label="Поиск рецепта"
+        autocomplete="off"
       />
     </div>
-    
-    <button 
-      type="submit" 
+
+    <button
+      type="submit"
       class="bg-brand hover:bg-brand-hover active:scale-95 min-w-40 rounded-2xl px-8 py-4 text-lg font-bold text-white shadow-lg shadow-brand/20 transition-all md:py-5 md:text-xl"
     >
       Найти
