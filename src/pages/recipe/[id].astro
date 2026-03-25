@@ -7,7 +7,7 @@ import { Icon } from "astro-icon/components";
 import IngredientsList from "../../components/IngredientsList.astro";
 import VideoPlayer from "../../components/VideoPlayer.astro";
 import HttpNotFound from "../../components/HttpNotFound.astro";
-import { fetchRecipesFromApi, mapBackendRecipe } from "../../lib/api/recipes";
+import { fetchRecipeById, mapBackendRecipe } from "../../lib/api/recipes";
 import { normalizeIngredients } from "../../lib/normalizeIngredients";
 
 const { id } = Astro.params;
@@ -24,11 +24,8 @@ if (id?.startsWith("local-")) {
     } as Record<string, unknown>;
   }
 } else if (id?.startsWith("db-")) {
-  const { list, ok } = await fetchRecipesFromApi();
-  if (ok) {
-    const raw = (list as Record<string, unknown>[]).find((r) => `db-${r.id}` === id);
-    if (raw) recipe = mapBackendRecipe(raw) as Record<string, unknown>;
-  }
+  const { item, ok } = await fetchRecipeById(id);
+  if (ok && item) recipe = mapBackendRecipe(item) as Record<string, unknown>;
 }
 
 if (!recipe) {
@@ -46,7 +43,7 @@ const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
 const pageTitle = recipe ? `${title} — РецептыДома` : "Рецепт не найден — Рецепты Дома";
 ---
 
-<Layout title={pageTitle}>
+<Layout title={pageTitle} description={description} image={main_image}>
   {
     !recipe ? (
       <HttpNotFound />
@@ -68,14 +65,12 @@ const pageTitle = recipe ? `${title} — РецептыДома` : "Рецепт
                 <Icon name="lucide:clock" class="h-5 w-5 shrink-0" aria-hidden="true" />
                 <span>{cooking_time} мин</span>
               </span>
-              {
-                difficulty && (
-                  <span class="bg-accent-soft text-brand flex items-center justify-center gap-2 rounded-2xl px-5 py-2 text-xs font-bold tracking-wider uppercase">
-                    <Icon name="lucide:flame" class="h-5 w-5 shrink-0" aria-hidden="true" />
-                    {difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : difficulty === "easy" ? "Легко" : difficulty}
-                  </span>
-                )
-              }
+              {difficulty && (
+                <span class="bg-accent-soft text-brand flex items-center justify-center gap-2 rounded-2xl px-5 py-2 text-xs font-bold tracking-wider uppercase">
+                  <Icon name="lucide:flame" class="h-5 w-5 shrink-0" aria-hidden="true" />
+                  {difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : difficulty === "easy" ? "Легко" : difficulty}
+                </span>
+              )}
             </div>
             <div class="flex flex-col gap-3 sm:flex-row">
               <button
@@ -99,24 +94,22 @@ const pageTitle = recipe ? `${title} — РецептыДома` : "Рецепт
         </header>
 
         <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl">
-          {
-            main_image ? (
-              <img
-                src={main_image}
-                alt={`Фото готового блюда: ${title}`}
-                width={1200}
-                height={675}
-                class="h-full w-full object-cover"
-                loading="eager"
-                decoding="async"
-                style={`view-transition-name: recipe-image-${id}`}
-              />
-            ) : (
-              <div class="flex h-full w-full items-center justify-center">
-                <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
-              </div>
-            )
-          }
+          {main_image ? (
+            <img
+              src={main_image}
+              alt={`Фото готового блюда: ${title}`}
+              width={1200}
+              height={675}
+              class="h-full w-full object-cover"
+              loading="eager"
+              decoding="async"
+              style={`view-transition-name: recipe-image-${id}`}
+            />
+          ) : (
+            <div class="flex h-full w-full items-center justify-center">
+              <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
+            </div>
+          )}
         </div>
 
         <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
@@ -131,41 +124,27 @@ const pageTitle = recipe ? `${title} — РецептыДома` : "Рецепт
 
               <VideoPlayer videoUrl={video_url} />
 
-              <div
-                id="textSteps"
-                role={video_url ? "tabpanel" : undefined}
-                aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}
-              >
+              <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
                 <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
                   Приготовление
                 </h2>
                 <ol class="list-none space-y-12 p-0" aria-labelledby="steps-heading">
-                  {
-                    steps.map((step, index) => (
-                      <li class="group relative">
-                        <div class="mb-4 flex gap-6">
-                          <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
-                            {step.order ?? index + 1}
-                          </div>
-                          <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
+                  {steps.map((step, index) => (
+                    <li class="group relative">
+                      <div class="mb-4 flex gap-6">
+                        <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
+                          {step.order ?? index + 1}
                         </div>
+                        <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
+                      </div>
 
-                        {step.image ? (
-                          <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
-                            <img
-                              src={step.image}
-                              alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
-                              width={800}
-                              height={450}
-                              loading="lazy"
-                              decoding="async"
-                              class="h-auto w-full"
-                            />
-                          </div>
-                        ) : null}
-                      </li>
-                    ))
-                  }
+                      {step.image ? (
+                        <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
+                          <img src={step.image} alt={`Шаг ${step.order ?? index + 1}: иллюстрация`} width={800} height={450} loading="lazy" decoding="async" class="h-auto w-full" />
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
                 </ol>
               </div>
             </section>

@@ -6,17 +6,8 @@ import RecipeCard from "../components/RecipeCard.astro";
 import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
 
-try {
-  const ipCheck = await fetch('https://api.ipify.org?format=json');
-  const ipData = await ipCheck.json();
-  console.log("Мой сервер делает запрос с этого IP:", ipData.ip);
-} catch (e) {
-  console.log("Не удалось определить IP");
-}
-
-
 let errorMessage = "";
-const { list, ok, status } = await fetchRecipesFromApi();
+const { list, ok, status } = await fetchRecipesFromApi({ limit: 10 });
 
 if (!ok && status === 403) {
   errorMessage = "Бэкенд: доступ запрещен (IP Whitelist). Покажу только локальные рецепты.";

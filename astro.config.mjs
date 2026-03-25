@@ -8,9 +8,8 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  image: {
-    domains: [""], // Разрешаем Astro обрабатывать картинки с этого IP
-  },
   output: "server",
   adapter: netlify(),
+  // Картинки проксируются через /api-images/* (см. src/pages/api-images/[...slug].ts),
+  // поэтому внешние домены в image.domains не нужны.
 });

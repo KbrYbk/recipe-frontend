@@ -7,20 +7,33 @@ import { Icon } from "astro-icon/components";
 import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
 
-const { list } = await fetchRecipesFromApi();
+const qRaw = Astro.url.searchParams.get("q")?.trim() || "";
+const categoryId = Astro.url.searchParams.get("categoryId")?.trim() || "";
+const categoryLegacy = Astro.url.searchParams.get("category")?.trim() || "";
+const difficultyFilter = Astro.url.searchParams.get("difficulty")?.trim() || "";
 
-const processedBackend = (list as Record<string, unknown>[]).map((r) => mapBackendRecipe(r));
+// 1) Если есть поиск — используем search/{search}/{categoryId?}
+// 2) Если есть categoryId — используем category/{id}
+// 3) Иначе — список рецептов
+const { list } = await fetchRecipesFromApi({
+  search: qRaw || undefined,
+  categoryId: categoryId || undefined,
+});
+
+let processedBackend = (list as Record<string, unknown>[]).map((r) => mapBackendRecipe(r));
+
+// Временная совместимость: если кто-то ходит по старым ссылкам ?category=breakfast
+if (categoryLegacy) {
+  processedBackend = processedBackend.filter((r) => String((r as any).category ?? "") === categoryLegacy);
+}
 
 const processedLocal = localRecipes.map((r) => ({
   ...r,
   id: `local-${r.id}`,
 }));
 
-const allRecipes = [...processedBackend, ...processedLocal];
-
-const categoryFilter = Astro.url.searchParams.get("category")?.trim() || "";
-const difficultyFilter = Astro.url.searchParams.get("difficulty")?.trim() || "";
-const q = Astro.url.searchParams.get("q")?.trim().toLowerCase() || "";
+// В каталоге отдаём приоритет бэку; локальные данные оставляем как fallback, если бэк пустой
+const allRecipes = processedBackend.length > 0 ? processedBackend : processedLocal;
 
 function recipesHref(overrides: Record<string, string | undefined>): string {
   const p = new URLSearchParams(Astro.url.searchParams);
@@ -32,14 +45,10 @@ function recipesHref(overrides: Record<string, string | undefined>): string {
   return s ? `/recipes?${s}` : "/recipes";
 }
 
+// Фильтр сложности оставляем на фронте (если бэк пока не поддерживает), дешево по данным страницы
 const filteredRecipes = allRecipes.filter((r) => {
-  const rec = r as Record<string, unknown>;
-  if (categoryFilter && String(rec.category ?? "") !== categoryFilter) return false;
-  if (difficultyFilter && difficultyFilter !== "all" && String(rec.difficulty ?? "") !== difficultyFilter) return false;
-  if (!q) return true;
-  const title = String(rec.title ?? "").toLowerCase();
-  const desc = String(rec.description ?? "").toLowerCase();
-  return title.includes(q) || desc.includes(q);
+  if (!difficultyFilter || difficultyFilter === "all") return true;
+  return String((r as any).difficulty ?? "") === difficultyFilter;
 });
 
 // Словарь для фильтров сложности (чтобы сопоставить API и UI)
@@ -59,7 +68,7 @@ const categoryNav = [
 ];
 
 const searchPreserve: Record<string, string> = {};
-if (categoryFilter) searchPreserve.category = categoryFilter;
+if (categoryLegacy) searchPreserve.category = categoryLegacy;
 if (difficultyFilter && difficultyFilter !== "all") searchPreserve.difficulty = difficultyFilter;
 ---
 
@@ -82,7 +91,7 @@ if (difficultyFilter && difficultyFilter !== "all") searchPreserve.difficulty = 
         </div>
 
         <div class="w-full md:w-96">
-          <SearchBar preserveParams={searchPreserve} initialQuery={Astro.url.searchParams.get("q") ?? ""} />
+          <SearchBar preserveParams={searchPreserve} initialQuery={qRaw} />
         </div>
       </div>
     </header>
@@ -103,11 +112,11 @@ if (difficultyFilter && difficultyFilter !== "all") searchPreserve.difficulty = 
                   categoryNav.map((c) => (
                     <li>
                       <a
-                        href={c.value === "" ? recipesHref({ category: undefined }) : recipesHref({ category: c.value })}
-                        aria-current={categoryFilter === c.value || (c.value === "" && !categoryFilter) ? "page" : undefined}
+                        href={c.value === "" ? recipesHref({ category: undefined, categoryId: undefined }) : recipesHref({ category: c.value, categoryId: undefined })}
+                        aria-current={categoryLegacy === c.value || (c.value === "" && !categoryLegacy) ? "page" : undefined}
                         class:list={[
                           "hover:bg-brand/10 hover:text-brand block rounded-lg px-3 py-2 text-sm transition-colors",
-                          categoryFilter === c.value || (c.value === "" && !categoryFilter) ? "bg-brand/10 text-brand font-semibold" : "text-text-muted",
+                          categoryLegacy === c.value || (c.value === "" && !categoryLegacy) ? "bg-brand/10 text-brand font-semibold" : "text-text-muted",
                         ]}
                       >
                         {c.label}
