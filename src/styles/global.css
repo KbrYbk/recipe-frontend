@@ -138,17 +138,21 @@
     /* Используем имена из @theme (без префикса --color) */
     @apply bg-brand hover:bg-brand-hover shadow-brand/20 rounded-xl px-6 py-2 font-bold text-white shadow-lg transition-all active:scale-95;
   }
-  /* Скрываем солнце в светлой теме */
+  /* Иконка луны видна по умолчанию (для светлой темы) */
+  .theme-icon-moon {
+    display: block;
+  }
+
+  /* Иконка солнца скрыта по умолчанию (для светлой темы) */
   .theme-icon-sun {
     display: none;
   }
 
-  /* Скрываем луну в темной теме */
+  /* В темной теме: скрываем луну, показываем солнце */
   .dark .theme-icon-moon {
     display: none;
   }
 
-  /* Показываем солнце в темной теме */
   .dark .theme-icon-sun {
     display: block;
   }
