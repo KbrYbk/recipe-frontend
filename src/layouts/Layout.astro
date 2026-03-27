@@ -7,9 +7,13 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  canonical?: string;
+  noindex?: boolean;
 }
 
-const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg" } = Astro.props;
+const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg", canonical, noindex = false } = Astro.props;
+const canonicalHref = (canonical ?? "").startsWith("http") ? (canonical as string) : new URL(canonical ?? Astro.url.href, Astro.url).href;
+const shareImage = image.startsWith("http") ? image : new URL(image, Astro.url).href;
 ---
 
 <!doctype html>
@@ -20,17 +24,19 @@ const { title, description = "Лучшие рецепты для каждого:
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalHref} />
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:url" content={canonicalHref} />
     <meta property="og:site_name" content="РецептыДома" />
-    <meta property="og:image" content={image} />
+    <meta property="og:image" content={shareImage} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image} />
+    <meta name="twitter:image" content={shareImage} />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
@@ -38,6 +44,7 @@ const { title, description = "Лучшие рецепты для каждого:
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <slot name="head" />
     <script is:inline>
       const applyTheme = () => {
         let theme;
@@ -60,11 +67,72 @@ const { title, description = "Лучшие рецепты для каждого:
     <ClientRouter />
   </head>
   <body class="flex min-h-screen flex-col antialiased">
-    <a href="#main-content" class="skip-to-main"> К основному содержимому </a>
+    <a href="#main-content" class="skip-to-main">Перейти к основному контенту</a>
+    <div id="page-progress" class="page-progress" transition:persist aria-hidden="true"></div>
+    <div id="route-status" class="sr-only" transition:persist aria-live="polite"></div>
     <Header />
-    <main id="main-content" tabindex="-1" class="grow px-4 py-8 md:px-8 lg:px-12">
+    <main id="main-content" tabindex="-1" class="main-content-transition grow px-4 py-8 md:px-8 lg:px-12">
       <slot />
     </main>
     <Footer />
+    <script>
+      // Флаг состояния загрузки
+      let isTransitioning = false;
+
+      const startLoading = () => {
+        // Если мы уже в процессе загрузки — выходим, ничего не делаем
+        if (isTransitioning) return;
+
+        isTransitioning = true;
+        document.body.classList.add("is-loading-active");
+
+        const progress = document.getElementById("page-progress");
+        const main = document.getElementById("main-content");
+
+        if (progress) {
+          progress.classList.remove("is-done");
+          progress.classList.add("is-loading");
+          progress.style.transform = "scaleX(0)";
+        }
+
+        if (main) {
+          main.classList.add("is-transitioning");
+        }
+      };
+
+      const stopLoading = () => {
+        // Сбрасываем флаг и убираем блокировку кликов
+        isTransitioning = false;
+        document.body.classList.remove("is-loading-active");
+
+        const progress = document.getElementById("page-progress");
+        const main = document.getElementById("main-content");
+
+        if (progress) {
+          progress.classList.replace("is-loading", "is-done");
+        }
+
+        if (main) {
+          main.classList.remove("is-transitioning");
+        }
+
+        setTimeout(() => {
+          const p = document.getElementById("page-progress");
+          if (p && !p.classList.contains("is-loading")) {
+            p.classList.remove("is-done");
+            p.style.transform = "scaleX(0)";
+          }
+        }, 500);
+      };
+
+      // Слушаем события Astro
+      document.addEventListener("astro:before-preparation", startLoading);
+      document.addEventListener("astro:page-load", stopLoading);
+      document.addEventListener("astro:after-preparation", () => {
+        // Если подготовка сорвалась (например, 404 или обрыв сети)
+        // мы должны разблокировать интерфейс
+        if (isTransitioning) stopLoading();
+      });
+    </script>
   </body>
 </html>

@@ -3,48 +3,134 @@ import { Icon } from "astro-icon/components";
 ---
 
 <header class="border-line bg-card-bg/80 sticky top-0 z-50 border-b backdrop-blur-md">
-  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-    <a href="/" class="text-brand flex items-center gap-2 text-3xl font-bold md:text-4xl" aria-label="Главная страница Рецепты Дома">
-      <Icon name="lucide:cooking-pot" class="h-8 w-8" aria-hidden="true" /> Рецепты Дома
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <a href="/" class="text-brand flex items-center gap-2 text-2xl font-bold transition-transform active:scale-95 md:text-3xl" aria-label="Рецепты Дома — на главную">
+      <Icon name="lucide:cooking-pot" class="h-7 w-7 md:h-8 md:w-8" aria-hidden="true" />
+      <span class="tracking-tight">Рецепты Дома</span>
     </a>
-    <nav class="hidden items-center gap-8 md:flex">
-      <a href="/recipes" class="hover:text-brand font-medium transition-colors">Рецепты</a>
-      <a href="/recipes" class="hover:text-brand font-medium transition-colors">Каталог</a>
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden items-center gap-8 md:flex" aria-label="Основная навигация">
+      <a href="/recipes" class="text-text-main hover:text-brand font-medium transition-colors">Все рецепты</a>
+      
       <div class="bg-line h-6 w-px"></div>
+
       <button
         type="button"
         id="themeToggle"
         class="bg-page-bg border-line text-text-main hover:border-brand hover:text-brand flex h-10 w-10 items-center justify-center rounded-xl border transition-all active:scale-95"
         aria-label="Переключить тему"
-        aria-pressed="false"
       >
         <Icon name="lucide:moon" class="theme-icon-moon h-5 w-5" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-5 w-5" aria-hidden="true" />
       </button>
     </nav>
+
+    <!-- Mobile Controls -->
+    <div class="flex items-center gap-3 md:hidden">
+      <button
+        type="button"
+        id="themeToggleMobile"
+        class="text-text-main flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-95"
+        aria-label="Переключить тему"
+      >
+        <Icon name="lucide:moon" class="theme-icon-moon h-6 w-6" aria-hidden="true" />
+        <Icon name="lucide:sun" class="theme-icon-sun h-6 w-6" aria-hidden="true" />
+      </button>
+
+      <button
+        type="button"
+        id="mobileMenuBtn"
+        class="text-text-main flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-95"
+        aria-expanded="false"
+        aria-controls="mobileMenu"
+        aria-label="Открыть меню"
+      >
+        <Icon name="lucide:menu" class="menu-icon-open h-7 w-7" aria-hidden="true" />
+        <Icon name="lucide:x" class="menu-icon-close hidden h-7 w-7" aria-hidden="true" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Overlay -->
+  <div
+    id="mobileMenu"
+    class="border-line bg-card-bg/95 invisible absolute top-full left-0 w-full border-b opacity-0 transition-all duration-300 backdrop-blur-lg md:hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Мобильное меню"
+  >
+    <nav class="flex flex-col p-6 gap-6">
+      <a href="/recipes" class="text-text-main text-lg font-bold hover:text-brand transition-colors">Все рецепты</a>
+      <a href="/recipes?category=breakfast" class="text-text-muted hover:text-brand flex items-center gap-3 transition-colors">
+        <Icon name="lucide:coffee" class="h-5 w-5" /> Завтраки
+      </a>
+      <a href="/recipes?category=lunch" class="text-text-muted hover:text-brand flex items-center gap-3 transition-colors">
+        <Icon name="lucide:soup" class="h-5 w-5" /> Обеды
+      </a>
+      <a href="/recipes?category=dinner" class="text-text-muted hover:text-brand flex items-center gap-3 transition-colors">
+        <Icon name="lucide:drumstick" class="h-5 w-5" /> Ужины
+      </a>
+    </nav>
   </div>
 </header>
 
+<style>
+  #mobileMenu.is-open {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #mobileMenu:not(.is-open) {
+    transform: translateY(-10px);
+  }
+</style>
+
 <script>
-  function setupThemeToggle() {
-    const btn = document.getElementById("themeToggle");
-    if (!btn || btn.dataset.themeBound === "1") return;
-    btn.dataset.themeBound = "1";
+  function setupHeader() {
+    const mobileBtn = document.getElementById("mobileMenuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const themeBtns = document.querySelectorAll("#themeToggle, #themeToggleMobile");
+    const openIcon = mobileBtn?.querySelector(".menu-icon-open");
+    const closeIcon = mobileBtn?.querySelector(".menu-icon-close");
 
-    const syncPressed = () => {
-      const dark = document.documentElement.classList.contains("dark");
-      btn.setAttribute("aria-pressed", dark ? "true" : "false");
+    if (!mobileBtn || !mobileMenu) return;
+
+    // Toggle Mobile Menu
+    const toggleMenu = (force?: boolean) => {
+      const isOpen = force ?? !mobileMenu.classList.contains("is-open");
+      mobileMenu.classList.toggle("is-open", isOpen);
+      mobileBtn.setAttribute("aria-expanded", String(isOpen));
+      mobileBtn.setAttribute("aria-label", isOpen ? "Закрыть меню" : "Открыть меню");
+      openIcon?.classList.toggle("hidden", isOpen);
+      closeIcon?.classList.toggle("hidden", !isOpen);
+      document.body.style.overflow = isOpen ? "hidden" : "";
     };
-    syncPressed();
 
-    btn.addEventListener("click", () => {
-      document.documentElement.classList.toggle("dark");
-      const isDark = document.documentElement.classList.contains("dark");
-      localStorage.setItem("theme", isDark ? "dark" : "light");
-      btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+    mobileBtn.addEventListener("click", () => toggleMenu());
+
+    // Theme logic
+    themeBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.documentElement.classList.toggle("dark");
+        const isDark = document.documentElement.classList.contains("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      });
+    });
+
+    // Close menu on link click (for SPA navigation)
+    mobileMenu.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => toggleMenu(false));
+    });
+
+    // Close on Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && mobileMenu.classList.contains("is-open")) {
+        toggleMenu(false);
+      }
     });
   }
 
-  setupThemeToggle();
-  document.addEventListener("astro:after-swap", setupThemeToggle);
+  setupHeader();
+  document.addEventListener("astro:after-swap", setupHeader);
 </script>

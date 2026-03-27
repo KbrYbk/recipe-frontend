@@ -20,131 +20,113 @@ export function toImageProxyUrl(path: string | undefined | null): string | undef
   return path;
 }
 
-type ListResult = { list: Record<string, unknown>[]; ok: boolean; status: number };
-type OneResult = { item: Record<string, unknown> | null; ok: boolean; status: number };
-
-/** Короткий кэш в памяти процесса: меньше запросов к Laravel при листании рецептов. */
-let recipesCache: { expires: number; value: ListResult } | null = null;
-const CACHE_TTL_MS = 60_000;
-
-/** Единая точка запроса списка рецептов с бэкенда (Laravel). */
-export async function fetchRecipesFromApi(
-  opts: { limit?: number; search?: string; categoryId?: number | string } = {},
-  timeoutMs = 12_000,
-): Promise<ListResult> {
-  const now = Date.now();
-  const canUseCache = !opts.limit && !opts.search && !opts.categoryId;
-  if (canUseCache && recipesCache && recipesCache.expires > now) {
-    return recipesCache.value;
-  }
-
+/** Получение списка рецептов (Поиск, Категории, Пагинация, Сложность) */
+export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: number | string; page?: number; difficulty?: string } = {}) {
   const base = apiBase();
-  if (!base) {
-    return { list: [], ok: false, status: 0 };
+  const page = opts.page || 1;
+  const apiPath = base.endsWith("/api") ? "/getRecipes" : "/api/getRecipes";
+
+  // Базовая логика формирования URL (совместимость с текущими роутами)
+  let url = `${base}${apiPath}`;
+
+  if (opts.search) {
+    const s = encodeURIComponent(String(opts.search).trim());
+    url += `/search/${s}`;
+    if (opts.categoryId) url += `/${opts.categoryId}`;
+  } else if (opts.categoryId) {
+    url += `/category/${opts.categoryId}`;
+  } else {
+    url += `/page/${page}`;
   }
 
-  const url = (() => {
-    if (opts.search) {
-      const s = encodeURIComponent(String(opts.search).trim());
-      if (opts.categoryId != null && String(opts.categoryId) !== "") {
-        return `${base}/api/getRecipes/search/${s}/${encodeURIComponent(String(opts.categoryId))}`;
-      }
-      return `${base}/api/getRecipes/search/${s}`;
-    }
-    if (opts.categoryId != null && String(opts.categoryId) !== "") {
-      return `${base}/api/getRecipes/category/${encodeURIComponent(String(opts.categoryId))}`;
-    }
-    if (opts.limit != null && Number.isFinite(Number(opts.limit))) {
-      return `${base}/api/getRecipes/value/${encodeURIComponent(String(opts.limit))}`;
-    }
-    return `${base}/api/getRecipes`;
-  })();
+  // Добавляем остальные параметры через Query String
+  const queryParams = new URLSearchParams();
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  // Если мы не в роуте /page/{page}, добавляем page= через query
+  if (page > 1 && !url.includes(`/page/${page}`)) {
+    queryParams.set("page", String(page));
+  }
+
+  if (opts.difficulty && opts.difficulty !== "all") {
+    queryParams.set("difficulty", opts.difficulty);
+  }
+
+  const queryString = queryParams.toString();
+  if (queryString) {
+    url += (url.includes("?") ? "&" : "?") + queryString;
+  }
 
   try {
     const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        [PROJECT_HEADER]: apiKey(),
-      },
-      signal: controller.signal,
+      headers: { [PROJECT_HEADER]: apiKey() },
     });
+    if (!response.ok) throw new Error(`Status: ${response.status}`);
 
-    clearTimeout(timer);
+    const result = await response.json();
+    const dataObj = result.data || result;
 
-    if (!response.ok) {
-      return { list: [], ok: false, status: response.status };
-    }
+    // Laravel pagination: data.data или просто data
+    const list = Array.isArray(dataObj.data) ? dataObj.data : Array.isArray(dataObj) ? dataObj : [];
+    const total = dataObj.total || list.length || 0;
+    
+    // Пытаемся взять размер страницы из ответа или используем 20 по умолчанию
+    const perPage = dataObj.per_page || 20;
+    const totalPages = dataObj.last_page || Math.ceil(total / perPage) || 1;
 
-    const result = (await response.json()) as { data?: Record<string, unknown>[] } | Record<string, unknown>[];
-    const list = Array.isArray(result) ? result : (result.data ?? []);
-    const value: ListResult = { list, ok: true, status: response.status };
-    if (canUseCache) recipesCache = { expires: Date.now() + CACHE_TTL_MS, value };
-    return value;
-  } catch {
-    clearTimeout(timer);
-    return { list: [], ok: false, status: 0 };
+    return { list, total, totalPages, ok: true };
+  } catch (e) {
+    console.error("❌ API Error:", e);
+    return { list: [], total: 0, totalPages: 1, ok: false };
   }
 }
 
-/** Деталка: получить один рецепт по id. */
-export async function fetchRecipeById(id: number | string, timeoutMs = 12_000): Promise<OneResult> {
+/** Динамические категории */
+export async function fetchCategoriesFromApi() {
   const base = apiBase();
-  if (!base) return { item: null, ok: false, status: 0 };
-
-  const cleanId = String(id).replace(/^db-/, "");
-  const url = `${base}/api/getRecipes/${encodeURIComponent(cleanId)}`;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
+  const url = base.endsWith("/api") ? `${base}/getCategories` : `${base}/api/getCategories`;
   try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        [PROJECT_HEADER]: apiKey(),
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timer);
-
-    if (!response.ok) return { item: null, ok: false, status: response.status };
-    const result = (await response.json()) as { data?: Record<string, unknown> } | Record<string, unknown>;
-    const item = "data" in result ? (result as any).data ?? null : result;
-    return { item, ok: true, status: response.status };
+    const response = await fetch(url, { headers: { [PROJECT_HEADER]: apiKey() } });
+    const result = await response.json();
+    return Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
   } catch {
-    clearTimeout(timer);
-    return { item: null, ok: false, status: 0 };
+    return [];
   }
 }
 
-/** Поля бэкенда → формат карточек и страницы рецепта (префикс db-). */
-export function mapBackendRecipe(r: Record<string, unknown>): Record<string, unknown> {
-  const rawId = r.id;
-  const id = typeof rawId === "number" || typeof rawId === "string" ? rawId : "";
-  const main = toImageProxyUrl((r.main_image as string) ?? "") ?? "";
-  const stepsRaw = r.steps;
-  const steps = Array.isArray(stepsRaw)
-    ? stepsRaw.map((s) => {
-        if (s && typeof s === "object" && "image" in s) {
-          const row = s as Record<string, unknown>;
-          const img = row.image;
-          if (typeof img === "string" && img !== "") {
-            return { ...row, image: toImageProxyUrl(img) };
-          }
-        }
-        return s;
-      })
-    : stepsRaw;
-
+export function mapBackendRecipe(r: any) {
   return {
     ...r,
-    id: `db-${id}`,
-    main_image: main,
-    steps,
+    id: `db-${r.id}`,
+    main_image: toImageProxyUrl(r.main_image),
+    steps: Array.isArray(r.steps) ? r.steps.map((s: any) => ({ ...s, image: toImageProxyUrl(s.image) })) : [],
   };
+}
+/** Получение одного рецепта по ID */
+export async function fetchRecipeById(id: string | number) {
+  const base = apiBase();
+  // Вырезаем префикс db-, если он пришел с фронта
+  const cleanId = String(id).replace(/^db-/, "");
+
+  const hasApiInBase = base.endsWith("/api");
+  const url = `${base}${hasApiInBase ? "" : "/api"}/getRecipes/${encodeURIComponent(cleanId)}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        [PROJECT_HEADER]: apiKey(),
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) return { item: null, ok: false };
+
+    const result = await response.json();
+    // Laravel обычно кладет объект в поле data
+    const item = result && result.data ? result.data : result;
+
+    return { item, ok: true };
+  } catch (e) {
+    console.error(`❌ Ошибка загрузки рецепта ${id}:`, e);
+    return { item: null, ok: false };
+  }
 }

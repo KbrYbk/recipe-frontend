@@ -19,51 +19,53 @@ const hasImage = !!main_image && main_image !== "";
 const imageAlt = `Фото блюда: ${title}`;
 ---
 
-<a href={`/recipe/${id}`} class="group block w-full overflow-hidden rounded-3xl focus:ring-brand focus:ring-2 focus:ring-offset-2 focus:outline-none">
-  <article class="flex h-full flex-col border border-line bg-card-bg shadow-sm transition-all duration-300 hover:shadow-xl">
-    <div class="relative flex h-48 w-full items-center justify-center overflow-hidden bg-page-bg">
-      {
-        hasImage ? (
-          <img
-            src={main_image}
-            alt={imageAlt}
-            loading="lazy"
-            decoding="async"
-            class="animate-fade-in h-full w-full object-cover opacity-0 transition-transform duration-500 group-hover:scale-110"
-            onload="this.classList.remove('opacity-0')"
-            style={`view-transition-name: recipe-image-${id}`}
-          />
-        ) : null
-      }
+<article class="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-card-bg shadow-sm transition-all duration-300 hover:shadow-xl focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2">
+  <div class="relative flex h-48 w-full items-center justify-center overflow-hidden bg-page-bg">
+    {
+      hasImage ? (
+        <Image
+          src={main_image}
+          alt={imageAlt}
+          width={600}
+          height={400}
+          loading="lazy"
+          decoding="async"
+          class="animate-fade-in h-full w-full object-cover opacity-0 transition-transform duration-500 group-hover:scale-110"
+          onload="this.classList.remove('opacity-0')"
+          style={`view-transition-name: recipe-image-${id}`}
+        />
+      ) : null
+    }
 
-      <div class={`fallback ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">
-        <Icon name="lucide:utensils-crossed" class="h-16 w-16 text-text-muted opacity-20" />
-      </div>
+    <div class={`fallback ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">
+      <Icon name="lucide:utensils-crossed" class="h-16 w-16 text-text-muted opacity-20" />
     </div>
+  </div>
 
-    <div class="flex grow flex-col p-6">
-      <h2 class="text-text-main mb-3 line-clamp-2 text-xl font-bold transition-colors group-hover:text-brand md:text-2xl">
+  <div class="flex grow flex-col p-6">
+    <h2 class="text-text-main mb-3 line-clamp-2 text-xl font-bold transition-colors group-hover:text-brand md:text-2xl">
+      <a href={`/recipe/${id}`} class="after:absolute after:inset-0 focus:outline-none">
         {title}
-      </h2>
+      </a>
+    </h2>
 
-      <p class="text-text-muted mb-6 line-clamp-3 grow text-sm leading-relaxed">
-        {description}
-      </p>
+    <p class="text-text-muted mb-6 line-clamp-3 grow text-sm leading-relaxed">
+      {description}
+    </p>
 
-      <div class="mt-auto flex items-center justify-between border-t border-line pt-4 text-sm">
-        <div class="text-text-muted flex items-center gap-1.5 font-medium">
-          <Icon name="lucide:clock" class="h-4 w-4 shrink-0" />
-          <span class="leading-none">{cooking_time} мин</span>
-        </div>
+    <div class="mt-auto flex items-center justify-between border-t border-line pt-4 text-sm">
+      <div class="text-text-muted flex items-center gap-1.5 font-medium">
+        <Icon name="lucide:clock" class="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span class="leading-none">{cooking_time} мин</span>
+      </div>
 
-        <div class="text-brand flex items-center gap-1 font-bold">
-          <span class="leading-none">Смотреть</span>
-          <Icon name="lucide:arrow-right" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-        </div>
+      <div class="text-brand flex items-center gap-1 font-bold">
+        <span class="leading-none">Смотреть</span>
+        <Icon name="lucide:arrow-right" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
       </div>
     </div>
-  </article>
-</a>
+  </div>
+</article>
 
 <style>
   @keyframes fadeIn {

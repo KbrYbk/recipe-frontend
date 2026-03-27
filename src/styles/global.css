@@ -54,7 +54,12 @@
       color 0.3s ease;
     @apply antialiased;
   }
-
+  body.is-loading-active {
+    /* Запрещаем клики по всем ссылкам и кнопкам, пока идет переход */
+    pointer-events: none;
+    /* Можно слегка изменить курсор, чтобы юзер видел: "ждем" */
+    cursor: wait;
+  }
   /* Глобальная настройка границ */
   * {
     border-color: var(--border-subtle);
@@ -62,6 +67,47 @@
 }
 
 @layer components {
+  .page-progress {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-hover));
+    transform-origin: left;
+    transform: scaleX(0);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      transform 0.2s ease-out,
+      opacity 0.2s ease;
+  }
+
+  /* Когда идет загрузка, запускаем "ленивое" заполнение */
+  .page-progress.is-loading {
+    opacity: 1;
+    /* Анимируем до 90% за 15 секунд, чтобы всегда было движение */
+    animation: progress-fake-loading 15s forwards cubic-bezier(0.1, 0.2, 0.1, 1);
+  }
+
+  .page-progress.is-done {
+    transform: scaleX(1);
+    opacity: 0;
+    transition:
+      transform 0.2s ease-out,
+      opacity 0.3s 0.2s ease;
+  }
+
+  @keyframes progress-fake-loading {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(0.9);
+    }
+  }
+
   .skip-to-main {
     position: absolute;
     left: 1rem;
@@ -105,6 +151,46 @@
   /* Показываем солнце в темной теме */
   .dark .theme-icon-sun {
     display: block;
+  }
+
+  .image-zoom {
+    cursor: zoom-in;
+  }
+
+  .image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgb(0 0 0 / 0.82);
+    backdrop-filter: blur(2px);
+  }
+
+  .image-lightbox.is-open {
+    display: flex;
+  }
+
+  .image-lightbox img {
+    max-height: 90vh;
+    max-width: min(96vw, 1280px);
+    width: auto;
+    border-radius: 0.75rem;
+    object-fit: contain;
+  }
+
+  .image-lightbox-close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    border: 1px solid rgb(255 255 255 / 0.4);
+    border-radius: 0.6rem;
+    color: #fff;
+    background: rgb(0 0 0 / 0.3);
+    padding: 0.45rem 0.7rem;
+    font-size: 0.9rem;
   }
 }
 

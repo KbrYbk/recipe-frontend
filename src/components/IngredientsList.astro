@@ -27,7 +27,13 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
           return (
             <li class="border-line/50 flex items-start gap-4 border-b pb-3 last:border-0">
               <div class="flex h-6 shrink-0 items-center">
-                <input id={cbId} type="checkbox" class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded" />
+                <input
+                  id={cbId}
+                  type="checkbox"
+                  data-ingredient-checkbox
+                  data-recipe-slug={recipeSlug}
+                  class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded"
+                />
               </div>
               <label
                 for={cbId}
@@ -47,3 +53,29 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
     {ingredients.length === 0 && <p class="text-text-muted text-sm italic">Ингредиенты не указаны</p>}
   </div>
 </aside>
+
+<script>
+  function initIngredientCheckboxPersistence() {
+    const inputs = Array.from(document.querySelectorAll("[data-ingredient-checkbox]"));
+    if (inputs.length === 0) return;
+
+    inputs.forEach((node) => {
+      const input = node;
+      if (!(input instanceof HTMLInputElement)) return;
+      if (input.dataset.bound === "1") return;
+      input.dataset.bound = "1";
+      const slug = input.dataset.recipeSlug ?? "recipe";
+      const key = `recipe:ingredients:${slug}:${input.id}`;
+      input.checked = localStorage.getItem(key) === "1";
+      input.addEventListener("change", () => {
+        localStorage.setItem(key, input.checked ? "1" : "0");
+      });
+    });
+  }
+
+  initIngredientCheckboxPersistence();
+  if (!window.__ingredientPersistBound) {
+    document.addEventListener("astro:after-swap", initIngredientCheckboxPersistence);
+    window.__ingredientPersistBound = true;
+  }
+</script>

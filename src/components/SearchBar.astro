@@ -10,11 +10,8 @@ const { preserveParams = {}, initialQuery = "" } = Astro.props;
 
 <div class="mx-auto max-w-3xl">
   <form action="/recipes" method="GET" role="search" class="flex flex-col gap-4 sm:flex-row">
-    {
-      Object.entries(preserveParams).map(([name, value]) =>
-        value ? <input type="hidden" name={name} value={value} /> : null,
-      )
-    }
+    <input type="hidden" name="page" value="1" />
+    {Object.entries(preserveParams).map(([name, value]) => (value ? <input type="hidden" name={name} value={value} /> : null))}
     <div class="relative flex-1">
       <input
         type="search"
@@ -28,10 +25,7 @@ const { preserveParams = {}, initialQuery = "" } = Astro.props;
       />
     </div>
 
-    <button
-      type="submit"
-      class="bg-brand hover:bg-brand-hover active:scale-95 min-w-40 rounded-2xl px-8 py-4 text-lg font-bold text-white shadow-lg shadow-brand/20 transition-all md:py-5 md:text-xl"
-    >
+    <button type="submit" class="bg-brand hover:bg-brand-hover shadow-brand/20 min-w-40 rounded-2xl px-8 py-4 text-lg font-bold text-white shadow-lg transition-all active:scale-95 md:py-5 md:text-xl">
       Найти
     </button>
   </form>
