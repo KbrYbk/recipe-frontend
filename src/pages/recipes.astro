@@ -26,27 +26,46 @@ const [categoriesData, recipesData] = await Promise.all([
   }),
 ]);
 
-const { list, total, totalPages, ok } = recipesData;
+const { list, total: apiTotal = 0, ok: apiOk } = recipesData;
+const perPage = 20; // Стандарт пагинации из API
 
-// 2. Обработка бэкенд-рецептов + Legacy фильтр
+// 2. Обработка бэкенд-рецептов
 let processedBackend = list.map(mapBackendRecipe);
 
 if (categoryLegacy && !categoryId) {
-  // Дофильтровываем на фронте только если это старый параметр и нет categoryId
   processedBackend = processedBackend.filter((r: any) => String(r.category || "").toLowerCase() === categoryLegacy.toLowerCase());
 }
 
-// 3. Умный Fallback на локальные данные
-const processedLocal = localRecipes.map((r) => ({ ...r, id: `local-${r.id}` }));
+// 3. Фильтрация локальных данных
+const filteredLocalFull = localRecipes
+  .filter((r) => {
+    if (qRaw && !r.title.toLowerCase().includes(qRaw.toLowerCase()) && !r.description.toLowerCase().includes(qRaw.toLowerCase())) {
+      return false;
+    }
+    if (categoryId && String(r.category_id) !== String(categoryId)) {
+      return false;
+    }
+    if (difficultyFilter !== "all" && r.difficulty !== difficultyFilter) {
+      return false;
+    }
+    return true;
+  })
+  .map((r) => ({ ...r, id: `local-${r.id}` }));
 
-// Условие: если бэк ответил с ошибкой ИЛИ он пустой (и это не результат поиска/фильтра)
-const isBackendEmpty = !ok || (processedBackend.length === 0 && !qRaw && !categoryId && !categoryLegacy);
-const allRecipes = isBackendEmpty ? processedLocal : processedBackend;
+// 4. Умная пагинация объединенных данных
+// Считаем, сколько локальных рецептов нам нужно добавить на ТЕКУЩУЮ страницу
+const apiTotalLoadedSoFar = (currentPage - 1) * perPage + processedBackend.length;
+const totalNeededOnPage = perPage;
+const spaceForLocal = Math.max(0, totalNeededOnPage - processedBackend.length);
 
-// 4. Фильтрация локальных данных (бэкенд уже отфильтрован в API)
-const filteredRecipes = isBackendEmpty
-  ? allRecipes.filter((r: any) => (difficultyFilter === "all" ? true : String(r.difficulty) === difficultyFilter))
-  : allRecipes;
+// Сколько локальных рецептов УЖЕ было показано на прошлых страницах?
+// (Если apiTotal меньше, чем (currentPage-1)*perPage, значит часть локальных уже ушла в прошлые страницы)
+const localAlreadyShownCount = Math.max(0, (currentPage - 1) * perPage - apiTotal);
+const localSlice = filteredLocalFull.slice(localAlreadyShownCount, localAlreadyShownCount + spaceForLocal);
+
+const filteredRecipes = [...processedBackend, ...localSlice];
+const finalTotal = apiTotal + filteredLocalFull.length;
+const finalTotalPages = Math.ceil(finalTotal / perPage);
 
 // 5. Универсальный хелпер ссылок
 function recipesHref(overrides: Record<string, string | number | undefined>) {
@@ -56,41 +75,29 @@ function recipesHref(overrides: Record<string, string | number | undefined>) {
     else p.set(k, String(v));
   });
 
-  // При переходе на категорию или поиск - сбрасываем старый slug-фильтр
   if (overrides.categoryId || overrides.q) {
     p.delete("category");
   }
 
-  // Сбрасываем страницу на 1 при изменении фильтров, если не указано иное
   if (!overrides.page) p.set("page", "1");
   const s = p.toString();
   return s ? `/recipes?${s}` : "/recipes";
 }
 
 const categories = categoriesData.filter((c: any) => c.title).slice(0, 20);
-// Словарь для фильтров сложности (чтобы сопоставить API и UI)
 const difficultyMap = [
   { label: "Все", value: "all" },
   { label: "Легко", value: "easy" },
   { label: "Средне", value: "medium" },
   { label: "Сложно", value: "hard" },
 ];
+
 const jsonLdBreadcrumbs = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   itemListElement: [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Главная",
-      item: new URL("/", Astro.url.origin).href,
-    },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Рецепты",
-      item: Astro.url.href,
-    },
+    { "@type": "ListItem", position: 1, name: "Главная", item: new URL("/", Astro.url.origin).href },
+    { "@type": "ListItem", position: 2, name: "Рецепты", item: Astro.url.href },
   ],
 });
 ---
@@ -110,7 +117,7 @@ const jsonLdBreadcrumbs = JSON.stringify({
             Наша <span class="text-brand">коллекция</span>
           </h1>
           <p class="text-text-muted mt-4 text-lg">
-            Показано {filteredRecipes.length} из {total} рецептов
+            Показано {filteredRecipes.length} из {finalTotal} рецептов
           </p>
         </div>
         <div class="w-full md:w-96">
@@ -132,26 +139,16 @@ const jsonLdBreadcrumbs = JSON.stringify({
               <h3 class="text-text-muted mb-4 text-sm font-semibold tracking-wider uppercase">Категории</h3>
               <ul class="space-y-2" id="category-filters">
                 <li>
-                  <a
-                    href={recipesHref({ categoryId: undefined })}
-                    class:list={[
-                      "block rounded-lg px-3 py-2 transition-colors",
-                      !categoryId && !categoryLegacy && "bg-brand/10 text-brand font-bold",
-                    ]}
-                  >
+                  <a href={recipesHref({ categoryId: undefined })} class:list={["block rounded-lg px-3 py-2 transition-colors", !categoryId && !categoryLegacy && "bg-brand/10 text-brand font-bold"]}>
                     Все
                   </a>
                 </li>
-
                 {
                   categories.map((c: any) => (
                     <li>
                       <a
                         href={recipesHref({ categoryId: c.id })}
-                        class:list={[
-                          "hover:bg-brand/5 block rounded-lg px-3 py-2 transition-colors",
-                          String(categoryId) === String(c.id) && "bg-brand/10 text-brand font-bold",
-                        ]}
+                        class:list={["hover:bg-brand/5 block rounded-lg px-3 py-2 transition-colors", String(categoryId) === String(c.id) && "bg-brand/10 text-brand font-bold"]}
                       >
                         {c.title}
                       </a>
@@ -168,10 +165,7 @@ const jsonLdBreadcrumbs = JSON.stringify({
                   difficultyMap.map((d) => (
                     <a
                       href={recipesHref({ difficulty: d.value })}
-                      class:list={[
-                        "rounded-full border px-4 py-1 text-xs transition-all",
-                        difficultyFilter === d.value ? "border-brand text-brand bg-brand/5" : "border-line text-text-muted",
-                      ]}
+                      class:list={["rounded-full border px-4 py-1 text-xs transition-all", difficultyFilter === d.value ? "border-brand text-brand bg-brand/5" : "border-line text-text-muted"]}
                     >
                       {d.label}
                     </a>
@@ -189,32 +183,24 @@ const jsonLdBreadcrumbs = JSON.stringify({
         </div>
 
         {
-          allRecipes.length === 0 && (
+          filteredRecipes.length === 0 && (
             <div class="py-20 text-center">
               <Icon name="lucide:search-x" class="text-text-muted mx-auto mb-4 h-16 w-16 opacity-20" />
               <h3 class="text-text-main text-xl font-bold">Ничего не нашли</h3>
               <p class="text-text-muted mt-2">Попробуй изменить параметры поиска или категорию</p>
+              {(qRaw || categoryId || difficultyFilter !== "all") && (
+                <a href="/recipes" class="text-brand mt-6 inline-block font-semibold hover:underline">
+                  Сбросить фильтры
+                </a>
+              )}
             </div>
           )
         }
 
         {
-          allRecipes.length > 0 && filteredRecipes.length === 0 && (
-            <div class="py-20 text-center">
-              <Icon name="lucide:search-x" class="text-text-muted mx-auto mb-4 h-16 w-16 opacity-20" />
-              <h3 class="text-text-main text-xl font-bold">Нет рецептов по выбранным условиям</h3>
-              <p class="text-text-muted mt-2">Сбросьте фильтры или измените запрос в поиске.</p>
-              <a href="/recipes" class="text-brand mt-6 inline-block font-semibold hover:underline">
-                Показать все рецепты
-              </a>
-            </div>
-          )
-        }
-
-        {
-          totalPages > 1 && filteredRecipes.length > 0 && (
+          finalTotalPages > 1 && filteredRecipes.length > 0 && (
             <div class="mt-12">
-              <Pagination currentPage={currentPage} totalPages={totalPages} baseUrlFunc={(p) => recipesHref({ page: p })} />
+              <Pagination currentPage={currentPage} totalPages={finalTotalPages} baseUrlFunc={(p) => recipesHref({ page: p })} />
             </div>
           )
         }

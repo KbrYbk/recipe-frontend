@@ -1,13 +1,13 @@
 [
   {
-    "id": "1",
+    "id": 1,
     "title": "Луковый Угар",
     "main_image": "/images/lukoviy-ugar.webp",
     "description": "Экстремально ароматное блюдо с уникальным вкусом. Запах специфичный, к подобному приучают с детства!",
     "cooking_time": 45,
     "difficulty": "hard",
     "video_url": "https://www.youtube.com/embed/jtDnaGG_5Kg",
-    "category": "dinner",
+    "category_id": 1,
     "ingredients": [
       { "name": "Средних луковиц", "amount": "5", "unit": "шт." },
       { "name": "Чеснока", "amount": "3", "unit": "зубчика" },
@@ -35,16 +35,25 @@
       { "order": 9, "text": "Все это приправить лимонным соком (пару чайных ложек).", "image": "" },
       { "order": 10, "text": "Блюдо подается со стаканом томатного сока и ломтиком лаваша.", "image": "/images/steps/step-10.webp" },
       { "order": 11, "text": "Добавляем столовую ложку белого перца, 3 ст. ложки паприки и 5 СТОЛОВЫХ ложек соли!", "image": "" }
-    ]
+    ],
+    "created_at": "2026-03-30T12:00:00.000000Z",
+    "updated_at": "2026-03-30T12:00:00.000000Z",
+    "likes_count": 666,
+    "average_rating": 5,
+    "source_url": null,
+    "user": {
+      "id": 1,
+      "name": "БыкОсеменитель"
+    }
   },
   {
-    "id": "2",
+    "id": 2,
     "title": "Жаренное мясо",
     "main_image": "/images/meat.webp",
+    "video_url": "https://www.youtube.com/embed/9Dn3ZMiHD-k",
     "description": "Мясо будет таять во рту.",
     "cooking_time": 420,
     "difficulty": "easy",
-    "category": "bakery",
     "ingredients": [
       { "name": "Мясо", "amount": "500", "unit": "г" },
       { "name": "Масло", "amount": "1", "unit": "литр" },
@@ -58,19 +67,105 @@
       { "order": 3, "text": "Смажьте мясо маслом. Посолите, поперчите.", "image": "" },
       { "order": 4, "text": "Смажьте мясо. Посолите масло мясом. Поперчите.", "image": "" },
       { "order": 5, "text": "Мясаните масло. Смажьте сасло саслом.", "image": "" }
-    ]
+    ],
+    "created_at": "2026-03-30T12:00:00.000000Z",
+    "updated_at": "2026-03-30T12:00:00.000000Z",
+    "category_id": 1,
+    "likes_count": 67,
+    "average_rating": 2.1,
+    "source_url": null,
+    "user": {
+      "id": 1,
+      "name": "БыкОсеменитель"
+    }
   },
   {
     "id": 3,
-    "title": "Домашние сырники",
-    "main_image": "",
+    "title": "Сраники с говном",
+    "main_image": "/images/sirnyki.webp",
+    "video_url": null,
     "description": "Нежные, воздушные сырники с изюмом.",
     "cooking_time": 20,
     "difficulty": "easy",
     "ingredients": [
-      { "name": "Творог", "unit": "г", "amount": "500" },
-      { "name": "Яйцо", "unit": "шт.", "amount": "1" }
+      { "name": "Творог", "amount": "500", "unit": "г" },
+      { "name": "Яйцо", "amount": "1", "unit": "шт." }
     ],
-    "steps": [{ "order": 1, "text": "Смешайте все ингредиенты.", "image": "" }]
+    "steps": [{ "order": 1, "text": "Смешайте все ингредиенты.", "image": null }],
+    "created_at": "2026-03-30T12:00:00.000000Z",
+    "updated_at": "2026-03-30T12:00:00.000000Z",
+    "category_id": 1,
+    "likes_count": 78,
+    "average_rating": 4.9,
+    "source_url": null,
+    "user": {
+      "id": 1,
+      "name": "БыкОсеменитель"
+    }
+  },
+  {
+    "id": 4,
+    "title": "Свиная Башка",
+    "main_image": "/images/svinaya-bashka.webp",
+    "video_url": "https://www.youtube.com/embed/wv8fx61uNmw?si=9rwGTDDen53sEE13",
+    "description": "Все вы когда нибудь хотели попробовать что нибудь новенькое, необычное, к вашему счастью я раздобыл давно забытый рецепт блюда «Свиная Башка». Этот рецепт был придуман древней, вымершей мезоамериканской цивилизацией «Майя».",
+    "cooking_time": 90,
+    "difficulty": "hard",
+    "ingredients": [
+      { "name": "Свиная голова", "amount": "1", "unit": "шт." },
+      { "name": "Свиные ноги", "amount": "4", "unit": "шт." },
+      { "name": "Консервы с паштетом / собачим кормом", "amount": "3", "unit": "шт." },
+      { "name": "Говяжья трахея", "amount": "2", "unit": "шт." },
+      { "name": "Куриные лапки (сырые)", "amount": "2", "unit": "шт." },
+      { "name": "Кетчуп", "amount": "", "unit": "по вкусу" },
+      { "name": "Свиные кишки", "amount": "1", "unit": "тарелка" }
+    ],
+    "steps": [
+      {
+        "order": 1,
+        "text": "Начиняем свиные кишки паштетом при помощи мясорубки или кондитерского пакета.",
+        "image": "/images/steps/svinaya-bashka1.webp"
+      },
+      {
+        "order": 2,
+        "text": "Берём две говяжьи трахеи и закрепляем их в области ушных каналов.",
+        "image": "/images/steps/svinaya-bashka2.webp"
+      },
+      {
+        "order": 3,
+        "text": "В свиные ноги вставляем зубочистки и прикрепляем их к голове.",
+        "image": "/images/steps/svinaya-bashka3.webp"
+      },
+      {
+        "order": 4,
+        "text": "Делаем хаотичные надрезы на кишках и слегка выдавливаем паштет наружу.",
+        "image": "/images/steps/svinaya-bashka4.webp"
+      },
+      {
+        "order": 5,
+        "text": "Берём две сырые куриные лапки в качестве украшения и при помощи зубочисток , делаем из них рожки",
+        "image": "/images/steps/svinaya-bashka5.webp"
+      },
+      {
+        "order": 6,
+        "text": "Для завершения нам нужно воткнуть промеж глаз нож и кетчупом сделать эффект стекающей крови.",
+        "image": "/images/svinaya-bashka.webp"
+      },
+      {
+        "order": 7,
+        "text": "Блюдо «Свиная Башка» готово, оно подается с пивом и ржаными гренками. /n Приятного аппетита!",
+        "image": null
+      }
+    ],
+    "created_at": "2026-03-30T12:30:00.000000Z",
+    "updated_at": "2026-03-30T12:30:00.000000Z",
+    "category_id": 1,
+    "likes_count": 999,
+    "average_rating": 4.2,
+    "source_url": null,
+    "user": {
+      "id": 1,
+      "name": "БыкОсеменитель"
+    }
   }
 ]

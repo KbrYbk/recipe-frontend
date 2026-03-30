@@ -12,11 +12,11 @@ import { fetchRecipeById, mapBackendRecipe } from "../../lib/api/recipes";
 import { normalizeIngredients } from "../../lib/normalizeIngredients";
 
 const { id } = Astro.params;
+const cleanId = id?.replace(/^(local-|db-)/, "");
 
 let recipe: Record<string, unknown> | null = null;
 
 if (id?.startsWith("local-")) {
-  const cleanId = id.replace("local-", "");
   const raw = localRecipes.find((r) => String(r.id) === cleanId);
   if (raw) {
     recipe = {
@@ -43,6 +43,7 @@ const difficulty = recipe?.difficulty != null ? String(recipe.difficulty) : "";
 const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
 const pageTitle = recipe ? `${title} — РецептыДома` : "Рецепт не найден — Рецепты Дома";
 const canonical = recipe ? `/recipe/${id}` : "/404";
+const origin = Astro.url.origin;
 const jsonLdRecipe =
   recipe &&
   JSON.stringify({
@@ -69,13 +70,13 @@ const jsonLdBreadcrumbs = JSON.stringify({
       "@type": "ListItem",
       position: 1,
       name: "Главная",
-      item: new URL("/", Astro.url.origin).href,
+      item: new URL("/", origin).href,
     },
     {
       "@type": "ListItem",
       position: 2,
       name: "Рецепты",
-      item: new URL("/recipes", Astro.url.origin).href,
+      item: new URL("/recipes", origin).href,
     },
     {
       "@type": "ListItem",
@@ -106,34 +107,51 @@ const jsonLdBreadcrumbs = JSON.stringify({
         <header class="mb-12">
           <h1 class="text-text-main mb-6 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
 
-          <div class="flex flex-col justify-between gap-6 sm:flex-row md:items-center">
-            <div class="flex flex-col gap-4 sm:flex-row">
-              <span class="bg-card-bg border-line text-text-main flex items-center justify-center gap-2 rounded-2xl border px-5 py-2">
-                <Icon name="lucide:clock" class="h-5 w-5 shrink-0" aria-hidden="true" />
-                <span>{cooking_time} мин</span>
+          <div class="flex flex-col justify-between gap-6 lg:flex-row">
+            <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
+              <span class="bg-card-bg border-line text-text-main flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium">
+                <Icon name="lucide:clock" class="text-brand h-5 w-5 shrink-0" />
+                <span class="tabular-nums">{cooking_time} мин</span>
               </span>
+
               {difficulty && (
-                <span class="bg-accent-soft text-brand flex items-center justify-center gap-2 rounded-2xl px-5 py-2 text-xs font-bold tracking-wider uppercase">
-                  <Icon name="lucide:flame" class="h-5 w-5 shrink-0" aria-hidden="true" />
-                  {difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : difficulty === "easy" ? "Легко" : difficulty}
+                <span class="bg-accent-soft text-brand flex h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-bold tracking-wider uppercase">
+                  <Icon name="lucide:flame" class="h-5 w-5 shrink-0" />
+                  <span>{difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко"}</span>
+                </span>
+              )}
+
+              {recipe && recipe.average_rating > 0 && (
+                <span class="bg-card-bg border-line flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold text-amber-500">
+                  <Icon name="lucide:star" class="h-5 w-5 shrink-0 fill-current" />
+                  <span class="tabular-nums">{recipe.average_rating}</span>
+                </span>
+              )}
+
+              {recipe && recipe.likes_count > 0 && (
+                <span class="bg-card-bg border-line flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold text-rose-500">
+                  <Icon name="lucide:heart" class="h-5 w-5 shrink-0 fill-current" />
+                  <span class="tabular-nums">{recipe.likes_count}</span>
                 </span>
               )}
             </div>
-            <div class="flex flex-col gap-3 sm:flex-row">
+
+            <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
               <button
                 type="button"
                 onclick="window.print()"
-                class="bg-card-bg border-line text-text-main hover:border-brand no-print flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-all active:scale-95"
+                class="bg-card-bg border-line text-text-main hover:border-brand no-print flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border px-5 py-2 text-sm font-medium transition-all active:scale-95 sm:flex-initial"
               >
-                <Icon name="lucide:printer" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                <Icon name="lucide:printer" class="h-4 w-4 shrink-0" />
                 <span>Печать</span>
               </button>
+
               <button
                 type="button"
                 id="shareBtn"
-                class="bg-brand hover:bg-brand-hover shadow-brand/20 flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-lg transition-all active:scale-95"
+                class="bg-brand hover:bg-brand-hover shadow-brand/20 flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-bold text-white shadow-lg transition-all active:scale-95 sm:flex-initial"
               >
-                <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" />
                 <span>Поделиться</span>
               </button>
             </div>
@@ -164,13 +182,57 @@ const jsonLdBreadcrumbs = JSON.stringify({
           <IngredientsList ingredients={ingredients} recipeSlug={id ?? "recipe"} />
 
           <div class="lg:col-span-2">
-            <section aria-labelledby="about-heading">
+            <section aria-labelledby="about-heading" class="mb-12">
               <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold">
                 О рецепте
               </h2>
-              <p class="text-text-muted mb-12 text-xl leading-relaxed italic">«{description}»</p>
 
-              <VideoPlayer videoUrl={video_url} />
+              <div class="relative">
+                <div class="absolute -left-4 top-0 bottom-0 w-1 bg-brand/20 rounded-full hidden md:block"></div>
+                
+                <p class="text-text-muted mb-6 text-xl leading-relaxed italic">
+                  «{description}»
+                </p>
+
+                <div class="flex flex-wrap items-center gap-y-4 gap-x-6 border-t border-line pt-6">
+                  
+                  {recipe.user?.name && (
+                    <div class="flex items-center gap-2 text-sm">
+                      <div class="bg-brand/10 flex h-8 w-8 items-center justify-center rounded-full">
+                        <Icon name="lucide:user" class="text-brand h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <div class="flex flex-col">
+                        <span class="text-text-muted text-xs uppercase tracking-wider font-medium">Автор</span>
+                        <span class="text-text-main font-bold">{recipe.user.name}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {recipe.user?.name && recipe.source_url && (
+                    <div class="hidden h-8 w-px bg-line sm:block"></div>
+                  )}
+
+                  {recipe.source_url && (
+                    <a
+                      href={recipe.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="group flex items-center gap-2 text-sm transition-colors"
+                    >
+                      <div class="bg-slate-100 dark:bg-slate-800 group-hover:bg-brand/10 flex h-8 w-8 items-center justify-center rounded-full transition-colors">
+                        <Icon name="lucide:external-link" class="text-text-muted group-hover:text-brand h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <div class="flex flex-col">
+                        <span class="text-text-muted text-xs uppercase tracking-wider font-medium">Источник</span>
+                        <span class="text-text-main group-hover:text-brand font-bold underline-offset-4 group-hover:underline">Оригинал рецепта</span>
+                      </div>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <VideoPlayer videoUrl={video_url} />
 
               <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
                 <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
@@ -204,7 +266,6 @@ const jsonLdBreadcrumbs = JSON.stringify({
                   ))}
                 </ol>
               </div>
-            </section>
           </div>
         </div>
       </article>
@@ -263,11 +324,6 @@ const jsonLdBreadcrumbs = JSON.stringify({
         }
       } catch (err) {
         console.error(err);
-      }
-    });
-  }
-</script>
-err);
       }
     });
   }

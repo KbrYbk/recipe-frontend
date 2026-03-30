@@ -53,10 +53,51 @@ const imageAlt = `Фото блюда: ${title}`;
       {description}
     </p>
 
+    <div class="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-text-muted">
+      {
+        recipe.user?.name && (
+          <div class="flex items-center gap-1">
+            <Icon name="lucide:user" class="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{recipe.user.name}</span>
+          </div>
+        )
+      }
+      {
+        recipe.difficulty && (
+          <div class="flex items-center gap-1 uppercase tracking-wider">
+            <Icon name="lucide:flame" class="h-3.5 w-3.5" aria-hidden="true" />
+            <span>
+              {recipe.difficulty === "hard" ? "Сложно" : recipe.difficulty === "medium" ? "Средне" : "Легко"}
+            </span>
+          </div>
+        )
+      }
+    </div>
+
     <div class="mt-auto flex items-center justify-between border-t border-line pt-4 text-sm">
-      <div class="text-text-muted flex items-center gap-1.5 font-medium">
-        <Icon name="lucide:clock" class="h-4 w-4 shrink-0" aria-hidden="true" />
-        <span class="leading-none">{cooking_time} мин</span>
+      <div class="flex items-center gap-4">
+        <div class="text-text-muted flex items-center gap-1.5 font-medium">
+          <Icon name="lucide:clock" class="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span class="leading-none tabular-nums">{cooking_time} мин</span>
+        </div>
+
+        {
+          recipe.average_rating > 0 && (
+            <div class="flex items-center gap-1 text-amber-500 font-bold" aria-label={`Рейтинг: ${recipe.average_rating}`}>
+              <Icon name="lucide:star" class="h-4 w-4 fill-current" aria-hidden="true" />
+              <span class="leading-none tabular-nums">{recipe.average_rating}</span>
+            </div>
+          )
+        }
+
+        {
+          recipe.likes_count > 0 && (
+            <div class="text-rose-500 flex items-center gap-1 font-bold" aria-label={`Лайков: ${recipe.likes_count}`}>
+              <Icon name="lucide:heart" class="h-4 w-4 fill-current" aria-hidden="true" />
+              <span class="leading-none tabular-nums">{recipe.likes_count}</span>
+            </div>
+          )
+        }
       </div>
 
       <div class="text-brand flex items-center gap-1 font-bold">
