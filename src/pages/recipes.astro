@@ -10,8 +10,10 @@ import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from ".
 
 const url = Astro.url;
 const qRaw = url.searchParams.get("q")?.trim() || "";
-const categoryId = url.searchParams.get("categoryId")?.trim() || "";
+const categoryId = url.searchParams.get("categoryId")?.trim() || ""; // categoryId from URL, for display/highlighting
 const categoryLegacy = url.searchParams.get("category")?.trim() || "";
+// effectiveCategoryId is used for actual filtering/fetching. It's cleared if qRaw is present.
+const effectiveCategoryId = qRaw ? "" : categoryId;
 const difficultyFilter = url.searchParams.get("difficulty")?.trim() || "all";
 const currentPage = parseInt(url.searchParams.get("page") || "1");
 
@@ -121,7 +123,7 @@ const jsonLdBreadcrumbs = JSON.stringify({
           </p>
         </div>
         <div class="w-full md:w-96">
-          <SearchBar initialQuery={qRaw} preserveParams={{ categoryId, difficulty: difficultyFilter }} />
+          <SearchBar initialQuery={qRaw} preserveParams={{ difficulty: difficultyFilter }} />
         </div>
       </div>
     </header>
