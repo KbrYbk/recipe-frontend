@@ -31,10 +31,10 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
 
   if (opts.search) {
     const s = encodeURIComponent(String(opts.search).trim());
-    url += `/search/${s}`;
-    if (opts.categoryId) url += `/${opts.categoryId}`;
+    url += `/search/${s}/${page}`; // page теперь в пути для поиска
+    if (opts.categoryId) url += `/${opts.categoryId}`; // categoryId остается в пути для поиска
   } else if (opts.categoryId) {
-    url += `/category/${opts.categoryId}`;
+    url += `/category/${opts.categoryId}/${page}`; // categoryId и page теперь в пути для категории
   } else {
     url += `/page/${page}`;
   }
@@ -42,10 +42,10 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
   // Добавляем остальные параметры через Query String
   const queryParams = new URLSearchParams();
 
-  // Если мы не в роуте /page/{page}, добавляем page= через query
-  if (page > 1 && !url.includes(`/page/${page}`)) {
-    queryParams.set("page", String(page));
-  }
+  // Параметр "page" теперь всегда в пути, поэтому убираем его из queryParams
+  // if (page > 1 && !url.includes(`/page/${page}`)) {
+  //   queryParams.set("page", String(page));
+  // }
 
   if (opts.difficulty && opts.difficulty !== "all") {
     queryParams.set("difficulty", opts.difficulty);
