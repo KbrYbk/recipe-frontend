@@ -41,7 +41,7 @@ const ingredients = normalizeIngredients(recipe?.ingredients);
 const steps = (recipe?.steps as { order?: number; text?: string; image?: string }[] | undefined) ?? [];
 const difficulty = recipe?.difficulty != null ? String(recipe.difficulty) : "";
 const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
-const pageTitle = recipe ? `${title} — РецептыДома` : "Рецепт не найден — Рецепты Дома";
+const pageTitle = recipe ? `${title} — SwagEda` : "Рецепт не найден — SwagEda";
 const canonical = recipe ? `/recipe/${id}` : "/404";
 const origin = Astro.url.origin;
 const jsonLdRecipe =
@@ -188,42 +188,32 @@ const jsonLdBreadcrumbs = JSON.stringify({
               </h2>
 
               <div class="relative">
-                <div class="absolute -left-4 top-0 bottom-0 w-1 bg-brand/20 rounded-full hidden md:block"></div>
-                
-                <p class="text-text-muted mb-6 text-xl leading-relaxed italic">
-                  «{description}»
-                </p>
+                <div class="bg-brand/20 absolute top-0 bottom-0 -left-4 hidden w-1 rounded-full md:block" />
 
-                <div class="flex flex-wrap items-center gap-y-4 gap-x-6 border-t border-line pt-6">
-                  
+                <p class="text-text-muted mb-6 text-xl leading-relaxed italic">«{description}»</p>
+
+                <div class="border-line flex flex-wrap items-center gap-x-6 gap-y-4 border-t pt-6">
                   {recipe.user?.name && (
                     <div class="flex items-center gap-2 text-sm">
                       <div class="bg-brand/10 flex h-8 w-8 items-center justify-center rounded-full">
                         <Icon name="lucide:user" class="text-brand h-4 w-4" aria-hidden="true" />
                       </div>
                       <div class="flex flex-col">
-                        <span class="text-text-muted text-xs uppercase tracking-wider font-medium">Автор</span>
+                        <span class="text-text-muted text-xs font-medium tracking-wider uppercase">Автор</span>
                         <span class="text-text-main font-bold">{recipe.user.name}</span>
                       </div>
                     </div>
                   )}
 
-                  {recipe.user?.name && recipe.source_url && (
-                    <div class="hidden h-8 w-px bg-line sm:block"></div>
-                  )}
+                  {recipe.user?.name && recipe.source_url && <div class="bg-line hidden h-8 w-px sm:block" />}
 
                   {recipe.source_url && (
-                    <a
-                      href={recipe.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="group flex items-center gap-2 text-sm transition-colors"
-                    >
-                      <div class="bg-slate-100 dark:bg-slate-800 group-hover:bg-brand/10 flex h-8 w-8 items-center justify-center rounded-full transition-colors">
+                    <a href={recipe.source_url} target="_blank" rel="noopener noreferrer" class="group flex items-center gap-2 text-sm transition-colors">
+                      <div class="group-hover:bg-brand/10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 transition-colors dark:bg-slate-800">
                         <Icon name="lucide:external-link" class="text-text-muted group-hover:text-brand h-4 w-4" aria-hidden="true" />
                       </div>
                       <div class="flex flex-col">
-                        <span class="text-text-muted text-xs uppercase tracking-wider font-medium">Источник</span>
+                        <span class="text-text-muted text-xs font-medium tracking-wider uppercase">Источник</span>
                         <span class="text-text-main group-hover:text-brand font-bold underline-offset-4 group-hover:underline">Оригинал рецепта</span>
                       </div>
                     </a>
@@ -234,38 +224,38 @@ const jsonLdBreadcrumbs = JSON.stringify({
 
             <VideoPlayer videoUrl={video_url} />
 
-              <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
-                <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
-                  Приготовление
-                </h2>
-                <ol class="list-none space-y-12 p-0" aria-labelledby="steps-heading">
-                  {steps.map((step, index) => (
-                    <li class="group relative">
-                      <div class="mb-4 flex gap-6">
-                        <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
-                          {step.order ?? index + 1}
-                        </div>
-                        <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
+            <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
+              <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
+                Приготовление
+              </h2>
+              <ol class="list-none space-y-12 p-0" aria-labelledby="steps-heading">
+                {steps.map((step, index) => (
+                  <li class="group relative">
+                    <div class="mb-4 flex gap-6">
+                      <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
+                        {step.order ?? index + 1}
                       </div>
+                      <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
+                    </div>
 
-                      {step.image ? (
-                        <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
-                          <img
-                            data-zoomable
-                            src={step.image}
-                            alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
-                            width={800}
-                            height={450}
-                            loading="lazy"
-                            decoding="async"
-                            class="image-zoom h-auto w-full"
-                          />
-                        </div>
-                      ) : null}
-                    </li>
-                  ))}
-                </ol>
-              </div>
+                    {step.image ? (
+                      <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
+                        <img
+                          data-zoomable
+                          src={step.image}
+                          alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
+                          width={800}
+                          height={450}
+                          loading="lazy"
+                          decoding="async"
+                          class="image-zoom h-auto w-full"
+                        />
+                      </div>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
       </article>
