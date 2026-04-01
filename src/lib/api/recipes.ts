@@ -21,7 +21,7 @@ export function toImageProxyUrl(path: string | undefined | null): string | undef
 }
 
 /** Получение списка рецептов (Поиск, Категории, Пагинация, Сложность) */
-export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: number | string; page?: number; difficulty?: string } = {}) {
+export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: number | string; page?: number; difficulty?: string; limit?: number } = {}) {
   const base = apiBase();
   const page = opts.page || 1;
   const apiPath = base.endsWith("/api") ? "/getRecipes" : "/api/getRecipes";
@@ -29,7 +29,9 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
   // Базовая логика формирования URL (совместимость с текущими роутами)
   let url = `${base}${apiPath}`;
 
-  if (opts.search) {
+  if (opts.limit) {
+    url += `/value/${opts.limit}`;
+  } else if (opts.search) {
     const s = encodeURIComponent(String(opts.search).trim());
     url += `/search/${s}/${page}`; // page теперь в пути для поиска
     if (opts.categoryId) url += `/${opts.categoryId}`; // categoryId остается в пути для поиска
@@ -60,7 +62,8 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
     const response = await fetch(url, {
       headers: { [PROJECT_HEADER]: apiKey() },
     });
-    if (!response.ok) throw new Error(`Status: ${response.status}`);
+    const status = response.status;
+    if (!response.ok) return { list: [], total: 0, totalPages: 1, ok: false, status };
 
     const result = await response.json();
     const dataObj = result.data || result;
@@ -73,10 +76,10 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
     const perPage = dataObj.per_page || 20;
     const totalPages = dataObj.last_page || Math.ceil(total / perPage) || 1;
 
-    return { list, total, totalPages, ok: true };
+    return { list, total, totalPages, ok: true, status };
   } catch (e) {
     console.error("❌ API Error:", e);
-    return { list: [], total: 0, totalPages: 1, ok: false };
+    return { list: [], total: 0, totalPages: 1, ok: false, status: 0 };
   }
 }
 
