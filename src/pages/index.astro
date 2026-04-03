@@ -7,7 +7,7 @@ import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
 
 let errorMessage = "";
-const { list, ok, status } = await fetchRecipesFromApi({ limit: 10 });
+const { list, ok, status } = await fetchRecipesFromApi({ limit: 3 });
 
 if (!ok && status === 403) {
   errorMessage = "Бэкенд: доступ запрещен (IP Whitelist). Покажу только локальные рецепты.";
@@ -25,11 +25,11 @@ const processedLocal = localRecipes.map((r) => ({
   id: `local-${r.id}`,
 }));
 
-// Соединяем
-const allRecipes = [...processedBackend, ...processedLocal];
+// Соединяем: если API был успешен, используем его данные. Иначе - локальные.
+const allRecipes = ok ? processedBackend : processedLocal;
 ---
 
-<Layout title="Рецепты Дома — Твоя уютная кухня">
+<Layout title="SwagEda — Твоя уютная кухня">
   <div class="mx-auto max-w-6xl">
     {
       errorMessage && (
@@ -68,7 +68,7 @@ const allRecipes = [...processedBackend, ...processedLocal];
       </div>
 
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {allRecipes.slice(0, 3).map((recipe) => <RecipeCard recipe={recipe} />)}
+        {allRecipes.map((recipe) => <RecipeCard recipe={recipe} />)}
       </div>
     </section>
   </div>
