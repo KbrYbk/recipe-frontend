@@ -121,19 +121,35 @@ const jsonLdBreadcrumbs = JSON.stringify({
                 </span>
               )}
 
-              {recipe && recipe.average_rating > 0 && (
-                <span class="bg-card-bg border-line flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold text-amber-500">
-                  <Icon name="lucide:star" class="h-5 w-5 shrink-0 fill-current" />
-                  <span class="tabular-nums">{recipe.average_rating}</span>
-                </span>
-              )}
+              <button
+                type="button"
+                id="likeBtn"
+                data-id={id}
+                data-count={recipe?.likes_count || 0}
+                class="bg-card-bg border-line flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold text-rose-500 transition-all hover:bg-rose-50 active:scale-95 disabled:opacity-70 disabled:hover:bg-transparent"
+              >
+                <Icon name="lucide:heart" class="heart-icon h-5 w-5 shrink-0" />
+                <span class="likes-count tabular-nums">{recipe?.likes_count || 0}</span>
+              </button>
 
-              {recipe && recipe.likes_count > 0 && (
-                <span class="bg-card-bg border-line flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold text-rose-500">
-                  <Icon name="lucide:heart" class="h-5 w-5 shrink-0 fill-current" />
-                  <span class="tabular-nums">{recipe.likes_count}</span>
-                </span>
-              )}
+              <div
+                id="ratingStars"
+                data-id={id}
+                data-avg={recipe?.average_rating || 0}
+                class="bg-card-bg border-line flex h-11 items-center justify-center gap-1 rounded-xl border px-4 py-2 text-sm font-bold text-amber-500"
+              >
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    type="button"
+                    data-star={star}
+                    class="star-btn transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100"
+                    aria-label={`Оценить на ${star}`}
+                  >
+                    <Icon name="lucide:star" class="h-5 w-5 shrink-0" />
+                  </button>
+                ))}
+                <span class="avg-val ml-1 tabular-nums">{recipe?.average_rating || 0}</span>
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
@@ -327,4 +343,96 @@ const jsonLdBreadcrumbs = JSON.stringify({
       }
     });
   }
+</script>
+
+<script>
+  import { incrementLike, setRating } from "../../lib/api/recipes";
+
+  function setupInteractions() {
+    const likeBtn = document.getElementById("likeBtn") as HTMLButtonElement;
+    const ratingContainer = document.getElementById("ratingStars");
+    const recipeId = likeBtn?.dataset.id;
+    if (!likeBtn || !ratingContainer || !recipeId) return;
+
+    // Likes
+    const likedRecipes = JSON.parse(localStorage.getItem("liked_recipes") || "[]");
+    if (likedRecipes.includes(recipeId)) {
+      likeBtn.disabled = true;
+      likeBtn.querySelector("svg")?.classList.add("fill-current");
+    }
+
+    likeBtn.onclick = async () => {
+      if (likedRecipes.includes(recipeId)) return;
+      
+      const countEl = likeBtn.querySelector(".likes-count");
+      const currentCount = parseInt(likeBtn.dataset.count || "0");
+      if (countEl) countEl.textContent = String(currentCount + 1);
+      
+      likeBtn.disabled = true;
+      likeBtn.querySelector("svg")?.classList.add("fill-current");
+
+      try {
+        const res = await incrementLike(recipeId);
+        if (res.ok) {
+          likedRecipes.push(recipeId);
+          localStorage.setItem("liked_recipes", JSON.stringify(likedRecipes));
+        } else {
+          throw new Error();
+        }
+      } catch {
+        if (countEl) countEl.textContent = String(currentCount);
+        likeBtn.disabled = false;
+        likeBtn.querySelector("svg")?.classList.remove("fill-current");
+        alert("Не удалось поставить лайк");
+      }
+    };
+
+    // Rating
+    const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
+    const userRating = myRatings[recipeId];
+    const stars = ratingContainer.querySelectorAll(".star-btn");
+
+    const updateStarsUI = (val: number) => {
+      stars.forEach((s) => {
+        const starNum = parseInt((s as HTMLElement).dataset.star || "0");
+        const svg = s.querySelector("svg");
+        if (starNum <= val) svg?.classList.add("fill-current");
+        else svg?.classList.remove("fill-current");
+      });
+    };
+
+    if (userRating) {
+      updateStarsUI(userRating);
+      stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+    }
+
+    stars.forEach((btn) => {
+      (btn as HTMLButtonElement).onclick = async () => {
+        const rating = parseInt((btn as HTMLElement).dataset.star || "0");
+        
+        try {
+          const ipRes = await fetch("https://api.ipify.org?format=json");
+          const { ip } = await ipRes.json();
+          
+          const res = await setRating(recipeId, rating, ip);
+          if (res.ok) {
+            myRatings[recipeId] = rating;
+            localStorage.setItem("my_ratings", JSON.stringify(myRatings));
+            updateStarsUI(rating);
+            stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+          } else if (res.status === 403) {
+            alert("Вы уже голосовали за этот рецепт");
+            stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+          } else {
+            alert("Ошибка при установке рейтинга");
+          }
+        } catch {
+          alert("Не удалось отправить рейтинг");
+        }
+      };
+    });
+  }
+
+  setupInteractions();
+  document.addEventListener("astro:page-load", setupInteractions);
 </script>

@@ -130,3 +130,35 @@ export async function fetchRecipeById(id: string | number) {
     return { item: null, ok: false };
   }
 }
+
+/** Лайк рецепта */
+export async function incrementLike(id: string | number) {
+  const base = apiBase();
+  const cleanId = String(id).replace(/^(db-|local-)/, "");
+  const hasApiInBase = base.endsWith("/api");
+  const url = `${base}${hasApiInBase ? "" : "/api"}/incrementLike/${encodeURIComponent(cleanId)}`;
+
+  return fetch(url, {
+    method: "PATCH",
+    headers: {
+      [PROJECT_HEADER]: apiKey(),
+    },
+  });
+}
+
+/** Установка рейтинга */
+export async function setRating(id: string | number, rating: number, ip: string) {
+  const base = apiBase();
+  const cleanId = String(id).replace(/^(db-|local-)/, "");
+  const hasApiInBase = base.endsWith("/api");
+  const url = `${base}${hasApiInBase ? "" : "/api"}/setRating/${encodeURIComponent(cleanId)}`;
+
+  return fetch(url, {
+    method: "POST",
+    headers: {
+      [PROJECT_HEADER]: apiKey(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ rating, ip }),
+  });
+}
