@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
-import netlify from "@astrojs/netlify";
+import node from "@astrojs/node";
 
 export default defineConfig({
   integrations: [icon()],
@@ -9,7 +9,9 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   output: "server",
-  adapter: netlify(),
+  adapter: node({
+    mode: "standalone",
+  }),
   // Картинки проксируются через /api-images/* (см. src/pages/api-images/[...slug].ts),
   // поэтому внешние домены в image.domains не нужны.
 });

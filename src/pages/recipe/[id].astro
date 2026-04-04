@@ -361,19 +361,18 @@ const jsonLdBreadcrumbs = JSON.stringify({
       likeBtn.disabled = true;
       likeBtn.querySelector("svg")?.classList.add("fill-current");
 
-      try {
-        const res = await incrementLike(recipeId);
-        if (res.ok) {
-          likedRecipes.push(recipeId);
-          localStorage.setItem("liked_recipes", JSON.stringify(likedRecipes));
-        } else {
-          throw new Error();
-        }
-      } catch {
+      const res = await incrementLike(recipeId).catch(() => null);
+      if (res?.ok) {
+        likedRecipes.push(recipeId);
+        localStorage.setItem("liked_recipes", JSON.stringify(likedRecipes));
+      } else {
         if (countEl) countEl.textContent = String(currentCount);
         likeBtn.disabled = false;
         likeBtn.querySelector("svg")?.classList.remove("fill-current");
-        alert("Не удалось поставить лайк");
+        
+        if (res?.status === 403) alert("Вы уже голосовали");
+        else if (res?.status === 422) alert("Ошибка валидации (422)");
+        else alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
       }
     };
 
@@ -400,24 +399,27 @@ const jsonLdBreadcrumbs = JSON.stringify({
       (btn as HTMLButtonElement).onclick = async () => {
         const rating = parseInt((btn as HTMLElement).dataset.star || "0");
         
-        try {
-          const ipRes = await fetch("https://api.ipify.org?format=json");
-          const { ip } = await ipRes.json();
-          
-          const res = await setRating(recipeId, rating, ip);
-          if (res.ok) {
-            myRatings[recipeId] = rating;
-            localStorage.setItem("my_ratings", JSON.stringify(myRatings));
-            updateStarsUI(rating);
-            stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
-          } else if (res.status === 403) {
+        const ip = await fetch("https://api.ipify.org?format=json")
+          .then(r => r.json())
+          .then(d => d.ip)
+          .catch(() => "0.0.0.0");
+
+        const res = await setRating(recipeId, rating, ip).catch(() => null);
+
+        if (res?.ok) {
+          myRatings[recipeId] = rating;
+          localStorage.setItem("my_ratings", JSON.stringify(myRatings));
+          updateStarsUI(rating);
+          stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+        } else {
+          if (res?.status === 403) {
             alert("Вы уже голосовали за этот рецепт");
             stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+          } else if (res?.status === 422) {
+            alert("Ошибка валидации (422)");
           } else {
-            alert("Ошибка при установке рейтинга");
+            alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
           }
-        } catch {
-          alert("Не удалось отправить рейтинг");
         }
       };
     });
