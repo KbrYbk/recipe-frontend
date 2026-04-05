@@ -4,7 +4,17 @@ import icon from "astro-icon";
 import node from "@astrojs/node";
 
 export default defineConfig({
-  integrations: [icon()],
+  site: 'https://swageda.ru',
+  trailingSlash: 'ignore',
+  integrations: [icon(), sitemap({
+    serialize(item) {
+      // Это на всякий случай принудительно меняет домен, если что-то проскочит
+      if (item.url.includes('localhost')) {
+        item.url = item.url.replace('http://localhost:4321', 'https://swageda.ru');
+      }
+      return item;
+    },
+  })],
   vite: {
     plugins: [tailwindcss()],
   },

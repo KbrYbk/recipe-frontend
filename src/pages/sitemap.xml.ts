@@ -2,8 +2,8 @@ import type { APIRoute } from "astro";
 import localRecipes from "../data/recipes.json";
 import { fetchSitemapIds } from "../lib/api/recipes";
 
-export const GET: APIRoute = async ({ url }) => {
-  const origin = `${url.protocol}//${url.host}`;
+export const GET: APIRoute = async ({ site }) => {
+  const origin = site ? site.toString().replace(/\/$/, '') : 'https://swageda.ru';
   const encoder = new TextEncoder();
   const now = new Date().toISOString();
 
