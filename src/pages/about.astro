@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="О проекте — Swageda" description="Инженерный подход к кулинарии.">
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <section class="space-y-8">
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">О проекте Swageda</h1>
+      <p class="text-xl text-gray-600 dark:text-gray-400 leading-relaxed border-l-4 border-orange-500 pl-6">
+        <strong>Swageda</strong> — это не просто книга рецептов. Это высокопроизводительный агрегатор, созданный для тех, кто ценит скорость и чистоту интерфейса.
+      </p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-10">
+        <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-2 text-orange-600">⚡ Скорость</h3>
+          <p class="text-sm opacity-80">Astro-генерация. Загрузка за миллисекунды даже на плохом интернете.</p>
+        </div>
+        <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-2 text-orange-600">♿ Доступность</h3>
+          <p class="text-sm opacity-80">Соблюдение стандартов WCAG и чистая семантика для всех устройств.</p>
+        </div>
+        <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-2 text-orange-600">📂 Масштаб</h3>
+          <p class="text-sm opacity-80">База из 31,000+ рецептов с мгновенным поиском и фильтрацией.</p>
+        </div>
+      </div>
+
+      <div class="prose dark:prose-invert max-w-none">
+        <p>Мы убрали всё лишнее: тяжелые JS-библиотеки, навязчивую рекламу и сложную навигацию. Наша цель — дать вам рецепт здесь и сейчас.</p>
+      </div>
+    </section>
+  </main>
+</Layout>

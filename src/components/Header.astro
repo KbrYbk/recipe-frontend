@@ -110,13 +110,12 @@ import { Icon } from "astro-icon/components";
     mobileBtn.addEventListener("click", () => toggleMenu());
 
     // Theme logic
-    themeBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.documentElement.classList.toggle("dark");
-        const isDark = document.documentElement.classList.contains("dark");
-        localStorage.setItem("theme", isDark ? "dark" : "light");
-      });
-    });
+    const toggleTheme = () => {
+      const isDark = document.documentElement.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    };
+
+    themeBtns.forEach(btn => btn.addEventListener("click", toggleTheme));
 
     // Close menu on link click (for SPA navigation)
     mobileMenu.querySelectorAll("a").forEach(link => {

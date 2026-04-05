@@ -1,0 +1,26 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Контакты — Swageda" description="Свяжитесь с нами по вопросам работы сайта.">
+  <main class="max-w-2xl mx-auto px-4 py-20 text-center">
+    <h1 class="text-4xl font-bold mb-4 text-gray-900 dark:text-white">Контакты</h1>
+    <p class="text-gray-600 dark:text-gray-400 mb-12">Нашли баг или есть идея? Пишите, мы не кусаемся.</p>
+
+    <div class="space-y-4">
+      <a href="mailto:support@swageda.ru" 
+         class="group block p-6 border-2 border-orange-500 rounded-2xl hover:bg-orange-500 transition-colors duration-200">
+        <span class="block text-sm text-gray-500 dark:text-gray-400 group-hover:text-white transition-colors">Техподдержка</span>
+        <strong class="text-xl group-hover:text-white transition-colors">support@swageda.ru</strong>
+      </a>
+
+      <a href="mailto:ads@swageda.ru" 
+         class="group block p-6 border border-gray-200 dark:border-gray-700 rounded-2xl hover:border-orange-500 transition-all duration-200">
+        <span class="block text-sm text-gray-500 dark:text-gray-400 group-hover:text-orange-500">Сотрудничество</span>
+        <strong class="text-xl group-hover:text-orange-500">ads@swageda.ru</strong>
+      </a>
+    </div>
+
+    <p class="mt-12 text-sm text-gray-400">Отвечаем в течение 24 часов.</p>
+  </main>
+</Layout>

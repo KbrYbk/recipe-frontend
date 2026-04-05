@@ -1,82 +1,67 @@
 const PROJECT_HEADER = "X-Project-Key-ass";
 
-function apiBase(): string {
+function getApiConfig() {
   const base = import.meta.env.API_BASE_URL;
-  return base ? String(base).replace(/\/$/, "") : "";
+  return {
+    base: base ? String(base).replace(/\/$/, "") : "",
+    key: import.meta.env.PROJECT_KEY ? String(import.meta.env.PROJECT_KEY) : "",
+  };
 }
 
-function apiKey(): string {
-  return import.meta.env.PROJECT_KEY ? String(import.meta.env.PROJECT_KEY) : "";
+function getHeaders() {
+  return {
+    [PROJECT_HEADER]: getApiConfig().key,
+    "Content-Type": "application/json",
+  };
 }
 
 /** Прячет внешний origin картинок за /api-images/* (наш домен). */
 export function toImageProxyUrl(path: string | undefined | null): string | undefined {
-  if (!path || path === "") return undefined;
+  if (!path) return undefined;
   if (path.startsWith("/api-images/")) return path;
   if (path.startsWith("/")) return `/api-images${path}`;
-  // На всякий случай: относительный путь без слэша
   if (!path.startsWith("http")) return `/api-images/${path}`;
-  // Абсолютные URL не трогаем (можно расширить позже при необходимости)
   return path;
 }
 
 /** Получение списка рецептов (Поиск, Категории, Пагинация, Сложность) */
 export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: number | string; page?: number; difficulty?: string; limit?: number } = {}) {
-  const base = apiBase();
+  const { base } = getApiConfig();
   const page = opts.page || 1;
-  const apiPath = base.endsWith("/api") ? "/getRecipes" : "/api/getRecipes";
-
-  // Базовая логика формирования URL (совместимость с текущими роутами)
-  let url = `${base}${apiPath}`;
+  const apiPath = base.endsWith("/api") ? "" : "/api";
+  let url = `${base}${apiPath}/getRecipes`;
 
   if (opts.limit) {
     url += `/value/${opts.limit}`;
   } else if (opts.search) {
-    const s = encodeURIComponent(String(opts.search).trim());
-    url += `/search/${s}/${page}`; // page теперь в пути для поиска
-    if (opts.categoryId) url += `/${opts.categoryId}`; // categoryId остается в пути для поиска
+    url += `/search/${encodeURIComponent(String(opts.search).trim())}/${page}`;
+    if (opts.categoryId) url += `/${opts.categoryId}`;
   } else if (opts.categoryId) {
-    url += `/category/${opts.categoryId}/${page}`; // categoryId и page теперь в пути для категории
+    url += `/category/${opts.categoryId}/${page}`;
   } else {
     url += `/page/${page}`;
   }
 
-  // Добавляем остальные параметры через Query String
   const queryParams = new URLSearchParams();
-
-  // Параметр "page" теперь всегда в пути, поэтому убираем его из queryParams
-  // if (page > 1 && !url.includes(`/page/${page}`)) {
-  //   queryParams.set("page", String(page));
-  // }
-
   if (opts.difficulty && opts.difficulty !== "all") {
     queryParams.set("difficulty", opts.difficulty);
   }
 
   const queryString = queryParams.toString();
-  if (queryString) {
-    url += (url.includes("?") ? "&" : "?") + queryString;
-  }
+  if (queryString) url += `?${queryString}`;
 
   try {
-    const response = await fetch(url, {
-      headers: { [PROJECT_HEADER]: apiKey() },
-    });
-    const status = response.status;
-    if (!response.ok) return { list: [], total: 0, totalPages: 1, ok: false, status };
+    const response = await fetch(url, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
+    if (!response.ok) return { list: [], total: 0, totalPages: 1, ok: false, status: response.status };
 
     const result = await response.json();
     const dataObj = result.data || result;
-
-    // Laravel pagination: data.data или просто data
     const list = Array.isArray(dataObj.data) ? dataObj.data : Array.isArray(dataObj) ? dataObj : [];
     const total = dataObj.total || list.length || 0;
-    
-    // Пытаемся взять размер страницы из ответа или используем 20 по умолчанию
     const perPage = dataObj.per_page || 20;
     const totalPages = dataObj.last_page || Math.ceil(total / perPage) || 1;
 
-    return { list, total, totalPages, ok: true, status };
+    return { list, total, totalPages, ok: true, status: response.status };
   } catch (e) {
     console.error("❌ API Error:", e);
     return { list: [], total: 0, totalPages: 1, ok: false, status: 0 };
@@ -85,10 +70,10 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
 
 /** Динамические категории */
 export async function fetchCategoriesFromApi() {
-  const base = apiBase();
+  const { base } = getApiConfig();
   const url = base.endsWith("/api") ? `${base}/getCategories` : `${base}/api/getCategories`;
   try {
-    const response = await fetch(url, { headers: { [PROJECT_HEADER]: apiKey() } });
+    const response = await fetch(url, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
     const result = await response.json();
     return Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
   } catch {
@@ -104,30 +89,18 @@ export function mapBackendRecipe(r: any) {
     steps: Array.isArray(r.steps) ? r.steps.map((s: any) => ({ ...s, image: toImageProxyUrl(s.image) })) : [],
   };
 }
+
 /** Получение одного рецепта по ID */
 export async function fetchRecipeById(id: string | number) {
-  const base = apiBase();
-  // Вырезаем префикс db-, если он пришел с фронта
+  const { base } = getApiConfig();
   const cleanId = String(id).replace(/^db-/, "");
-
-  const hasApiInBase = base.endsWith("/api");
-  const url = `${base}${hasApiInBase ? "" : "/api"}/getRecipes/${encodeURIComponent(cleanId)}`;
+  const url = `${base}${base.endsWith("/api") ? "" : "/api"}/getRecipes/${encodeURIComponent(cleanId)}`;
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        [PROJECT_HEADER]: apiKey(),
-        "Content-Type": "application/json",
-      },
-    });
-
+    const response = await fetch(url, { headers: getHeaders() });
     if (!response.ok) return { item: null, ok: false };
-
     const result = await response.json();
-    // Laravel обычно кладет объект в поле data
-    const item = result && result.data ? result.data : result;
-
-    return { item, ok: true };
+    return { item: result.data || result, ok: true };
   } catch (e) {
     console.error(`❌ Ошибка загрузки рецепта ${id}:`, e);
     return { item: null, ok: false };
@@ -136,32 +109,51 @@ export async function fetchRecipeById(id: string | number) {
 
 /** Лайк рецепта */
 export async function incrementLike(id: string | number) {
-  const base = apiBase();
+  const { base } = getApiConfig();
   const cleanId = String(id).replace(/^(db-|local-)/, "");
-  const hasApiInBase = base.endsWith("/api");
-  const url = `${base}${hasApiInBase ? "" : "/api"}/incrementLike/${encodeURIComponent(cleanId)}`;
-
-  return fetch(url, {
-    method: "PATCH",
-    headers: {
-      [PROJECT_HEADER]: apiKey(),
-    },
-  });
+  const url = `${base}${base.endsWith("/api") ? "" : "/api"}/incrementLike/${encodeURIComponent(cleanId)}`;
+  return fetch(url, { method: "PATCH", headers: { [PROJECT_HEADER]: getApiConfig().key } });
 }
 
 /** Установка рейтинга */
 export async function setRating(id: string | number, rating: number, ip: string) {
-  const base = apiBase();
+  const { base } = getApiConfig();
   const cleanId = String(id).replace(/^(db-|local-)/, "");
-  const hasApiInBase = base.endsWith("/api");
-  const url = `${base}${hasApiInBase ? "" : "/api"}/setRating/${encodeURIComponent(cleanId)}`;
-
+  const url = `${base}${base.endsWith("/api") ? "" : "/api"}/setRating/${encodeURIComponent(cleanId)}`;
   return fetch(url, {
     method: "POST",
-    headers: {
-      [PROJECT_HEADER]: apiKey(),
-      "Content-Type": "application/json",
-    },
+    headers: getHeaders(),
     body: JSON.stringify({ rating, ip }),
   });
+}
+/** Получение списка ID для sitemap через роут /value/{val} */
+export async function fetchSitemapIds(limit: number = 15000) {
+  const { base } = getApiConfig();
+  const apiPath = base.endsWith("/api") ? "" : "/api";
+  
+  // Юзаем твой роут: GET /getRecipes/value/{val}
+  // Забираем сразу большую пачку, чтобы не мучить сервер лишними запросами
+  const url = `${base}${apiPath}/getRecipes/value/${limit}`;
+
+  try {
+    console.log(`🔗 Requesting API: ${url}`);
+    const response = await fetch(url, { 
+      headers: { [PROJECT_HEADER]: getApiConfig().key } 
+    });
+    
+    if (!response.ok) return { list: [], total: 0 };
+    
+    const result = await response.json();
+    
+    // Твой роут /value/{val} возвращает массив рецептов напрямую
+    const list = Array.isArray(result) ? result : (result.data || []);
+    
+    return { 
+      list: list.map((r: any) => ({ id: r.id, updated_at: r.updated_at })), 
+      total: list.length 
+    };
+  } catch (e) {
+    console.error("Sitemap API Error:", e);
+    return { list: [], total: 0 };
+  }
 }

@@ -17,16 +17,10 @@ if (!ok && status === 403) {
   errorMessage = "Бэкенд недоступен. Использую резервные данные.";
 }
 
-const processedBackend = (list as Record<string, unknown>[]).map((r) => mapBackendRecipe(r));
-
-// Для локальных рецептов просто добавляем префикс к ID
-const processedLocal = localRecipes.map((r) => ({
-  ...r,
-  id: `local-${r.id}`,
-}));
-
 // Соединяем: если API был успешен, используем его данные. Иначе - локальные.
-const allRecipes = ok ? processedBackend : processedLocal;
+const allRecipes = ok 
+  ? (list as any[]).map(mapBackendRecipe) 
+  : localRecipes.map((r) => ({ ...r, id: `local-${r.id}` }));
 ---
 
 <Layout title="SwagEda — Твоя уютная кухня">

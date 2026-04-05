@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+const today = new Date().toLocaleDateString('ru-RU');
+---
+
+<Layout title="Политика конфиденциальности — Swageda">
+  <main class="max-w-3xl mx-auto px-4 py-12">
+    <article class="prose prose-orange dark:prose-invert max-w-none">
+      <h1 class="text-3xl font-extrabold mb-2">Политика конфиденциальности</h1>
+      <p class="text-sm text-gray-500 mb-8">Последнее обновление: {today}</p>
+
+      <section class="mb-10">
+        <h2 class="text-xl font-bold text-orange-600 mb-4 uppercase tracking-wider text-sm">1. Принципы сбора данных</h2>
+        <p>Мы за анонимность. Swageda не требует регистрации и не собирает ваши паспортные данные, клички собак или девичьи фамилии матерей.</p>
+      </section>
+
+      <section class="mb-10">
+        <h2 class="text-xl font-bold text-orange-600 mb-4 uppercase tracking-wider text-sm">2. Cookies и Аналитика</h2>
+        <p>Для корректной работы лайков и понимания того, не положил ли наш «ультраменьший» бэкендер сервер в очередной раз, мы используем технические Cookie и Яндекс.Метрику.</p>
+      </section>
+
+      <section class="mb-10">
+        <h2 class="text-xl font-bold text-orange-600 mb-4 uppercase tracking-wider text-sm">3. Ваша безопасность</h2>
+        <p>Все данные передаются по зашифрованному протоколу HTTPS. Мы не передаем информацию третьим лицам, если только они не придут с официальным запросом от правоохранительных органов.</p>
+      </section>
+
+      <div class="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg text-sm italic">
+        Остались вопросы? Пишите на <a href="mailto:privacy@swageda.ru" class="text-orange-600 underline">privacy@swageda.ru</a>.
+      </div>
+    </article>
+  </main>
+</Layout>
