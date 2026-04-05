@@ -24,8 +24,6 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
             # Переходим в папку проекта
-            cd /var/www/recipe-frontend || exit
-
             # Синхронизируем код
             git fetch origin main
             git reset --hard origin/main

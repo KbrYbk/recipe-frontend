@@ -1,0 +1,152 @@
+label onto
+
+# Branch main
+reset [new root]
+pick 1d78605 # Initial commit from Astro
+pick 869d590 # Initial commit: Astro project started
+pick 92aed81 # chore: setup project documentation and data structure
+pick 26d71b8 # style: fix grid layout conflicts and optimize image handling
+pick bc7bc8a # feat: add recipe details page and dark mode support
+pick e9735ee # feat: refactor to components and integrate Lucide icons
+pick a60caee # fix: Safe Guard and placeholder icon
+pick 129145c # ui: dark theme refactor & add footer & print styles
+pick c7f8e49 # fix: }
+pick 177098b # upd: all recipes page
+pick dc0ea42 # refactor architecture, add ClientRouter and image optimization
+pick 8d70459 # upd:connect backend
+pick 99fb9f1 # upd:  astro
+pick 5a42da3 # build: setup netlify adapter
+pick 6c75abc # fix: correct netlify adapter import name
+pick 074eb02 # new: img in message
+pick 9fe222a # upd
+pick 696ad42 # new: loading indicator
+pick 769a97d # swag
+pick 2cb46ff # fix dark theme
+pick 9a8f624 # Refactor code structure for improved readability and maintainability
+pick bcef50d # Обновить маршруты API для поиска и категорий, добавив параметр "page" в путь
+label branch-point
+pick 519b015 # Search without category
+pick b40f802 # Change the project name to SwagEda in all components and pages
+pick 215dd5f # Add copy protection specifying the source and update the API to support the "limit" parameter
+label main
+
+# Branch main-2
+reset branch-point # Обновить маршруты API для поиска и категорий, добавив параметр "page" в путь
+pick c038c4a # Add the functionality of likes and ratings for recipes
+merge -C 08d89a9 main # Merge branch 'main' of https://github.com/KbrYbk/recipe-frontend
+pick 976b7b4 # build: prepare for production
+pick 2892734 # Add the "About the project", "Contacts" and "Privacy Policy" pages; update the API to get data for the sitemap; improve dark theme processing and optimize the code
+pick b5c1c6d # Add configuration for automatic deployment of the Swageda application via SSH when pushing to the main branch
+pick 57ab4fd # fix(deploy): improve deployment script by ensuring Node.js and PM2 paths are loaded and using git reset for code updates
+pick d9afbb9 # fix(deploy): streamline deployment script formatting and ensure proper execution of commands
+pick f2774b0 # fix(deploy): adjust formatting of deployment script for improved readability
+pick d904637 # fix(deploy): update deployment script name and improve formatting for clarity
+pick 76eabfe # feat: добавление интеграции с Yandex для верификации сайта и обновление конфигурации Astro
+pick 4fedb7f # fix: updating the deployment configuration and adding a file robots.txt
+pick c292411 # adding Yandex.Metrika for analytics and session tracking
+pick 7d1a60a # feat: Metadata update for pages with improved descriptions and SEO
+pick 17339cb # fix: ssh port
+pick 5f404a0 # feat: Improving the build and deployment process using npm ci and adding a status check
+pick 00e36ff # fix: fixing the type of the recipe variable and updating the description in the Layout component
+pick 06cc37b # fix: fixing the configuration for handling slashes in canonical URLs and updating the logic of forming the canonical URL in the Layout component
+pick 8a8b0f7 # fix: recipes.json file
+pick 4d0abe9 # fix: исправление идентификатора рецепта и удаление закомментированного кода из recipes.json
+pick 9ab89f5 # upd: IngredientsList
+pick 5520b74 # fix: removing sitemap dependency and updating configuration, adding middleware to handle sitemap requests
+pick 3fb3bf1 # upd: middleware
+pick f53a167 # upd: middleware
+pick ec42d0b # upd: middleware
+pick 4f85ffc # fix: social media preview
+pick 5106cd3 # fix: remove unnecessary closing brace in Layout.astro
+pick 7162e80 # upd: add img for 404
+pick a3c6348 # add favicon
+label branch-point-2
+pick a179ae0 # fix: comment out contact links in contacts.astro
+pick b0b74c9 # cookie
+label main-2
+
+# Branch main-3
+reset branch-point-2 # add favicon
+pick b02a671 # Add favicon images and web manifest for РецептыДома
+merge -C 5b847fe main-2 # Merge branch 'main' of https://github.com/KbrYbk/recipe-frontend
+pick 161af8e # fix: update the website's name to SwagEda and improve meta tags for SEO
+pick 323a8f7 # feat: add component Breadcrumbs for navigation & SEO
+pick 1725733 # feat: add support for meta tags for recipes and update the Layout component
+pick f29b477 # feat: expanded recipe meta tags
+pick 9fed61d # seo
+pick 5376764 # feat: add support for recipe collections
+pick 7a1f9ae # upd: README.md
+pick a2f0bec # feat: README with add link demo and screenshots
+label branch-point-3
+pick 71ce100 # feat: add support for multiple backend URLs
+pick a610cfb # feat: hide author and original source link
+pick 257b47b # feat: add Yandex Advertising Network (YAN) blocks
+label main-3
+
+reset branch-point-3 # feat: README with add link demo and screenshots
+pick 28eae05 # feat: add YAN for monetization
+pick e7b05fd # feat: fix footer, add ads
+merge -C a6972a9 main-3 # Merge branch 'main' of https://github.com/KbrYbk/recipe-frontend
+pick f9c3b34 # feat: mobile nav
+pick a38babc # feat: new design for bottom navigation
+pick 7b3165c # feat: random recipe functionality
+pick d565ed9 # feat: recipe rating display implementation
+pick e3175cc # feat: use favicon for logo in header and footer
+pick b731233 # fix: error message display
+pick 771bf92 # chore: update deployment configuration
+pick c88a48c # fix: YAN rendering and layout improvements
+pick 5ed6f16 # fix: random recipe button logic
+pick 2a854c9 # feat: enhance recipe buttons
+pick 7122353 # feat: 404 state for recipes
+pick d3c5453 # Add LICENSE file with copyright and terms
+pick 1ec130c # upd: id recipe
+pick 150f19d # fix: progress bar logic
+pick 85cf87e # feat: configure robots.txt and sitemap
+pick 200874e # chore: update project name to Swageda
+pick b570268 # refactor: core codebase improvements
+pick 6fefafd # fix: favorites
+pick c2b069d # refactor: remove unused ClientRouter
+pick e65541e # feat: add mobile filter functionality
+pick e2343b2 # fix: 24 ads block rendering
+pick 5cf7f36 # refactor: clean up component structure
+pick d127a7c # perf: add support for mobile image formats
+pick 96fb180 # feat: refactor layout scripts
+pick d0c26c3 # refactor: distribute and organize components
+pick dcd0d52 # refactor: improve info page layout
+pick fa400c7 # feat: add recipe printing support
+pick c1dcee0 # feat: implement recipe rating functionality
+pick 3a830a3 # perf: UI and code optimization
+pick 1302008 # feat: add header Content-Type for likes
+pick 0da1df0 # feat(core): release 1.0.0, CI/CD setup, and code cleanup
+pick 4a42002 # fix: recipe rating and likes
+
+# Rebase 4a42002 onto 5645f65 (114 commands)
+#
+# Commands:
+# p, pick <commit> = use commit
+# r, reword <commit> = use commit, but edit the commit message
+# e, edit <commit> = use commit, but stop for amending
+# s, squash <commit> = use commit, but meld into previous commit
+# f, fixup [-C | -c] <commit> = like "squash" but keep only the previous
+#                    commit's log message, unless -C is used, in which case
+#                    keep only this commit's message; -c is same as -C but
+#                    opens the editor
+# x, exec <command> = run command (the rest of the line) using shell
+# b, break = stop here (continue rebase later with 'git rebase --continue')
+# d, drop <commit> = remove commit
+# l, label <label> = label current HEAD with a name
+# t, reset <label> = reset HEAD to a label
+# m, merge [-C <commit> | -c <commit>] <label> [# <oneline>]
+#         create a merge commit using the original merge commit's
+#         message (or the oneline, if no original merge commit was
+#         specified); use -c <commit> to reword the commit message
+# u, update-ref <ref> = track a placeholder for the <ref> to be updated
+#                       to this position in the new commits. The <ref> is
+#                       updated at the end of the rebase
+#
+# These lines can be re-ordered; they are executed from top to bottom.
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+#
+# However, if you remove everything, the rebase will be aborted.
+#
