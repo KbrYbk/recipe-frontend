@@ -12,7 +12,14 @@ interface Props {
 }
 
 const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg", canonical, noindex = false } = Astro.props;
-const canonicalHref = (canonical ?? "").startsWith("http") ? (canonical as string) : new URL(canonical ?? Astro.url.href, Astro.url).href;
+
+// Формируем чистый канонический URL без слеша на конце
+const canonicalURL = new URL(canonical ?? Astro.url.pathname, Astro.site ?? Astro.url.origin);
+let canonicalHref = canonicalURL.href;
+if (canonicalHref.endsWith('/') && canonicalURL.pathname !== '/') {
+  canonicalHref = canonicalHref.slice(0, -1);
+}
+
 const shareImage = image.startsWith("http") ? image : new URL(image, Astro.url).href;
 ---
 
