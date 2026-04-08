@@ -14,7 +14,7 @@ import { normalizeIngredients } from "../../lib/normalizeIngredients";
 const { id } = Astro.params;
 const cleanId = id?.replace(/^(local-|db-)/, "");
 
-let recipe: Record<string, unknown> | null = null;
+let recipe: any | null = null;
 
 if (id?.startsWith("local-")) {
   const raw = localRecipes.find((r) => String(r.id) === cleanId);
@@ -88,7 +88,7 @@ const jsonLdBreadcrumbs = JSON.stringify({
 });
 ---
 
-<Layout title={pageTitle} description={seoDescription} image={main_image} canonical={canonical} noindex={!recipe}>
+<Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe}>
   {
     !recipe ? (
       <HttpNotFound />
@@ -353,11 +353,11 @@ const jsonLdBreadcrumbs = JSON.stringify({
 
     likeBtn.onclick = async () => {
       if (likedRecipes.includes(recipeId)) return;
-      
+
       const countEl = likeBtn.querySelector(".likes-count");
       const currentCount = parseInt(likeBtn.dataset.count || "0");
       if (countEl) countEl.textContent = String(currentCount + 1);
-      
+
       likeBtn.disabled = true;
       likeBtn.querySelector("svg")?.classList.add("fill-current");
 
@@ -369,7 +369,7 @@ const jsonLdBreadcrumbs = JSON.stringify({
         if (countEl) countEl.textContent = String(currentCount);
         likeBtn.disabled = false;
         likeBtn.querySelector("svg")?.classList.remove("fill-current");
-        
+
         if (res?.status === 403) alert("Вы уже голосовали");
         else if (res?.status === 422) alert("Ошибка валидации (422)");
         else alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
@@ -398,10 +398,10 @@ const jsonLdBreadcrumbs = JSON.stringify({
     stars.forEach((btn) => {
       (btn as HTMLButtonElement).onclick = async () => {
         const rating = parseInt((btn as HTMLElement).dataset.star || "0");
-        
+
         const ip = await fetch("https://api.ipify.org?format=json")
-          .then(r => r.json())
-          .then(d => d.ip)
+          .then((r) => r.json())
+          .then((d) => d.ip)
           .catch(() => "0.0.0.0");
 
         const res = await setRating(recipeId, rating, ip).catch(() => null);
@@ -415,20 +415,6 @@ const jsonLdBreadcrumbs = JSON.stringify({
           if (res?.status === 403) {
             alert("Вы уже голосовали за этот рецепт");
             stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
-          } else if (res?.status === 422) {
-            alert("Ошибка валидации (422)");
-          } else {
-            alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
-          }
-        }
-      };
-    });
-  }
-
-  setupInteractions();
-  document.addEventListener("astro:page-load", setupInteractions);
-</script>
-(s) => ((s as HTMLButtonElement).disabled = true));
           } else if (res?.status === 422) {
             alert("Ошибка валидации (422)");
           } else {
