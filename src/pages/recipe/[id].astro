@@ -88,7 +88,7 @@ const jsonLdBreadcrumbs = JSON.stringify({
 });
 ---
 
-<Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe}>
+<Layout title={pageTitle} description={seoDescription} image={main_image} canonical={canonical} noindex={!recipe}>
   {
     !recipe ? (
       <HttpNotFound />
@@ -415,6 +415,20 @@ const jsonLdBreadcrumbs = JSON.stringify({
           if (res?.status === 403) {
             alert("Вы уже голосовали за этот рецепт");
             stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+          } else if (res?.status === 422) {
+            alert("Ошибка валидации (422)");
+          } else {
+            alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
+          }
+        }
+      };
+    });
+  }
+
+  setupInteractions();
+  document.addEventListener("astro:page-load", setupInteractions);
+</script>
+(s) => ((s as HTMLButtonElement).disabled = true));
           } else if (res?.status === 422) {
             alert("Ошибка валидации (422)");
           } else {
