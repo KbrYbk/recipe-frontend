@@ -81,30 +81,6 @@
   },
   {
     "id": 3,
-    "title": "Сраники с говном",
-    "main_image": "/images/sirnyki.webp",
-    "video_url": null,
-    "description": "Нежные, воздушные сырники с изюмом.",
-    "cooking_time": 20,
-    "difficulty": "easy",
-    "ingredients": [
-      { "name": "Творог", "amount": "500", "unit": "г" },
-      { "name": "Яйцо", "amount": "1", "unit": "шт." }
-    ],
-    "steps": [{ "order": 1, "text": "Смешайте все ингредиенты.", "image": null }],
-    "created_at": "2026-03-30T12:00:00.000000Z",
-    "updated_at": "2026-03-30T12:00:00.000000Z",
-    "category_id": 1,
-    "likes_count": 78,
-    "average_rating": 4.9,
-    "source_url": null,
-    "user": {
-      "id": 1,
-      "name": "БыкОсеменитель"
-    }
-  },
-  {
-    "id": 4,
     "title": "Свиная Башка",
     "main_image": "/images/svinaya-bashka.webp",
     "video_url": "https://www.youtube.com/embed/wv8fx61uNmw?si=9rwGTDDen53sEE13",
@@ -153,7 +129,7 @@
       },
       {
         "order": 7,
-        "text": "Блюдо «Свиная Башка» готово, оно подается с пивом и ржаными гренками. /n Приятного аппетита!",
+        "text": "Блюдо «Свиная Башка» готово, оно подается с пивом и ржаными гренками. Приятного аппетита!",
         "image": null
       }
     ],
