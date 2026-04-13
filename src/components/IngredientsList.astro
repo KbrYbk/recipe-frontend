@@ -15,33 +15,37 @@ interface Props {
 const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 ---
 
-<aside class="lg:sticky lg:top-28 lg:col-span-1" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
-  <div class="border-line bg-card-bg rounded-4xl border p-8 shadow-sm transition-shadow hover:shadow-md">
-    <h2 id={`ingredients-heading-${recipeSlug}`} class="text-text-main mb-6 flex items-center gap-2 text-2xl font-bold">
-      <Icon name="lucide:shopping-basket" class="h-6 w-6 shrink-0" aria-hidden="true" /> Ингредиенты
-    </h2>
-    <ul class="space-y-4">
+<aside class="group lg:sticky lg:top-28 lg:col-span-1" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
+  <div class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm transition-all hover:shadow-lg">
+    <div class="mb-6 flex w-full flex-wrap items-baseline justify-between gap-y-2">
+      <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap">
+        <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" />
+        Ингредиенты
+      </h2>
+      <button data-reset-ingredients={recipeSlug} class="text-text-muted hover:text-brand text-xs font-medium transition-colors"> Сбросить </button>
+    </div>
+
+    <ul class="space-y-3">
       {
         ingredients.map((item, i) => {
           const cbId = `ing-${recipeSlug}-${i}`;
           return (
-            <li class="border-line/50 flex items-start gap-4 border-b pb-3 last:border-0">
+            <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors">
               <div class="flex h-6 shrink-0 items-center">
                 <input
                   id={cbId}
                   type="checkbox"
                   data-ingredient-checkbox
                   data-recipe-slug={recipeSlug}
-                  class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded"
+                  class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded-md transition-all checked:scale-110"
                 />
               </div>
-              <label
-                for={cbId}
-                class="text-text-main flex min-w-0 flex-1 cursor-pointer gap-3 text-base leading-tight md:text-lg"
-              >
-                <span class="min-w-0 flex-1 break-words font-medium">{item.name}</span>
-                {(item.amount || item.unit) && (
-                  <span class="text-text-muted shrink-0 text-right text-sm font-semibold italic"> {item.amount} {item.unit} </span>
+              <label for={cbId} class="flex flex-1 cursor-pointer flex-col select-none">
+                <span class="text-text-main leading-tight font-medium">{item.name}</span>
+                {item.amount && (
+                  <span class="text-text-muted text-xs font-bold italic opacity-80">
+                    {item.amount} {item.unit}
+                  </span>
                 )}
               </label>
             </li>
@@ -50,32 +54,59 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       }
     </ul>
 
-    {ingredients.length === 0 && <p class="text-text-muted text-sm italic">Ингредиенты не указаны</p>}
+    <button
+      data-copy-ingredients
+      class="border-line text-text-main hover:bg-page-bg mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border py-3 text-sm font-semibold transition-all active:scale-95"
+    >
+      <Icon name="lucide:copy" class="h-4 w-4" />
+      Копировать список
+    </button>
   </div>
 </aside>
 
 <script>
-  function initIngredientCheckboxPersistence() {
-    const inputs = Array.from(document.querySelectorAll("[data-ingredient-checkbox]"));
-    if (inputs.length === 0) return;
+  function initIngredients() {
+    const slug = document.querySelector("[data-recipe-slug]")?.getAttribute("data-recipe-slug");
+    const checkboxes = document.querySelectorAll<HTMLInputElement>("[data-ingredient-checkbox]");
+    const resetBtn = document.querySelector(`[data-reset-ingredients="${slug}"]`);
+    const copyBtn = document.querySelector("[data-copy-ingredients]");
 
-    inputs.forEach((node) => {
-      const input = node;
-      if (!(input instanceof HTMLInputElement)) return;
-      if (input.dataset.bound === "1") return;
-      input.dataset.bound = "1";
-      const slug = input.dataset.recipeSlug ?? "recipe";
-      const key = `recipe:ingredients:${slug}:${input.id}`;
+    // Логика чекбоксов (сохранение)
+    checkboxes.forEach((input) => {
+      const key = `recipe:ing:${slug}:${input.id}`;
       input.checked = localStorage.getItem(key) === "1";
+
       input.addEventListener("change", () => {
         localStorage.setItem(key, input.checked ? "1" : "0");
       });
     });
+
+    // Логика сброса
+    resetBtn?.addEventListener("click", () => {
+      checkboxes.forEach((input) => {
+        input.checked = false;
+        localStorage.removeItem(`recipe:ing:${slug}:${input.id}`);
+      });
+    });
+
+    // Логика копирования
+    copyBtn?.addEventListener("click", () => {
+      const text = Array.from(checkboxes)
+        .map((input) => {
+          const label = input.closest("li")?.querySelector("label");
+          return `• ${label?.innerText.replace("\n", " ")}`;
+        })
+        .join("\n");
+
+      navigator.clipboard.writeText(`Ингредиенты:\n${text}`).then(() => {
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = "✅ Скопировано!";
+        setTimeout(() => (copyBtn.innerHTML = originalText), 2000);
+      });
+    });
   }
 
-  initIngredientCheckboxPersistence();
-  if (!window.__ingredientPersistBound) {
-    document.addEventListener("astro:after-swap", initIngredientCheckboxPersistence);
-    window.__ingredientPersistBound = true;
-  }
+  // Запуск
+  initIngredients();
+  document.addEventListener("astro:after-swap", initIngredients);
 </script>
