@@ -22,7 +22,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
         <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" />
         Ингредиенты
       </h2>
-      <button data-reset-ingredients={recipeSlug} class="text-text-muted hover:text-brand text-xs font-medium transition-colors"> Сбросить </button>
+      <button data-reset-ingredients={recipeSlug} class="text-text-muted hover:text-brand text-xs font-medium transition-colors cursor-pointer"> Сбросить </button>
     </div>
 
     <ul class="space-y-3">
