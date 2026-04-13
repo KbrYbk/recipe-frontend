@@ -29,7 +29,6 @@ if (canonicalHref.endsWith("/") && canonicalURL.pathname !== "/") {
 const shareImage = image.startsWith("http") 
   ? image 
   : new URL(image, siteURL).href;
-}
 ---
 
 <!doctype html>
