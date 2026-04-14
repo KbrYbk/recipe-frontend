@@ -26,9 +26,7 @@ if (canonicalHref.endsWith("/") && canonicalURL.pathname !== "/") {
 }
 
 // 4. Формируем абсолютный путь к картинке
-const shareImage = image.startsWith("http") 
-  ? image 
-  : new URL(image, siteURL).href;
+const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).href;
 ---
 
 <!doctype html>
@@ -54,6 +52,7 @@ const shareImage = image.startsWith("http")
     <meta name="twitter:image" content={shareImage} />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="generator" content={Astro.generator} />
     <meta name="yandex-verification" content="e0698217d6d9209f" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
