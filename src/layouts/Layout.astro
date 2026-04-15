@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import CookieConsent from "../components/CookieConsent.astro";
 import { ClientRouter } from "astro:transitions";
 interface Props {
   title: string;
@@ -127,6 +128,7 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
       <slot />
     </main>
     <Footer />
+    <CookieConsent />
     <script>
       // Флаг состояния загрузки
       let isTransitioning = false;
