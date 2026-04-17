@@ -18,12 +18,10 @@ if (!ok && status === 403) {
 }
 
 // Соединяем: если API был успешен, используем его данные. Иначе - локальные.
-const allRecipes = ok 
-  ? (list as any[]).map(mapBackendRecipe) 
-  : localRecipes.map((r) => ({ ...r, id: `local-${r.id}` }));
+const allRecipes = ok ? (list as any[]).map(mapBackendRecipe) : localRecipes.map((r) => ({ ...r, id: `local-${r.id}` }));
 ---
 
-<Layout title="SwagEda — Твоя уютная кухня" description="SwagEda — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов с пошаговыми фото. Найдите идеальный завтрак, обед или ужин в нашем удобном и быстром каталоге.">
+<Layout title="SwagEda — Твоя уютная кухня" description="SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов: от завтраков до ужинов. Готовим просто, вкусно и с любовью.">
   <div class="mx-auto max-w-6xl">
     {
       errorMessage && (
@@ -35,10 +33,11 @@ const allRecipes = ok
     }
 
     <section class="py-12 text-center md:py-16">
-      <h1 class="text-text-main m mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+      <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
         Что <span class="text-brand">приготовим</span> сегодня?
+        <span class="sr-only">Проект СвэгЕда, СвегЕда, СвагЕда, SwagEda — лучшие домашние рецепты пошагово</span>
       </h1>
-      <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">Выбирай из наших лучших рецептов</p>
+      <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.</p>
       <SearchBar />
     </section>
 

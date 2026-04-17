@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import Layout from "../layouts/Layout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import SearchBar from "../components/SearchBar.astro";
 import Pagination from "../components/Pagination.astro";
@@ -93,28 +94,23 @@ const difficultyMap = [
   { label: "Средне", value: "medium" },
   { label: "Сложно", value: "hard" },
 ];
-
-const jsonLdBreadcrumbs = JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Главная", item: new URL("/", Astro.url.origin).href },
-    { "@type": "ListItem", position: 2, name: "Рецепты", item: Astro.url.href },
-  ],
-});
 ---
 
-<Layout title="Все рецепты — SwagEda" description="Огромная коллекция кулинарных рецептов на любой вкус: от простых завтраков до изысканных ужинов. Фильтруйте по категориям и сложности в каталоге SwagEda.">
-  <script type="application/ld+json" set:html={jsonLdBreadcrumbs} slot="head" />
+<Layout
+  title="Все рецепты — SwagEda"
+  description="Огромная коллекция кулинарных рецептов на любой вкус: от простых завтраков до изысканных ужинов. Фильтруйте по категориям и сложности в каталоге SwagEda."
+>
   <div class="mx-auto max-w-6xl px-4">
     <header class="border-line mb-12 border-b py-10 md:py-16">
       <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <nav class="text-text-muted mb-4 flex items-center gap-2 text-sm">
-            <a href="/" class="hover:text-brand transition-colors">Главная</a>
-            <Icon name="lucide:chevron-right" class="h-4 w-4" />
-            <span class="text-text-main font-medium">Все рецепты</span>
-          </nav>
+          {
+            categoryId ? (
+              <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: categories.find((c) => String(c.id) === String(categoryId))?.title || "Категория" }]} />
+            ) : (
+              <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }]} />
+            )
+          }
           <h1 class="text-text-main text-4xl font-bold md:text-5xl">
             Наша <span class="text-brand">коллекция</span>
           </h1>

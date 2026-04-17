@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import localRecipes from "../../data/recipes.json";
 import { Icon } from "astro-icon/components";
 import IngredientsList from "../../components/IngredientsList.astro";
@@ -44,6 +45,17 @@ const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
 const pageTitle = recipe ? `${title} — SwagEda` : "Рецепт не найден — SwagEda";
 const canonical = recipe ? `/recipe/${id}` : "/404";
 const origin = Astro.url.origin;
+// Перед созданием jsonLdRecipe добавим хелпер для абсолютных ссылок
+const toAbsUrl = (url: string) => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  // Берем домен из конфига (https://swageda.ru)
+  const siteUrl = Astro.site ? Astro.site.origin : "https://swageda.ru";
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  const finalPath = cleanPath.startsWith("/api-images") ? cleanPath : `/api-images${cleanPath}`;
+
+  return `${siteUrl}${finalPath}`;
+};
 const jsonLdRecipe =
   recipe &&
   JSON.stringify({
@@ -51,58 +63,92 @@ const jsonLdRecipe =
     "@type": "Recipe",
     name: title,
     description,
-    image: main_image ? [main_image] : [],
-    totalTime: cooking_time ? `PT${cooking_time}M` : undefined,
+    image: main_image ? [toAbsUrl(main_image)] : [],
+    prepTime: recipe.prep_time ? `PT${recipe.prep_time}M` : undefined,
+    cookTime: cooking_time ? `PT${cooking_time}M` : undefined,
+    totalTime: recipe.prep_time || cooking_time ? `PT${(Number(recipe.prep_time) || 0) + cooking_time}M` : undefined,
     recipeIngredient: ingredients.map((i) => `${i.name}${i.amount || i.unit ? ` — ${i.amount ?? ""} ${i.unit ?? ""}`.trim() : ""}`),
     recipeInstructions: steps.map((step, index) => ({
       "@type": "HowToStep",
+      name: `Шаг ${step.order ?? index + 1}`, // Обязательно для карусели
+      url: `${Astro.site?.origin}${canonical}#step-${step.order ?? index + 1}`,
       position: step.order ?? index + 1,
       text: step.text ?? "",
-      image: step.image || undefined,
+      image: step.image ? toAbsUrl(step.image) : undefined,
     })),
+    aggregateRating:
+      recipe.average_rating > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: recipe.average_rating,
+            // Ждем честный ratings_count от бэкенда
+            reviewCount: recipe.ratings_count || recipe.likes_count || 1,
+          }
+        : undefined,
+    author: {
+      "@type": "Person",
+      name: recipe.user?.name || "Команда SwagEda",
+    },
+    recipeCuisine: recipe.cuisine || undefined,
+    recipeYield: recipe.yield ? `${recipe.yield} порции` : "4 порции",
+    nutrition: recipe.calories
+      ? {
+          "@type": "NutritionInformation",
+          calories: `${recipe.calories} kcal`,
+        }
+      : undefined,
+    keywords: recipe.keywords || undefined,
+    datePublished: recipe.created_at,
+    video: video_url
+      ? {
+          "@type": "VideoObject",
+          name: title,
+          description: description,
+          thumbnailUrl: [toAbsUrl(main_image)],
+          contentUrl: video_url,
+          uploadDate: recipe.created_at,
+        }
+      : undefined,
   });
-
-const jsonLdBreadcrumbs = JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    {
-      "@type": "ListItem",
-      position: 1,
-      name: "Главная",
-      item: new URL("/", origin).href,
-    },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Рецепты",
-      item: new URL("/recipes", origin).href,
-    },
-    {
-      "@type": "ListItem",
-      position: 3,
-      name: title,
-      item: Astro.url.href,
-    },
-  ],
-});
+// Формируем объект для мета-тегов
+const recipeMeta = recipe
+  ? {
+      publishDate: recipe.created_at || recipe.updated_at,
+      category: typeof recipe.category === "object" ? recipe.category.title : recipe.category,
+      author: recipe.user?.name,
+    }
+  : undefined;
 ---
 
-<Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe}>
+<Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe} ogType="article" recipeData={recipeMeta}>
   {
     !recipe ? (
       <HttpNotFound />
     ) : (
       <article class="mx-auto max-w-4xl px-4 py-8 md:py-12">
         {jsonLdRecipe && <script type="application/ld+json" set:html={jsonLdRecipe} />}
-        {jsonLdBreadcrumbs && <script type="application/ld+json" set:html={jsonLdBreadcrumbs} />}
-        <nav class="no-print mb-8" aria-label="Навигация по разделу">
-          {" "}
-          <a href="/recipes" class="group text-brand inline-flex items-center font-bold">
-            <Icon name="lucide:arrow-left" class="mr-2 h-5 w-5 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
-            Назад к рецептам
+
+        <div class="no-print mb-8">
+          <Breadcrumbs
+            items={[
+              { name: "Рецепты", href: "/recipes" },
+              ...(recipe.category
+                ? [
+                    {
+                      name: typeof recipe.category === "object" ? recipe.category.title : recipe.category,
+                      href: `/recipes?categoryId=${recipe.category_id || recipe.category?.id}`,
+                    },
+                  ]
+                : []),
+              { name: title, href: canonical },
+            ]}
+          />
+
+          <a href="/recipes" class="group text-brand mt-4 inline-flex items-center text-sm font-bold">
+            <Icon name="lucide:arrow-left" class="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
+            Назад к списку
           </a>
-        </nav>
+        </div>
 
         <header class="mb-12">
           <h1 class="text-text-main mb-6 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
@@ -184,6 +230,7 @@ const jsonLdBreadcrumbs = JSON.stringify({
               data-zoomable
               class="image-zoom h-full w-full object-cover"
               loading="eager"
+              fetchpriority="high"
               decoding="async"
               style={`view-transition-name: recipe-image-${id}`}
             />

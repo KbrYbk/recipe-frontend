@@ -1,0 +1,62 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface BreadcrumbItem {
+  name: string;
+  href?: string;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+}
+
+const { items } = Astro.props;
+
+// 1. Более надежное получение origin
+const siteOrigin = Astro.site?.origin || "https://swageda.ru";
+const safeOrigin = siteOrigin.replace(/\/$/, "");
+
+// 2. Формируем список элементов, включая "Главную", для SEO
+// Яндекс и Google любят, когда "Главная" тоже есть в JSON-LD
+const fullItems = [{ name: "Главная", href: "/" }, ...items];
+
+const breadcrumbList = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: fullItems.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    // Используем URL constructor для гарантии абсолютного пути
+    item: new URL(item.href || "", safeOrigin).href,
+  })),
+};
+
+const jsonLd = JSON.stringify(breadcrumbList);
+---
+
+<script type="application/ld+json" set:html={jsonLd} is:inline />
+
+<nav aria-label="Хлебные крошки" class="no-print text-text-muted flex items-center gap-2 text-sm">
+  <a href="/" class="hover:text-brand transition-colors">Главная</a>
+
+  {
+    items.map((item, index) => {
+      const isLast = index === items.length - 1;
+      return (
+        <>
+          <Icon name="lucide:chevron-right" class="h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />
+          {isLast ? (
+            <span class="text-text-main font-medium" aria-current="page">
+              {item.name}
+            </span>
+          ) : (
+            <a href={item.href} class="hover:text-brand transition-colors">
+              {item.name}
+            </a>
+          )}
+        </>
+      );
+    })
+  }
+</nav>

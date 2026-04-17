@@ -10,9 +10,16 @@ interface Props {
   image?: string;
   canonical?: string;
   noindex?: boolean;
+  ogType?: "website" | "article";
+  // Добавляем пропс для данных рецепта
+  recipeData?: {
+    publishDate?: string;
+    category?: string;
+    author?: string;
+  };
 }
 
-const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg", canonical, noindex = false } = Astro.props;
+const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg", canonical, noindex = false, ogType = "website", recipeData } = Astro.props;
 
 // 1. Сначала определяем базовый URL сайта (из конфига или текущего окружения)
 const siteURL = Astro.site ? Astro.site.origin : Astro.url.origin;
@@ -38,19 +45,32 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="keywords" content="рецепты, кулинария, свэгеда, свегеда, свагеда, SwagEda, вкусные рецепты, быстрые рецепты, пошаговые рецепты, домашняя кухня" />
     <link rel="canonical" href={canonicalHref} />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalHref} />
-    <meta property="og:site_name" content="РецептыДома" />
+    <meta property="og:site_name" content="SwagEda — Рецепты" />
     <meta property="og:image" content={shareImage} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImage} />
+
+    {
+      ogType === "article" && recipeData && (
+        <>
+          {recipeData.publishDate && <meta property="article:published_time" content={recipeData.publishDate} />}
+          {recipeData.author && <meta property="article:author" content={recipeData.author} />}
+          {recipeData.category && <meta property="article:section" content={recipeData.category} />}
+          <meta property="article:tag" content="Рецепты" />
+          <meta property="article:tag" content="Кулинария" />
+        </>
+      )
+    }
 
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
