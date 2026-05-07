@@ -24,6 +24,27 @@ export function toImageProxyUrl(path: string | undefined | null): string | undef
   return path;
 }
 
+/** Получение коллекции рецептов (breakfast, lunch, dinner, bakery) */
+export async function fetchCollectionFromApi(type: string, page: number = 1) {
+  const { base } = getApiConfig();
+  const apiPath = base.endsWith("/api") ? "" : "/api";
+  const url = `${base}${apiPath}/getRecipes/collection/${type}/${page}`;
+
+  try {
+    const response = await fetch(url, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
+    if (!response.ok) return { list: [], ok: false };
+    const result = await response.json();
+    const list = Array.isArray(result.data?.data) ? result.data.data : Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
+    const total = result.data?.total || list.length || 0;
+    const perPage = result.data?.per_page || 20;
+    const totalPages = result.data?.last_page || Math.ceil(total / perPage) || 1;
+    return { list, total, totalPages, ok: true };
+  } catch (e) {
+    console.error(`❌ Collection API Error (${type}):`, e);
+    return { list: [], ok: false };
+  }
+}
+
 /** Получение списка рецептов (Поиск, Категории, Пагинация, Сложность) */
 export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: number | string; page?: number; difficulty?: string; limit?: number } = {}) {
   const { base } = getApiConfig();

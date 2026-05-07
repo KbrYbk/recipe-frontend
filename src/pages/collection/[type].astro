@@ -1,0 +1,65 @@
+---
+export const prerender = false;
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import RecipeCard from "../../components/RecipeCard.astro";
+import Pagination from "../../components/Pagination.astro";
+import { fetchCollectionFromApi, mapBackendRecipe } from "../../lib/api/recipes";
+
+const { type } = Astro.params;
+const currentPage = parseInt(Astro.url.searchParams.get("page") || "1");
+
+const typeNames: Record<string, string> = {
+  breakfast: "Завтраки",
+  lunch: "Обеды",
+  dinner: "Ужины",
+  bakery: "Выпечка",
+};
+
+const title = typeNames[type as string] || "Коллекция рецептов";
+
+const { list, total = 0, totalPages = 1, ok } = await fetchCollectionFromApi(type as string, currentPage);
+
+const recipes = (list || []).map(mapBackendRecipe);
+
+// Универсальный хелпер ссылок для пагинации коллекций
+function collectionHref(page: number) {
+  const p = new URLSearchParams();
+  p.set("page", String(page));
+  const s = p.toString();
+  return s ? `/collection/${type}?${s}` : `/collection/${type}`;
+}
+
+// Для SEO
+const description = `Лучшие рецепты в категории ${title.toLowerCase()} на SwagEda. Пошаговые инструкции и фото.`;
+---
+
+<Layout title={`${title} — SwagEda`} description={description}>
+  <div class="mx-auto max-w-6xl px-4">
+    <header class="border-line mb-12 border-b py-10 md:py-16">
+      <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: title }]} />
+      <h1 class="text-text-main mt-4 text-4xl font-bold md:text-5xl">
+        <span class="text-brand">{title}</span>
+      </h1>
+      <p class="text-text-muted mt-4 text-lg">
+        {total > 0 ? `Наша подборка вкусных идей для раздела "${title.toLowerCase()}". Показано ${recipes.length} из ${total} рецептов.` : "К сожалению, в этой коллекции пока нет рецептов."}
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {recipes.map((recipe) => <RecipeCard recipe={recipe} />)}
+    </div>
+
+    {recipes.length === 0 && !ok && (
+      <div class="py-20 text-center">
+        <p class="text-text-muted">Не удалось загрузить коллекцию. Пожалуйста, попробуйте позже.</p>
+      </div>
+    )}
+    
+    {totalPages > 1 && recipes.length > 0 && (
+      <div class="mt-12">
+        <Pagination currentPage={currentPage} totalPages={totalPages} baseUrlFunc={(p) => collectionHref(p)} />
+      </div>
+    )}
+  </div>
+</Layout>

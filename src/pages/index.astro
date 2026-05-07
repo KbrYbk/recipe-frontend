@@ -4,10 +4,28 @@ import SearchBar from "../components/SearchBar.astro";
 import CategoryCard from "../components/CategoryCard.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import localRecipes from "../data/recipes.json";
-import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
+import { fetchRecipesFromApi, mapBackendRecipe, fetchCollectionFromApi } from "../lib/api/recipes";
 
 let errorMessage = "";
-const { list, ok, status } = await fetchRecipesFromApi({ limit: 3 });
+
+const COLLECTION_CONFIG = [
+  { id: "breakfast", title: "Завтраки", icon: "lucide:coffee" },
+  { id: "lunch", title: "Обеды", icon: "lucide:soup" },
+  { id: "dinner", title: "Ужины", icon: "lucide:drumstick" },
+  { id: "bakery", title: "Выпечка", icon: "lucide:croissant" },
+];
+
+// Загружаем популярные и все коллекции параллельно
+const [popularRes, ...collectionResults] = await Promise.all([
+  fetchRecipesFromApi({ limit: 3 }),
+  ...COLLECTION_CONFIG.map(c => fetchCollectionFromApi(c.id))
+]);
+
+console.log('DEBUG: popularRes', popularRes);
+console.log('DEBUG: collectionResults', collectionResults);
+
+const ok = popularRes.ok;
+const status = popularRes.status;
 
 if (!ok && status === 403) {
   errorMessage = "Бэкенд: доступ запрещен (IP Whitelist). Покажу только локальные рецепты.";
@@ -17,12 +35,23 @@ if (!ok && status === 403) {
   errorMessage = "Бэкенд недоступен. Использую резервные данные.";
 }
 
-// Соединяем: если API был успешен, используем его данные. Иначе - локальные.
-const allRecipes = ok ? (list as any[]).map(mapBackendRecipe) : localRecipes.map((r) => ({ ...r, id: `local-${r.id}` }));
+console.log('DEBUG: errorMessage', errorMessage);
+
+// Популярные рецепты
+const popularRecipes = ok ? (popularRes.list as any[]).map(mapBackendRecipe) : localRecipes.slice(0, 3).map((r) => ({ ...r, id: `local-${r.id}` }));
+console.log('DEBUG: popularRecipes (processed)', popularRecipes);
+
+// Обрабатываем коллекции
+const collections = COLLECTION_CONFIG.map((config, index) => {
+  const res = collectionResults[index];
+  const recipes = (res.list || []).slice(0, 3).map(mapBackendRecipe);
+  return { ...config, recipes };
+}).filter(c => c.recipes.length > 0);
+
 ---
 
 <Layout title="SwagEda — Твоя уютная кухня" description="SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов: от завтраков до ужинов. Готовим просто, вкусно и с любовью.">
-  <div class="mx-auto max-w-6xl">
+  <div class="mx-auto max-w-6xl px-4">
     {
       errorMessage && (
         <div class="my-8 rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
@@ -44,10 +73,9 @@ const allRecipes = ok ? (list as any[]).map(mapBackendRecipe) : localRecipes.map
     <section aria-labelledby="categories-heading" class="mb-12">
       <h2 id="categories-heading" class="sr-only">Популярные категории</h2>
       <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-        <CategoryCard iconName="lucide:coffee" title="Завтраки" href="/recipes?category=breakfast" />
-        <CategoryCard iconName="lucide:soup" title="Обеды" href="/recipes?category=lunch" />
-        <CategoryCard iconName="lucide:drumstick" title="Ужины" href="/recipes?category=dinner" />
-        <CategoryCard iconName="lucide:croissant" title="Выпечка" href="/recipes?category=bakery" />
+        {COLLECTION_CONFIG.map(c => (
+          <CategoryCard iconName={c.icon} title={c.title} href={`/collection/${c.id}`} />
+        ))}
       </div>
     </section>
 
@@ -61,8 +89,10 @@ const allRecipes = ok ? (list as any[]).map(mapBackendRecipe) : localRecipes.map
       </div>
 
       <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {allRecipes.map((recipe) => <RecipeCard recipe={recipe} />)}
+        {popularRecipes.map((recipe) => <RecipeCard recipe={recipe} />)}
       </div>
     </section>
+
+
   </div>
 </Layout>
