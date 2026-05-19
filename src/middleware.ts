@@ -4,63 +4,77 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url, request } = context;
 
   if (url.pathname.startsWith("/sitemap")) {
-    const backendUrl = `/api${url.pathname}${url.search}`;
+    const rawUrls = import.meta.env.PUBLIC_BACKEND_URLS;
+    const backendBaseUrls = rawUrls ? String(rawUrls).split(',').map(url => url.replace(/\/$/, "").trim()) : [
+      String(import.meta.env.API_BASE_URL || "").replace(/\/$/, "")
+    ];
 
-    const headersToSend = new Headers();
-    
-    // 1. Копируем заголовки от клиента, исключая служебные
-    for (const [key, value] of request.headers.entries()) {
-      const lowerKey = key.toLowerCase();
-      if (!['connection', 'upgrade', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer', 'transfer-encoding', 'host', 'cookie'].includes(lowerKey)) {
-        headersToSend.set(key, value);
+    let finalResponse: Response | undefined;
+
+    for (const base of backendBaseUrls) {
+      const backendUrl = `${base}/api${url.pathname}${url.search}`;
+      const headersToSend = new Headers();
+      
+      // 1. Копируем заголовки от клиента, исключая служебные
+      for (const [key, value] of request.headers.entries()) {
+        const lowerKey = key.toLowerCase();
+        if (!['connection', 'upgrade', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer', 'transfer-encoding', 'host', 'cookie'].includes(lowerKey)) {
+          headersToSend.set(key, value);
+        }
+      }
+
+      // 2. Устанавливаем Host бэкенда
+      try {
+          const backendHost = new URL(backendUrl).host;
+          headersToSend.set('Host', backendHost);
+      } catch (e) {
+          console.warn(`Invalid backend URL ${backendUrl}. Trying next fallback.`, e);
+          continue;
+      }
+
+      // 3. Добавляем X-Forwarded-For
+      const xForwardedFor = request.headers.get('x-forwarded-for') || request.headers.get('remote_addr');
+      if (xForwardedFor) {
+          headersToSend.set('X-Forwarded-For', xForwardedFor);
+      }
+
+      // 4. ГЛАВНОЕ: Добавляем ваш секретный ключ проекта, который используется в приложении
+      // Имя заголовка из src/lib/api/recipes.ts: X-Project-Key-ass
+      // Ключ из переменной окружения PROJECT_KEY
+      const projectKey = import.meta.env.PROJECT_KEY;
+      if (projectKey) {
+          headersToSend.set('X-Project-Key-ass', String(projectKey));
+      }
+
+      try {
+        const response = await fetch(backendUrl, {
+          method: request.method,
+          headers: headersToSend,
+        });
+
+        if (response.ok) {
+          finalResponse = response;
+          break; // Success, break out of fallback loop
+        } else {
+          console.warn(`[Sitemap Proxy Error]: Attempt failed for ${backendUrl} with status ${response.status}. Trying next fallback.`);
+          try {
+            const errorBody = await response.text();
+            console.warn("[Sitemap Proxy Error] Backend response body:", errorBody);
+          } catch (e) {}
+        }
+      } catch (error) {
+        console.error(`[Sitemap Proxy Error]: Fetch failed for ${backendUrl}. Trying next fallback:`, error);
       }
     }
 
-    // 2. Устанавливаем Host бэкенда
-    try {
-        const backendHost = new URL(backendUrl).host;
-        headersToSend.set('Host', backendHost);
-    } catch (e) {
-        return new Response("Invalid backend URL", { status: 500 });
-    }
-
-    // 3. Добавляем X-Forwarded-For
-    const xForwardedFor = request.headers.get('x-forwarded-for') || request.headers.get('remote_addr');
-    if (xForwardedFor) {
-        headersToSend.set('X-Forwarded-For', xForwardedFor);
-    }
-
-    // 4. ГЛАВНОЕ: Добавляем ваш секретный ключ проекта, который используется в приложении
-    // Имя заголовка из src/lib/api/recipes.ts: X-Project-Key-ass
-    // Ключ из переменной окружения PROJECT_KEY
-    const projectKey = import.meta.env.PROJECT_KEY;
-    if (projectKey) {
-        headersToSend.set('X-Project-Key-ass', String(projectKey));
-    }
-
-    try {
-      const response = await fetch(backendUrl, {
-        method: request.method,
-        headers: headersToSend,
+    if (finalResponse) {
+      return new Response(finalResponse.body, {
+        status: finalResponse.status,
+        statusText: finalResponse.statusText,
+        headers: finalResponse.headers,
       });
-
-      if (!response.ok) {
-        console.error(`[Sitemap Proxy Error]: Backend responded with status ${response.status}`);
-        try {
-          const errorBody = await response.text();
-          console.error("[Sitemap Proxy Error] Backend response body:", errorBody);
-        } catch (e) {}
-        return new Response(`Sitemap Proxy Error: ${response.status}`, { status: response.status });
-      }
-
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-      });
-    } catch (error) {
-      console.error("[Sitemap Proxy Error]: Fetch failed:", error);
-      return new Response("Sitemap Proxy Error: Could not reach backend.", { status: 502 });
+    } else {
+      return new Response("Sitemap Proxy Error: All backend URLs failed to respond successfully.", { status: 502 });
     }
   }
 
