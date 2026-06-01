@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">✨ <a href="https://swageda.ru/">Live Demo</a></p>
+
 [![Astro](https://img.shields.io/badge/Astro-6.0+-FF5D01?style=for-the-badge&logo=astro&logoColor=white)](https://astro.build)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
