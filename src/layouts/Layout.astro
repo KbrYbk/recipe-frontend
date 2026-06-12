@@ -171,31 +171,6 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
 
     <script is:inline>
       window.yaContextCb = window.yaContextCb || [];
-
-      function initFullscreenAd() {
-        window.yaContextCb.push(() => {
-          if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
-            // Полноэкранный блок (Fullscreen)
-            window.Ya.Context.AdvManager.render({
-              blockId: "R-A-19056160-20",
-              type: "fullscreen",
-              platform: "touch",
-            });
-
-            // Floor Ad (Липкий блок внизу экрана на мобильных)
-            window.Ya.Context.AdvManager.render({
-              blockId: "R-A-19056160-21",
-              type: "floorAd",
-              platform: "touch",
-            });
-          }
-        });
-      }
-
-      // Запуск при первой загрузке
-      initFullscreenAd();
-      // Перезапуск при переходах между страницами
-      document.addEventListener("astro:page-load", initFullscreenAd);
     </script>
     <ClientRouter />
   </head>
