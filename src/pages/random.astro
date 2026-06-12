@@ -1,9 +1,28 @@
 ---
-import recipes from "../data/recipes.json";
+import localRecipes from "../data/recipes.json";
+import { fetchRecipesFromApi } from "../lib/api/recipes";
 
-// Выбираем случайный рецепт
-const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+// Получаем общее количество рецептов, не загружая все данные.
+const { total: dbTotal } = await fetchRecipesFromApi({ limit: 1 });
+
+// Генерируем случайный выбор: либо локальный, либо из БД
+const isLocal = Math.random() < (localRecipes.length / (localRecipes.length + dbTotal));
+
+let finalUrl = "/recipes";
+
+if (isLocal && localRecipes.length > 0) {
+  const randomLocal = localRecipes[Math.floor(Math.random() * localRecipes.length)];
+  finalUrl = `/recipe/local-${randomLocal.id}`;
+} else if (dbTotal > 0) {
+  // Выбираем случайную страницу
+  const randomPage = Math.floor(Math.random() * Math.ceil(dbTotal / 20)) + 1;
+  const { list } = await fetchRecipesFromApi({ page: randomPage, limit: 20 });
+  
+  if (list.length > 0) {
+    const randomDb = list[Math.floor(Math.random() * list.length)];
+    finalUrl = `/recipe/db-${randomDb.id}`;
+  }
+}
+
+return Astro.redirect(finalUrl);
 ---
-
-<!-- Redirect to the random recipe page -->
-<meta http-equiv="refresh" content="0;url=/recipe/{randomRecipe.id}" />
