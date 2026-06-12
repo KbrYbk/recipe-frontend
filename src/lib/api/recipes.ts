@@ -27,10 +27,10 @@ async function fetchWithFallback(path: string, options: RequestInit = {}): Promi
       if (response.ok) {
         return response;
       } else {
-        console.warn(`Attempt failed for ${url} with status ${response.status}. Trying next fallback.`);
+        if (import.meta.env.DEV) console.warn(`Attempt failed for ${url} with status ${response.status}. Trying next fallback.`);
       }
     } catch (e) {
-      console.error(`Network error for ${url}. Trying next fallback:`, e);
+      if (import.meta.env.DEV) console.error(`Network error for ${url}. Trying next fallback:`, e);
     }
   }
   throw new Error("All backend URLs failed to respond successfully.");
@@ -57,7 +57,7 @@ export async function fetchCollectionFromApi(type: string, page: number = 1) {
     const totalPages = result.data?.last_page || Math.ceil(total / perPage) || 1;
     return { list, total, totalPages, ok: true };
   } catch (e) {
-    console.error(`❌ Collection API Error (${type}):`, e);
+    if (import.meta.env.DEV) console.error(`❌ Collection API Error (${type}):`, e);
     return { list: [], ok: false };
   }
 }
@@ -99,7 +99,7 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
 
     return { list, total, totalPages, ok: true, status: response.status };
   } catch (e) {
-    console.error("❌ API Error:", e);
+    if (import.meta.env.DEV) console.error("❌ API Error:", e);
     return { list: [], total: 0, totalPages: 1, ok: false, status: 0 };
   }
 }
@@ -133,7 +133,7 @@ export async function fetchRecipeById(id: string | number) {
     const result = await response.json();
     return { item: result.data || result, ok: true };
   } catch (e) {
-    console.error(`❌ Ошибка загрузки рецепта ${id}:`, e);
+    if (import.meta.env.DEV) console.error(`❌ Ошибка загрузки рецепта ${id}:`, e);
     return { item: null, ok: false };
   }
 }
@@ -157,7 +157,7 @@ export async function fetchSitemapIds(limit: number = 15000) {
   const path = `/getRecipes/value/${limit}`;
 
   try {
-    console.log(`🔗 Requesting API: ${path}`);
+    if (import.meta.env.DEV) console.log(`🔗 Requesting API: ${path}`);
     const response = await fetchWithFallback(path);
     
     if (!response.ok) return { list: [], total: 0 };
@@ -172,7 +172,7 @@ export async function fetchSitemapIds(limit: number = 15000) {
       total: list.length 
     };
   } catch (e) {
-    console.error("Sitemap API Error:", e);
+    if (import.meta.env.DEV) console.error("Sitemap API Error:", e);
     return { list: [], total: 0 };
   }
 }

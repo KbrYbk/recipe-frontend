@@ -12,6 +12,7 @@ import { Icon } from "astro-icon/components";
     <!-- Desktop Navigation -->
     <nav class="hidden items-center gap-8 md:flex" aria-label="Основная навигация">
       <a href="/recipes" class="text-text-main hover:text-brand font-medium transition-colors">Все рецепты</a>
+      <a href="/favorites" class="text-text-main hover:text-brand font-medium transition-colors">Избранное</a>
       
       <div class="bg-line h-6 w-px"></div>
 
@@ -37,77 +38,16 @@ import { Icon } from "astro-icon/components";
         <Icon name="lucide:moon" class="theme-icon-moon h-6 w-6" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-6 w-6" aria-hidden="true" />
       </button>
-
-      <button
-        type="button"
-        id="mobileMenuBtn"
-        class="text-text-main flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-95"
-        aria-expanded="false"
-        aria-controls="mobileMenu"
-        aria-label="Открыть меню"
-      >
-        <Icon name="lucide:menu" class="menu-icon-open h-7 w-7" aria-hidden="true" />
-        <Icon name="lucide:x" class="menu-icon-close hidden h-7 w-7" aria-hidden="true" />
-      </button>
     </div>
-  </div>
-
-  <!-- Mobile Menu Overlay -->
-  <div
-    id="mobileMenu"
-    class="border-line bg-card-bg/95 invisible absolute top-full left-0 w-full border-b opacity-0 transition-all duration-300 backdrop-blur-lg md:hidden"
-    role="dialog"
-    aria-modal="true"
-    aria-label="Мобильное меню"
-  >
-    <nav class="flex flex-col p-6 gap-6">
-      <a href="/recipes" class="text-text-main text-lg font-bold hover:text-brand transition-colors">Все рецепты</a>
-      <a href="/recipes?category=breakfast" class="text-text-muted hover:text-brand flex items-center gap-3 transition-colors">
-        <Icon name="lucide:coffee" class="h-5 w-5" /> Завтраки
-      </a>
-      <a href="/recipes?category=lunch" class="text-text-muted hover:text-brand flex items-center gap-3 transition-colors">
-        <Icon name="lucide:soup" class="h-5 w-5" /> Обеды
-      </a>
-      <a href="/recipes?category=dinner" class="text-text-muted hover:text-brand flex items-center gap-3 transition-colors">
-        <Icon name="lucide:drumstick" class="h-5 w-5" /> Ужины
-      </a>
-    </nav>
   </div>
 </header>
 
 <style>
-  #mobileMenu.is-open {
-    visibility: visible;
-    opacity: 1;
-    transform: translateY(0);
-  }
-  #mobileMenu:not(.is-open) {
-    transform: translateY(-10px);
-  }
 </style>
 
 <script>
   function setupHeader() {
-    const mobileBtn = document.getElementById("mobileMenuBtn");
-    const mobileMenu = document.getElementById("mobileMenu");
     const themeBtns = document.querySelectorAll("#themeToggle, #themeToggleMobile");
-    const openIcon = mobileBtn?.querySelector(".menu-icon-open");
-    const closeIcon = mobileBtn?.querySelector(".menu-icon-close");
-
-    if (!mobileBtn || !mobileMenu) return;
-
-    // Toggle Mobile Menu
-    const toggleMenu = (force?: boolean) => {
-      const isOpen = force ?? !mobileMenu.classList.contains("is-open");
-      mobileMenu.classList.toggle("is-open", isOpen);
-      mobileBtn.setAttribute("aria-expanded", String(isOpen));
-      mobileBtn.setAttribute("aria-label", isOpen ? "Закрыть меню" : "Открыть меню");
-      openIcon?.classList.toggle("hidden", isOpen);
-      closeIcon?.classList.toggle("hidden", !isOpen);
-      document.body.style.overflow = isOpen ? "hidden" : "";
-    };
-
-    mobileBtn.addEventListener("click", () => toggleMenu());
 
     // Theme logic
     const toggleTheme = () => {
@@ -116,18 +56,6 @@ import { Icon } from "astro-icon/components";
     };
 
     themeBtns.forEach(btn => btn.addEventListener("click", toggleTheme));
-
-    // Close menu on link click (for SPA navigation)
-    mobileMenu.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", () => toggleMenu(false));
-    });
-
-    // Close on Escape
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && mobileMenu.classList.contains("is-open")) {
-        toggleMenu(false);
-      }
-    });
   }
 
   setupHeader();

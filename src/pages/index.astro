@@ -22,9 +22,6 @@ const [popularRes, ...collectionResults] = await Promise.all([
   ...COLLECTION_CONFIG.map(c => fetchCollectionFromApi(c.id))
 ]);
 
-console.log('DEBUG: popularRes', popularRes);
-console.log('DEBUG: collectionResults', collectionResults);
-
 const ok = popularRes.ok;
 const status = popularRes.status;
 
@@ -36,11 +33,8 @@ if (!ok && status === 403) {
   errorMessage = "Бэкенд недоступен. Использую резервные данные.";
 }
 
-console.log('DEBUG: errorMessage', errorMessage);
-
 // Популярные рецепты
 const popularRecipes = ok ? (popularRes.list as any[]).map(mapBackendRecipe) : localRecipes.slice(0, 3).map((r) => ({ ...r, id: `local-${r.id}` }));
-console.log('DEBUG: popularRecipes (processed)', popularRecipes);
 
 // Обрабатываем коллекции
 const collections = COLLECTION_CONFIG.map((config, index) => {

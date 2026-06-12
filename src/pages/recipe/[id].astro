@@ -168,7 +168,7 @@ const recipeMeta = recipe
                 </span>
               )}
 
-              <button
+              {/* <button
                 type="button"
                 id="likeBtn"
                 data-id={id}
@@ -177,6 +177,16 @@ const recipeMeta = recipe
               >
                 <Icon name="lucide:heart" class="heart-icon h-5 w-5 shrink-0" />
                 <span class="likes-count tabular-nums">{recipe?.likes_count || 0}</span>
+              </button> */}
+
+              <button
+                type="button"
+                id="favoriteBtn"
+                data-id={id}
+                class="bg-card-bg border-line text-text-main flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition-all hover:text-brand hover:border-brand active:scale-95"
+              >
+                <Icon name="lucide:bookmark" class="bookmark-icon h-5 w-5 shrink-0" />
+                <span>Избранное</span>
               </button>
 
               <div
@@ -202,8 +212,9 @@ const recipeMeta = recipe
             <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
               <button
                 type="button"
-                onclick="window.print()"
+                onClick={() => window.print()}
                 class="bg-card-bg border-line text-text-main hover:border-brand no-print flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border px-5 py-2 text-sm font-medium transition-all active:scale-95 sm:flex-initial"
+                aria-label="Печать рецепта"
               >
                 <Icon name="lucide:printer" class="h-4 w-4 shrink-0" />
                 <span>Печать</span>
@@ -358,7 +369,7 @@ const recipeMeta = recipe
           alert("Ссылка скопирована!");
         }
       } catch (err) {
-        console.error(err);
+        if (import.meta.env.DEV) console.error(err);
       }
     });
   }
@@ -369,89 +380,127 @@ const recipeMeta = recipe
 
   function setupInteractions() {
     const likeBtn = document.getElementById("likeBtn") as HTMLButtonElement;
+    const favBtn = document.getElementById("favoriteBtn") as HTMLButtonElement;
     const ratingContainer = document.getElementById("ratingStars");
-    const recipeId = likeBtn?.dataset.id;
-    if (!likeBtn || !ratingContainer || !recipeId) return;
+    const recipeId = (likeBtn || favBtn || ratingContainer)?.dataset?.id;
+    if (!recipeId) return;
+
+    // Favorites logic
+    if (favBtn) {
+      const favorites = JSON.parse(localStorage.getItem("swageda_favorites") || "[]");
+      const isFav = favorites.includes(recipeId);
+      
+      if (isFav) {
+        favBtn.classList.add("text-brand", "border-brand");
+        const span = favBtn.querySelector("span");
+        if (span) span.textContent = "В избранном";
+        favBtn.querySelector("svg")?.classList.add("fill-current");
+      }
+
+      favBtn.onclick = () => {
+        const currentFavs = JSON.parse(localStorage.getItem("swageda_favorites") || "[]");
+        const index = currentFavs.indexOf(recipeId);
+        
+        if (index > -1) {
+          currentFavs.splice(index, 1);
+          favBtn.classList.remove("text-brand", "border-brand");
+          const span = favBtn.querySelector("span");
+          if (span) span.textContent = "В избранное";
+          favBtn.querySelector("svg")?.classList.remove("fill-current");
+        } else {
+          currentFavs.push(recipeId);
+          favBtn.classList.add("text-brand", "border-brand");
+          const span = favBtn.querySelector("span");
+          if (span) span.textContent = "В избранном";
+          favBtn.querySelector("svg")?.classList.add("fill-current");
+        }
+        localStorage.setItem("swageda_favorites", JSON.stringify(currentFavs));
+      };
+    }
 
     // Likes
-    const likedRecipes = JSON.parse(localStorage.getItem("liked_recipes") || "[]");
-    if (likedRecipes.includes(recipeId)) {
-      likeBtn.disabled = true;
-      likeBtn.querySelector("svg")?.classList.add("fill-current");
-    }
-
-    likeBtn.onclick = async () => {
-      if (likedRecipes.includes(recipeId)) return;
-
-      const countEl = likeBtn.querySelector(".likes-count");
-      const currentCount = parseInt(likeBtn.dataset.count || "0");
-      if (countEl) countEl.textContent = String(currentCount + 1);
-
-      likeBtn.disabled = true;
-      likeBtn.querySelector("svg")?.classList.add("fill-current");
-
-      const res = await incrementLike(recipeId).catch(() => null);
-      if (res?.ok) {
-        likedRecipes.push(recipeId);
-        localStorage.setItem("liked_recipes", JSON.stringify(likedRecipes));
-      } else {
-        if (countEl) countEl.textContent = String(currentCount);
-        likeBtn.disabled = false;
-        likeBtn.querySelector("svg")?.classList.remove("fill-current");
-
-        if (res?.status === 403) alert("Вы уже голосовали");
-        else if (res?.status === 422) alert("Ошибка валидации (422)");
-        else alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
+    if (likeBtn) {
+      const likedRecipes = JSON.parse(localStorage.getItem("liked_recipes") || "[]");
+      if (likedRecipes.includes(recipeId)) {
+        likeBtn.disabled = true;
+        likeBtn.querySelector("svg")?.classList.add("fill-current");
       }
-    };
 
-    // Rating
-    const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
-    const userRating = myRatings[recipeId];
-    const stars = ratingContainer.querySelectorAll(".star-btn");
+      likeBtn.onclick = async () => {
+        if (likedRecipes.includes(recipeId)) return;
 
-    const updateStarsUI = (val: number) => {
-      stars.forEach((s) => {
-        const starNum = parseInt((s as HTMLElement).dataset.star || "0");
-        const svg = s.querySelector("svg");
-        if (starNum <= val) svg?.classList.add("fill-current");
-        else svg?.classList.remove("fill-current");
-      });
-    };
+        const countEl = likeBtn.querySelector(".likes-count");
+        const currentCount = parseInt(likeBtn.dataset.count || "0");
+        if (countEl) countEl.textContent = String(currentCount + 1);
 
-    if (userRating) {
-      updateStarsUI(userRating);
-      stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
-    }
+        likeBtn.disabled = true;
+        likeBtn.querySelector("svg")?.classList.add("fill-current");
 
-    stars.forEach((btn) => {
-      (btn as HTMLButtonElement).onclick = async () => {
-        const rating = parseInt((btn as HTMLElement).dataset.star || "0");
-
-        const ip = await fetch("https://api.ipify.org?format=json")
-          .then((r) => r.json())
-          .then((d) => d.ip)
-          .catch(() => "0.0.0.0");
-
-        const res = await setRating(recipeId, rating, ip).catch(() => null);
-
+        const res = await incrementLike(recipeId).catch(() => null);
         if (res?.ok) {
-          myRatings[recipeId] = rating;
-          localStorage.setItem("my_ratings", JSON.stringify(myRatings));
-          updateStarsUI(rating);
-          stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+          likedRecipes.push(recipeId);
+          localStorage.setItem("liked_recipes", JSON.stringify(likedRecipes));
         } else {
-          if (res?.status === 403) {
-            alert("Вы уже голосовали за этот рецепт");
-            stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
-          } else if (res?.status === 422) {
-            alert("Ошибка валидации (422)");
-          } else {
-            alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
-          }
+          if (countEl) countEl.textContent = String(currentCount);
+          likeBtn.disabled = false;
+          likeBtn.querySelector("svg")?.classList.remove("fill-current");
+
+          if (res?.status === 403) alert("Вы уже голосовали");
+          else if (res?.status === 422) alert("Ошибка валидации (422)");
+          else alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
         }
       };
-    });
+    }
+
+    // Rating
+    if (ratingContainer) {
+      const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
+      const userRating = myRatings[recipeId];
+      const stars = ratingContainer.querySelectorAll(".star-btn");
+
+      const updateStarsUI = (val: number) => {
+        stars.forEach((s) => {
+          const starNum = parseInt((s as HTMLElement).dataset.star || "0");
+          const svg = s.querySelector("svg");
+          if (starNum <= val) svg?.classList.add("fill-current");
+          else svg?.classList.remove("fill-current");
+        });
+      };
+
+      if (userRating) {
+        updateStarsUI(userRating);
+        stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+      }
+
+      stars.forEach((btn) => {
+        (btn as HTMLButtonElement).onclick = async () => {
+          const rating = parseInt((btn as HTMLElement).dataset.star || "0");
+
+          const ip = await fetch("https://api.ipify.org?format=json")
+            .then((r) => r.json())
+            .then((d) => d.ip)
+            .catch(() => "0.0.0.0");
+
+          const res = await setRating(recipeId, rating, ip).catch(() => null);
+
+          if (res?.ok) {
+            myRatings[recipeId] = rating;
+            localStorage.setItem("my_ratings", JSON.stringify(myRatings));
+            updateStarsUI(rating);
+            stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+          } else {
+            if (res?.status === 403) {
+              alert("Вы уже голосовали за этот рецепт");
+              stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+            } else if (res?.status === 422) {
+              alert("Ошибка валидации (422)");
+            } else {
+              alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
+            }
+          }
+        };
+      });
+    }
   }
 
   setupInteractions();

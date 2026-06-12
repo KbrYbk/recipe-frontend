@@ -28,7 +28,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           const backendHost = new URL(backendUrl).host;
           headersToSend.set('Host', backendHost);
       } catch (e) {
-          console.warn(`Invalid backend URL ${backendUrl}. Trying next fallback.`, e);
+          if (import.meta.env.DEV) console.warn(`Invalid backend URL ${backendUrl}. Trying next fallback.`, e);
           continue;
       }
 
@@ -56,14 +56,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
           finalResponse = response;
           break; // Success, break out of fallback loop
         } else {
-          console.warn(`[Sitemap Proxy Error]: Attempt failed for ${backendUrl} with status ${response.status}. Trying next fallback.`);
+          if (import.meta.env.DEV) console.warn(`[Sitemap Proxy Error]: Attempt failed for ${backendUrl} with status ${response.status}. Trying next fallback.`);
           try {
             const errorBody = await response.text();
-            console.warn("[Sitemap Proxy Error] Backend response body:", errorBody);
+            if (import.meta.env.DEV) console.warn("[Sitemap Proxy Error] Backend response body:", errorBody);
           } catch (e) {}
         }
       } catch (error) {
-        console.error(`[Sitemap Proxy Error]: Fetch failed for ${backendUrl}. Trying next fallback:`, error);
+        if (import.meta.env.DEV) console.error(`[Sitemap Proxy Error]: Fetch failed for ${backendUrl}. Trying next fallback:`, error);
       }
     }
 
