@@ -23,14 +23,10 @@ const containerId = `yandex_rtb_${id.replace(/-/g, '_')}_${uniqueSuffix}`;
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Если родительский элемент скрыт (например, через Tailwind hidden), не пытаемся рендерить
-    // Это решает ошибку CONTAINER_IS_HIDDEN
-    const style = window.getComputedStyle(container.parentElement);
-    if (style.display === 'none') {
-      return;
-    }
-    
-    if (container.children.length > 0) return;
+    // Если контейнер уже содержит рекламу или процесс рендеринга, ничего не делаем
+    if (container.children.length > 0 || container.dataset.rendering === "true") return;
+
+    container.dataset.rendering = "true";
 
     window.yaContextCb = window.yaContextCb || [];
     window.yaContextCb.push(() => {
@@ -45,16 +41,42 @@ const containerId = `yandex_rtb_${id.replace(/-/g, '_')}_${uniqueSuffix}`;
           renderConfig.type = "feed";
         }
 
-        window.Ya.Context.AdvManager.render(renderConfig);
+        try {
+          window.Ya.Context.AdvManager.render(renderConfig);
+        } catch (e) {
+          console.error("Yandex Ad Render Error:", e);
+          container.dataset.rendering = "false";
+          // Повторная попытка через 5 секунд в случае ошибки
+          setTimeout(renderAd, 5000);
+        }
+      } else {
+        container.dataset.rendering = "false";
       }
     });
   }
 
-  // Запуск при загрузке
-  renderAd();
+  // Используем IntersectionObserver для ленивой загрузки рекламы только при появлении в зоне видимости
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        renderAd();
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    rootMargin: '200px' // Начинаем загрузку чуть заранее, чтобы пользователь не видел пустого места
+  });
+
+  const container = document.getElementById(containerId);
+  if (container) {
+    observer.observe(container);
+  }
   
-  // Запуск при навигации ClientRouter
-  document.addEventListener("astro:page-load", renderAd);
+  // Поддержка Astro View Transitions
+  document.addEventListener("astro:page-load", () => {
+    const el = document.getElementById(containerId);
+    if (el) observer.observe(el);
+  });
 </script>
 
 <style>

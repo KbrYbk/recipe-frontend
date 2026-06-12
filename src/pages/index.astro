@@ -43,9 +43,20 @@ const collections = COLLECTION_CONFIG.map((config, index) => {
   return { ...config, recipes };
 }).filter(c => c.recipes.length > 0);
 
+const siteUrl = Astro.site ? Astro.site.origin : Astro.url.origin;
+
+const webSiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "SwagEda",
+  "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда"],
+  "url": siteUrl
+};
 ---
 
 <Layout title="SwagEda — Твоя уютная кухня" description="SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов: от завтраков до ужинов. Готовим просто, вкусно и с любовью.">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(webSiteSchema)} />
+
   <div class="mx-auto max-w-6xl px-4">
     {
       errorMessage && (
@@ -59,7 +70,7 @@ const collections = COLLECTION_CONFIG.map((config, index) => {
     <section class="py-12 text-center md:py-16">
       <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
         Что <span class="text-brand">приготовим</span> сегодня?
-        <span class="sr-only">Проект СвэгЕда, СвегЕда, СвагЕда, SwagEda — лучшие домашние рецепты пошагово</span>
+        <span class="sr-only">Проект СвэгЕда, СвегЕда, Свагеда, SwagEda — лучшие домашние рецепты пошагово</span>
       </h1>
       <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.</p>
       <SearchBar />

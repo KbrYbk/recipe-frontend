@@ -86,14 +86,14 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    {(() => {
+    <div set:html={(() => {
       const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
         ? String(import.meta.env.PUBLIC_BACKEND_URLS).split(',')[0].replace(/\/$/, '')
         : import.meta.env.API_BASE_URL
         ? String(import.meta.env.API_BASE_URL).replace(/\/$/, '')
         : '';
       return apiBase ? `<link rel="preconnect" href="${apiBase}" crossorigin />` : '';
-    })()}
+    })()}></div>
     <slot name="head" />
     <script is:inline>
       const applyTheme = () => {
