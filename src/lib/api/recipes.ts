@@ -1,18 +1,39 @@
 const PROJECT_HEADER = "X-Project-Key-ass";
 
 function getApiConfig() {
-  const base = import.meta.env.API_BASE_URL;
+  const rawUrls = import.meta.env.PUBLIC_BACKEND_URLS;
+  const baseUrls = rawUrls ? String(rawUrls).split(',').map(url => url.replace(/\/$/, "").trim()) : [
+    String(import.meta.env.API_BASE_URL || "").replace(/\/$/, "")
+  ];
   return {
-    base: base ? String(base).replace(/\/$/, "") : "",
+    bases: baseUrls,
     key: import.meta.env.PROJECT_KEY ? String(import.meta.env.PROJECT_KEY) : "",
   };
 }
 
-function getHeaders() {
-  return {
-    [PROJECT_HEADER]: getApiConfig().key,
+async function fetchWithFallback(path: string, options: RequestInit = {}): Promise<Response> {
+  const { bases, key } = getApiConfig();
+  const headers = {
+    [PROJECT_HEADER]: key,
     "Content-Type": "application/json",
+    ...(options.headers || {})
   };
+
+  for (const base of bases) {
+    const apiPath = base.endsWith("/api") ? "" : "/api";
+    const url = `${base}${apiPath}${path}`;
+    try {
+      const response = await fetch(url, { ...options, headers });
+      if (response.ok) {
+        return response;
+      } else {
+        console.warn(`Attempt failed for ${url} with status ${response.status}. Trying next fallback.`);
+      }
+    } catch (e) {
+      console.error(`Network error for ${url}. Trying next fallback:`, e);
+    }
+  }
+  throw new Error("All backend URLs failed to respond successfully.");
 }
 
 /** Прячет внешний origin картинок за /api-images/* (наш домен). */
@@ -26,12 +47,8 @@ export function toImageProxyUrl(path: string | undefined | null): string | undef
 
 /** Получение коллекции рецептов (breakfast, lunch, dinner, bakery) */
 export async function fetchCollectionFromApi(type: string, page: number = 1) {
-  const { base } = getApiConfig();
-  const apiPath = base.endsWith("/api") ? "" : "/api";
-  const url = `${base}${apiPath}/getRecipes/collection/${type}/${page}`;
-
   try {
-    const response = await fetch(url, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
+    const response = await fetchWithFallback(`/getRecipes/collection/${type}/${page}`);
     if (!response.ok) return { list: [], ok: false };
     const result = await response.json();
     const list = Array.isArray(result.data?.data) ? result.data.data : Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
@@ -47,20 +64,18 @@ export async function fetchCollectionFromApi(type: string, page: number = 1) {
 
 /** Получение списка рецептов (Поиск, Категории, Пагинация, Сложность) */
 export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: number | string; page?: number; difficulty?: string; limit?: number } = {}) {
-  const { base } = getApiConfig();
   const page = opts.page || 1;
-  const apiPath = base.endsWith("/api") ? "" : "/api";
-  let url = `${base}${apiPath}/getRecipes`;
+  let apiBaseUrl = `/getRecipes`;
 
   if (opts.limit) {
-    url += `/value/${opts.limit}`;
+    apiBaseUrl += `/value/${opts.limit}`;
   } else if (opts.search) {
-    url += `/search/${encodeURIComponent(String(opts.search).trim())}/${page}`;
-    if (opts.categoryId) url += `/${opts.categoryId}`;
+    apiBaseUrl += `/search/${encodeURIComponent(String(opts.search).trim())}/${page}`;
+    if (opts.categoryId) apiBaseUrl += `/${opts.categoryId}`;
   } else if (opts.categoryId) {
-    url += `/category/${opts.categoryId}/${page}`;
+    apiBaseUrl += `/category/${opts.categoryId}/${page}`;
   } else {
-    url += `/page/${page}`;
+    apiBaseUrl += `/page/${page}`;
   }
 
   const queryParams = new URLSearchParams();
@@ -69,10 +84,10 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
   }
 
   const queryString = queryParams.toString();
-  if (queryString) url += `?${queryString}`;
+  const fullPath = queryString ? `${apiBaseUrl}?${queryString}` : apiBaseUrl;
 
   try {
-    const response = await fetch(url, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
+    const response = await fetchWithFallback(fullPath, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
     if (!response.ok) return { list: [], total: 0, totalPages: 1, ok: false, status: response.status };
 
     const result = await response.json();
@@ -91,10 +106,8 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
 
 /** Динамические категории */
 export async function fetchCategoriesFromApi() {
-  const { base } = getApiConfig();
-  const url = base.endsWith("/api") ? `${base}/getCategories` : `${base}/api/getCategories`;
   try {
-    const response = await fetch(url, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
+    const response = await fetchWithFallback(`/getCategories`);
     const result = await response.json();
     return Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
   } catch {
@@ -113,12 +126,9 @@ export function mapBackendRecipe(r: any) {
 
 /** Получение одного рецепта по ID */
 export async function fetchRecipeById(id: string | number) {
-  const { base } = getApiConfig();
   const cleanId = String(id).replace(/^db-/, "");
-  const url = `${base}${base.endsWith("/api") ? "" : "/api"}/getRecipes/${encodeURIComponent(cleanId)}`;
-
   try {
-    const response = await fetch(url, { headers: getHeaders() });
+    const response = await fetchWithFallback(`/getRecipes/${encodeURIComponent(cleanId)}`);
     if (!response.ok) return { item: null, ok: false };
     const result = await response.json();
     return { item: result.data || result, ok: true };
@@ -130,37 +140,25 @@ export async function fetchRecipeById(id: string | number) {
 
 /** Лайк рецепта */
 export async function incrementLike(id: string | number) {
-  const { base } = getApiConfig();
   const cleanId = String(id).replace(/^(db-|local-)/, "");
-  const url = `${base}${base.endsWith("/api") ? "" : "/api"}/incrementLike/${encodeURIComponent(cleanId)}`;
-  return fetch(url, { method: "PATCH", headers: { [PROJECT_HEADER]: getApiConfig().key } });
+  return fetchWithFallback(`/incrementLike/${encodeURIComponent(cleanId)}`, { method: "PATCH" });
 }
 
 /** Установка рейтинга */
 export async function setRating(id: string | number, rating: number, ip: string) {
-  const { base } = getApiConfig();
   const cleanId = String(id).replace(/^(db-|local-)/, "");
-  const url = `${base}${base.endsWith("/api") ? "" : "/api"}/setRating/${encodeURIComponent(cleanId)}`;
-  return fetch(url, {
+  return fetchWithFallback(`/setRating/${encodeURIComponent(cleanId)}`, {
     method: "POST",
-    headers: getHeaders(),
     body: JSON.stringify({ rating, ip }),
   });
 }
 /** Получение списка ID для sitemap через роут /value/{val} */
 export async function fetchSitemapIds(limit: number = 15000) {
-  const { base } = getApiConfig();
-  const apiPath = base.endsWith("/api") ? "" : "/api";
-  
-  // Юзаем твой роут: GET /getRecipes/value/{val}
-  // Забираем сразу большую пачку, чтобы не мучить сервер лишними запросами
-  const url = `${base}${apiPath}/getRecipes/value/${limit}`;
+  const path = `/getRecipes/value/${limit}`;
 
   try {
-    console.log(`🔗 Requesting API: ${url}`);
-    const response = await fetch(url, { 
-      headers: { [PROJECT_HEADER]: getApiConfig().key } 
-    });
+    console.log(`🔗 Requesting API: ${path}`);
+    const response = await fetchWithFallback(path);
     
     if (!response.ok) return { list: [], total: 0 };
     

@@ -5,6 +5,7 @@ import Breadcrumbs from "../components/Breadcrumbs.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import SearchBar from "../components/SearchBar.astro";
 import Pagination from "../components/Pagination.astro";
+import AdSlot from "../components/AdSlot.astro";
 import { Icon } from "astro-icon/components";
 import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from "../lib/api/recipes";
@@ -171,6 +172,8 @@ const difficultyMap = [
                 }
               </div>
             </div>
+
+            <AdSlot id="R-A-19056160-18" className="hidden lg:block" />
           </div>
         </div>
       </aside>

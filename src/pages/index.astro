@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import SearchBar from "../components/SearchBar.astro";
 import CategoryCard from "../components/CategoryCard.astro";
 import RecipeCard from "../components/RecipeCard.astro";
+import AdSlot from "../components/AdSlot.astro";
 import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe, fetchCollectionFromApi } from "../lib/api/recipes";
 
@@ -78,6 +79,8 @@ const collections = COLLECTION_CONFIG.map((config, index) => {
         ))}
       </div>
     </section>
+
+    <AdSlot id="R-A-19056160-16" />
 
     <section aria-labelledby="recipes-heading" class="mb-20">
       <div class="mb-10 flex items-end justify-between">

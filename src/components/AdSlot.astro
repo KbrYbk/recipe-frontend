@@ -1,0 +1,65 @@
+---
+interface Props {
+  id: string; // ID блока из личного кабинета РСЯ
+  className?: string;
+  style?: string;
+  isFeed?: boolean; // Установите true, если это "Виджет рекомендаций" или "Лента"
+}
+
+const { id, className, style, isFeed = false } = Astro.props;
+
+// Формируем уникальный ID контейнера
+const uniqueSuffix = Math.random().toString(36).substr(2, 5);
+const containerId = `yandex_rtb_${id.replace(/-/g, '_')}_${uniqueSuffix}`;
+---
+
+<div class:list={["ad-slot no-print my-4 mx-auto text-center", className]} style={style}>
+  <div class="text-[10px] text-text-muted mb-1 uppercase tracking-widest opacity-50">Реклама</div>
+  <div id={containerId} class="min-h-[100px]"></div>
+</div>
+
+<script is:inline define:vars={{ id, containerId, isFeed }}>
+  function renderAd() {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    // Если родительский элемент скрыт (например, через Tailwind hidden), не пытаемся рендерить
+    // Это решает ошибку CONTAINER_IS_HIDDEN
+    const style = window.getComputedStyle(container.parentElement);
+    if (style.display === 'none') {
+      return;
+    }
+    
+    if (container.children.length > 0) return;
+
+    window.yaContextCb = window.yaContextCb || [];
+    window.yaContextCb.push(() => {
+      if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
+        const renderConfig = {
+          blockId: id,
+          renderTo: containerId,
+          async: true
+        };
+
+        if (isFeed) {
+          renderConfig.type = "feed";
+        }
+
+        window.Ya.Context.AdvManager.render(renderConfig);
+      }
+    });
+  }
+
+  // Запуск при загрузке
+  renderAd();
+  
+  // Запуск при навигации ClientRouter
+  document.addEventListener("astro:page-load", renderAd);
+</script>
+
+<style>
+  .ad-slot {
+    width: 100%;
+    max-width: 100%;
+  }
+</style>
