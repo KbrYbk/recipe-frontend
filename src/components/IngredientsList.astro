@@ -15,7 +15,7 @@ interface Props {
 const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 ---
 
-<aside class="group lg:sticky lg:top-28 lg:col-span-1" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
+<div class="group" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
   <div class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm transition-all hover:shadow-lg">
     <div class="mb-6 flex w-full flex-wrap items-baseline justify-between gap-y-2">
       <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap">
@@ -62,7 +62,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       Копировать список
     </button>
   </div>
-</aside>
+</div>
 
 <script>
   function initIngredients() {

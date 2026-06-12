@@ -3,38 +3,44 @@ import { Icon } from "astro-icon/components";
 const currentYear = new Date().getFullYear();
 ---
 
-<footer class="border-line bg-card-bg mt-20 border-t transition-colors">
-  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+<footer class="border-line bg-card-bg no-print mt-20 border-t transition-colors">
+  <div class="mx-auto max-w-6xl px-4 py-12 md:px-8 lg:px-12">
     <div class="grid grid-cols-1 gap-12 md:grid-cols-4">
+      <!-- Колонки 1-2: Описание проекта -->
       <div class="md:col-span-2">
         <a href="/" class="text-brand mb-4 flex items-center gap-2 text-2xl font-bold" aria-label="SwagEda — на главную">
           <Icon name="lucide:cooking-pot" class="h-7 w-7" aria-hidden="true" />
           SwagEda
         </a>
-        <p class="text-text-muted max-w-md leading-relaxed">Твой уютный уголок с проверенными рецептами. Готовим просто, едим вкусно, делимся с любовью.</p>
+        <p class="text-text-muted max-w-md leading-relaxed">
+          Твой уютный уголок с проверенными рецептами. Готовим просто, едим вкусно, делимся с любовью. Присоединяйся к нашему кулинарному сообществу!
+        </p>
       </div>
 
+      <!-- Колонка 3: Навигация -->
       <nav aria-labelledby="footer-nav-heading">
         <h3 id="footer-nav-heading" class="text-text-main mb-4 text-sm font-bold tracking-wider uppercase">Карта сайта</h3>
         <ul class="space-y-2">
-          <li><a href="/" class="text-text-muted hover:text-brand transition-colors">Главная</a></li>
-          <li><a href="/recipes" class="text-text-muted hover:text-brand transition-colors">Все рецепты</a></li>
-          <li><a href="/privacy" class="text-text-muted hover:text-brand transition-colors">Политика конфиденциальности</a></li>
-          <li><a href="/about" class="text-text-muted hover:text-brand transition-colors">О проекте</a></li>
-          <li><a href="/contacts" class="text-text-muted hover:text-brand transition-colors">Контакты</a></li>
+          <li><a href="/" class="text-text-muted hover:text-brand font-medium transition-colors">Главная</a></li>
+          <li><a href="/recipes" class="text-text-muted hover:text-brand font-medium transition-colors">Все рецепты</a></li>
+          <li><a href="/privacy" class="text-text-muted hover:text-brand font-medium transition-colors">Политика конфиденциальности</a></li>
+          <li><a href="/about" class="text-text-muted hover:text-brand font-medium transition-colors">О проекте</a></li>
+          <li><a href="/contacts" class="text-text-muted hover:text-brand font-medium transition-colors">Контакты</a></li>
         </ul>
       </nav>
 
+      <!-- Колонка 4: Социальные сети -->
       <!-- <div>
         <h3 class="text-text-main mb-4 text-sm font-bold tracking-wider uppercase">Мы в сети</h3>
-        <div class="flex gap-4">
+        <p class="text-text-muted mb-4 text-xs leading-relaxed">Следите за новыми рецептами и кулинарными лайфхаками в наших соцсетях:</p>
+        <div class="flex gap-3">
           <a
             href="https://vk.com/"
             target="_blank"
             rel="noopener noreferrer"
-            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand flex h-12 w-12 items-center justify-center rounded-lg border transition-all hover:-translate-y-1"
+            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl border transition-all hover:-translate-y-1"
           >
-            <Icon name="local:vk" class="h-8 w-8" aria-hidden="true" />
+            <Icon name="vk" class="h-6 w-6" aria-hidden="true" />
             <span class="sr-only">ВКонтакте</span>
           </a>
 
@@ -42,9 +48,9 @@ const currentYear = new Date().getFullYear();
             href="https://t.me/"
             target="_blank"
             rel="noopener noreferrer"
-            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand flex h-12 w-12 items-center justify-center rounded-lg border transition-all hover:-translate-y-1"
+            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl border transition-all hover:-translate-y-1"
           >
-            <Icon name="local:tg" class="h-8 w-8" aria-hidden="true" />
+            <Icon name="tg" class="h-6 w-6" aria-hidden="true" />
             <span class="sr-only">Telegram</span>
           </a>
 
@@ -52,20 +58,21 @@ const currentYear = new Date().getFullYear();
             href="https://youtube.com/"
             target="_blank"
             rel="noopener noreferrer"
-            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand flex h-12 w-12 items-center justify-center rounded-lg border transition-all hover:-translate-y-1"
+            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl border transition-all hover:-translate-y-1"
           >
-            <Icon name="lucide:youtube" class="h-8 w-8" aria-hidden="true" />
+            <Icon name="lucide:youtube" class="h-6 w-6" aria-hidden="true" />
             <span class="sr-only">YouTube</span>
           </a>
-        </div> -->
-      </div>
+        </div>
+      </div> -->
     </div>
 
+    <!-- Нижняя полоса футера -->
     <div class="border-line mt-12 border-t pt-8 text-center md:flex md:items-center md:justify-between md:text-left">
       <p class="text-text-muted text-sm">
         &copy; {currentYear} SwagEda. Сделано с душой для любителей вкусно поесть.
       </p>
-      <p class="text-text-muted/60 mt-4 text-xs md:mt-0">Использование материалов сайта разрешено только с указанием активной ссылки.</p>
+      <p class="text-text-muted/60 mt-4 text-xs md:mt-0">Использование материалов сайта разрешено только с указанием активной ссылки на источник.</p>
     </div>
   </div>
 </footer>
