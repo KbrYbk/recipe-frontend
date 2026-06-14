@@ -195,17 +195,22 @@ const recipeMeta = recipe
                 data-avg={recipe?.average_rating || 0}
                 class="bg-card-bg border-line flex h-11 items-center justify-center gap-1 rounded-xl border px-4 py-2 text-sm font-bold text-amber-500"
               >
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    type="button"
-                    data-star={star}
-                    class="star-btn transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100"
-                    aria-label={`Оценить на ${star}`}
-                  >
-                    <Icon name="lucide:star" class="h-5 w-5 shrink-0" />
-                  </button>
-                ))}
-                <span class="avg-val ml-1 tabular-nums">{recipe?.average_rating || 0}</span>
+                <div class="stars-container flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      type="button"
+                      data-star={star}
+                      class="star-btn transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100"
+                      aria-label={`Оценить на ${star}`}
+                    >
+                      <Icon name="lucide:star" class="h-5 w-5 shrink-0" />
+                    </button>
+                  ))}
+                </div>
+                <div class="ml-2 text-text-main">
+                  <span class="avg-val font-bold">{recipe?.average_rating ? Number(recipe.average_rating).toFixed(1) : "0"}</span>
+                  <span class="user-val text-xs text-text-muted hidden"> (Ваша: <span class="val"></span>)</span>
+                </div>
               </div>
             </div>
 
@@ -457,46 +462,112 @@ const recipeMeta = recipe
       const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
       const userRating = myRatings[recipeId];
       const stars = ratingContainer.querySelectorAll(".star-btn");
+      const avgValSpan = ratingContainer.querySelector(".avg-val");
+      let isProcessing = false;
 
-      const updateStarsUI = (val: number) => {
+      const updateStarsUI = (val: number, isHover = false) => {
         stars.forEach((s) => {
           const starNum = parseInt((s as HTMLElement).dataset.star || "0");
           const svg = s.querySelector("svg");
-          if (starNum <= val) svg?.classList.add("fill-current");
-          else svg?.classList.remove("fill-current");
+          if (starNum <= val) {
+            svg?.classList.add("fill-current");
+            if (isHover) s.classList.add("scale-110");
+          } else {
+            svg?.classList.remove("fill-current");
+            if (isHover) s.classList.remove("scale-110");
+          }
         });
       };
 
+      const showUserRating = (val: number) => {
+        const userValEl = ratingContainer.querySelector(".user-val");
+        const valSpan = userValEl?.querySelector(".val");
+        if (userValEl && valSpan) {
+          userValEl.classList.remove("hidden");
+          valSpan.textContent = String(val);
+        }
+      };
+
+      // Инициализация при загрузке
       if (userRating) {
         updateStarsUI(userRating);
-        stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+        showUserRating(userRating);
+        stars.forEach((s) => {
+          (s as HTMLButtonElement).disabled = true;
+          s.classList.add("cursor-default");
+          s.classList.remove("hover:scale-110", "active:scale-90");
+        });
+        ratingContainer.classList.add("opacity-90");
+      } else {
+        // Добавляем эффекты наведения только если не голосовали
+        stars.forEach((btn) => {
+          btn.addEventListener("mouseenter", () => {
+            if (isProcessing) return;
+            const val = parseInt((btn as HTMLElement).dataset.star || "0");
+            updateStarsUI(val, true);
+          });
+        });
+
+        ratingContainer.addEventListener("mouseleave", () => {
+          if (isProcessing) return;
+          updateStarsUI(0);
+        });
       }
 
       stars.forEach((btn) => {
         (btn as HTMLButtonElement).onclick = async () => {
+          if (isProcessing || localStorage.getItem(`rated_${recipeId}`)) return;
+          
           const rating = parseInt((btn as HTMLElement).dataset.star || "0");
+          isProcessing = true;
+          
+          // Визуально отключаем кнопки сразу
+          stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
 
-          const ip = await fetch("https://api.ipify.org?format=json")
-            .then((r) => r.json())
-            .then((d) => d.ip)
-            .catch(() => "0.0.0.0");
+          try {
+            // Попытка получить IP для защиты от накрутки (базово)
+            const ip = await fetch("https://api64.ipify.org?format=json")
+              .then((r) => r.json())
+              .then((d) => d.ip)
+              .catch(() => "0.0.0.0");
 
-          const res = await setRating(recipeId, rating, ip).catch(() => null);
+            const res = await setRating(recipeId, rating, ip).catch(() => null);
 
-          if (res?.ok) {
-            myRatings[recipeId] = rating;
-            localStorage.setItem("my_ratings", JSON.stringify(myRatings));
-            updateStarsUI(rating);
-            stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
-          } else {
-            if (res?.status === 403) {
-              alert("Вы уже голосовали за этот рецепт");
-              stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
-            } else if (res?.status === 422) {
-              alert("Ошибка валидации (422)");
+            if (res?.ok) {
+              const result = await res.json().catch(() => ({}));
+              const newAvg = result?.data?.average_rating || result?.average_rating;
+
+              myRatings[recipeId] = rating;
+              localStorage.setItem("my_ratings", JSON.stringify(myRatings));
+              localStorage.setItem(`rated_${recipeId}`, "true");
+              
+              updateStarsUI(rating);
+              showUserRating(rating);
+              
+              // Анимация успеха
+              ratingContainer.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
+              setTimeout(() => ratingContainer.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
+
+              // Обновляем средний балл
+              if (avgValSpan) {
+                avgValSpan.textContent = newAvg ? Number(newAvg).toFixed(1) : String(rating);
+              }
             } else {
-              alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
+              const status = res?.status;
+              if (status === 403) {
+                alert("Вы уже оценивали этот рецепт");
+                localStorage.setItem(`rated_${recipeId}`, "true");
+              } else {
+                alert("Произошла ошибка при сохранении оценки. Попробуйте позже.");
+                // Возвращаем возможность клика если ошибка не "уже голосовал"
+                stars.forEach((s) => ((s as HTMLButtonElement).disabled = false));
+                isProcessing = false;
+              }
             }
+          } catch (err) {
+            console.error(err);
+            stars.forEach((s) => ((s as HTMLButtonElement).disabled = false));
+            isProcessing = false;
           }
         };
       });

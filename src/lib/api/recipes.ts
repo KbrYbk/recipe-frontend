@@ -12,6 +12,17 @@ function getApiConfig() {
 }
 
 async function fetchWithFallback(path: string, options: RequestInit = {}): Promise<Response> {
+  const isServer = import.meta.env.SSR || typeof window === "undefined";
+  
+  if (!isServer) {
+    const url = `/api-proxy${path}`;
+    const headers = {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    };
+    return fetch(url, { ...options, headers });
+  }
+
   const { bases, key } = getApiConfig();
   const headers = {
     [PROJECT_HEADER]: key,
@@ -24,7 +35,7 @@ async function fetchWithFallback(path: string, options: RequestInit = {}): Promi
     const url = `${base}${apiPath}${path}`;
     try {
       const response = await fetch(url, { ...options, headers });
-      if (response.ok) {
+      if (response.status < 500) {
         return response;
       } else {
         if (import.meta.env.DEV) console.warn(`Attempt failed for ${url} with status ${response.status}. Trying next fallback.`);
