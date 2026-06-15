@@ -140,12 +140,12 @@ export async function fetchRecipeById(id: string | number) {
   const cleanId = String(id).replace(/^db-/, "");
   try {
     const response = await fetchWithFallback(`/getRecipes/${encodeURIComponent(cleanId)}`);
-    if (!response.ok) return { item: null, ok: false };
+    if (!response.ok) return { item: null, ok: false, status: response.status };
     const result = await response.json();
-    return { item: result.data || result, ok: true };
+    return { item: result.data || result, ok: true, status: response.status };
   } catch (e) {
     if (import.meta.env.DEV) console.error(`❌ Ошибка загрузки рецепта ${id}:`, e);
-    return { item: null, ok: false };
+    return { item: null, ok: false, status: 0 };
   }
 }
 

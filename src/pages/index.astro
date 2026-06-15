@@ -4,6 +4,7 @@ import SearchBar from "../components/SearchBar.astro";
 import CategoryCard from "../components/CategoryCard.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import AdSlot from "../components/AdSlot.astro";
+import { Icon } from "astro-icon/components";
 import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe, fetchCollectionFromApi } from "../lib/api/recipes";
 
@@ -60,9 +61,29 @@ const webSiteSchema = {
   <div class="mx-auto max-w-6xl px-4">
     {
       errorMessage && (
-        <div class="my-8 rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
-          <p class="font-bold">Проблема с бэкендом:</p>
-          <p>{errorMessage}</p>
+        <div class="my-8 rounded-3xl border border-brand/15 bg-accent-soft p-6 md:p-8 shadow-sm">
+          <div class="flex flex-col gap-6 md:flex-row md:items-center">
+            <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+              <Icon name="lucide:chef-hat" class="h-10 w-10 animate-pulse" aria-hidden="true" />
+            </div>
+            <div class="flex-grow">
+              <h3 class="text-xl font-bold text-text-main md:text-2xl">
+                Ой, временные трудности на кухне!
+              </h3>
+              <p class="mt-2 text-base text-text-muted leading-relaxed">
+                Наш сайт сейчас испытывает небольшие технические неполадки. Не переживайте, мы уже вовсю "колдуем" над плитой и исправляем проблему! Возвращайтесь совсем скоро — мы вас очень ждем. А пока вы можете спокойно листать наши лучшие рецепты ниже в режиме офлайн.
+              </p>
+              
+              <details class="mt-4 border-t border-brand/10 pt-4 text-xs text-text-muted">
+                <summary class="cursor-pointer font-medium hover:text-brand transition-colors focus:outline-none">
+                  Технические детали (для отладки)
+                </summary>
+                <div class="mt-2 rounded-xl bg-card-bg p-3 border border-line font-mono text-[11px] leading-relaxed break-all text-text-main">
+                  Код ошибки: {errorMessage}
+                </div>
+              </details>
+            </div>
+          </div>
         </div>
       )
     }
