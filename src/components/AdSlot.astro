@@ -18,65 +18,102 @@ const containerId = `yandex_rtb_${id.replace(/-/g, '_')}_${uniqueSuffix}`;
   <div id={containerId} class="min-h-[100px]"></div>
 </div>
 
-<script is:inline define:vars={{ id, containerId, isFeed }}>
-  function renderAd() {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+<script is:inline define:vars={{ id, containerId, isFeed }}">
+  (function() {
+    // Защита от повторного рендера этого же экземпляра
+    var _rendered = false;
 
-    // Если контейнер уже содержит рекламу или процесс рендеринга, ничего не делаем
-    if (container.children.length > 0 || container.dataset.rendering === "true") return;
+    function renderAd() {
+      var container = document.getElementById(containerId);
+      if (!container) return;
 
-    container.dataset.rendering = "true";
+      // Если контейнер уже содержит рекламу или процесс рендеринга
+      if (container.children.length > 0 || container.dataset.rendering === "true") return;
 
-    window.yaContextCb = window.yaContextCb || [];
-    window.yaContextCb.push(() => {
-      if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
-        const renderConfig = {
-          blockId: id,
-          renderTo: containerId,
-          async: true
-        };
+      // Уже успешно отрендили — не повторяем
+      if (_rendered) return;
 
-        if (isFeed) {
-          renderConfig.type = "feed";
-        }
+      container.dataset.rendering = "true";
 
-        try {
-          window.Ya.Context.AdvManager.render(renderConfig);
-        } catch (e) {
-          console.error("Yandex Ad Render Error:", e);
+      window.yaContextCb = window.yaContextCb || [];
+      window.yaContextCb.push(function() {
+        if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
+          // isFeed приходит как строка "true" или "false" из define:vars
+          var isFeedBlock = (isFeed === true || isFeed === "true");
+
+          try {
+            if (isFeedBlock && typeof window.Ya.Context.AdvManager.renderFeed === "function") {
+              // Feed-блоки требуют отдельного метода renderFeed()
+              window.Ya.Context.AdvManager.renderFeed({
+                blockId: id,
+                renderTo: containerId
+              });
+            } else {
+              // Обычные баннеры
+              window.Ya.Context.AdvManager.render({
+                blockId: id,
+                renderTo: containerId,
+                async: true
+              });
+            }
+            _rendered = true;
+          } catch (e) {
+            console.error("Yandex Ad Render Error [" + id + "]:", e);
+            container.dataset.rendering = "false";
+            _rendered = false;
+            // Повторная попытка через 5 секунд
+            setTimeout(renderAd, 5000);
+          }
+        } else {
           container.dataset.rendering = "false";
-          // Повторная попытка через 5 секунд в случае ошибки
-          setTimeout(renderAd, 5000);
         }
-      } else {
-        container.dataset.rendering = "false";
-      }
-    });
-  }
+      });
+    }
 
-  // Используем IntersectionObserver для ленивой загрузки рекламы только при появлении в зоне видимости
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
+    // Таймаут: если context.js не загрузился за 3 секунд — всё равно пытаемся рендерить
+    // (yaContextCb вызовет колбэк когда догонит)
+    var fallbackTimer = setTimeout(function() {
+      var container = document.getElementById(containerId);
+      if (container && container.children.length === 0 && container.dataset.rendering !== "true") {
         renderAd();
-        observer.unobserve(entry.target);
+      }
+    }, 3000);
+
+    // IntersectionObserver для ленивой загрузки
+    var observer = null;
+    try {
+      observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            clearTimeout(fallbackTimer);
+            renderAd();
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        rootMargin: '200px'
+      });
+    } catch(e) {
+      // Fallback для старых браузеров — рендерим сразу
+      clearTimeout(fallbackTimer);
+      renderAd();
+    }
+
+    if (observer) {
+      var el = document.getElementById(containerId);
+      if (el) {
+        observer.observe(el);
+      }
+    }
+
+    // Поддержка Astro View Transitions — пере-обсервим после смены страницы
+    document.addEventListener("astro:page-load", function() {
+      var el = document.getElementById(containerId);
+      if (el && observer) {
+        observer.observe(el);
       }
     });
-  }, {
-    rootMargin: '200px' // Начинаем загрузку чуть заранее, чтобы пользователь не видел пустого места
-  });
-
-  const container = document.getElementById(containerId);
-  if (container) {
-    observer.observe(container);
-  }
-  
-  // Поддержка Astro View Transitions
-  document.addEventListener("astro:page-load", () => {
-    const el = document.getElementById(containerId);
-    if (el) observer.observe(el);
-  });
+  })();
 </script>
 
 <style>

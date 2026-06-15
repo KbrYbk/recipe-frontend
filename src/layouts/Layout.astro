@@ -84,6 +84,11 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <meta name="yandex-verification" content="e0698217d6d9209f" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preconnect to Yandex ad domains for faster loading -->
+    <link rel="preconnect" href="https://yandex.ru" crossorigin />
+    <link rel="preconnect" href="https://mc.yandex.ru" crossorigin />
+    <link rel="dns-prefetch" href="https://yandex.ru" />
+    <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <div set:html={(() => {
@@ -152,35 +157,21 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
         ym(108404580, "hit", window.location.href);
       });
     </script>
-    <!-- Yandex Autoplacement -->
-    <script src="https://yandex.ru/ads/system/context.js" async></script>
-
-    <script is:inline>
-      function initYandexAds() {
-        // Удаляем старые скрипты авторасстановки, если они зависли в head
-        document.querySelectorAll(".ya-ap-script").forEach((el) => el.remove());
-
-        // Массив твоих ID площадок авторасстановки
-        const pageIds = ["19056160", "19181668"];
-
-        pageIds.forEach((id) => {
-          const script = document.createElement("script");
-          script.className = "ya-ap-script";
-          script.src = `https://yandex.ru/ads/system/ap-loader.js`;
-          script.setAttribute("data-page-id", id);
-          script.async = true;
-          document.head.appendChild(script);
-        });
-      }
-
-      // Запуск при первой загрузке
-      initYandexAds();
-      // Перезапуск при каждом переходе между страницами Astro
-      document.addEventListener("astro:page-load", initYandexAds);
+    <!-- Yandex Context JS — загружаем один раз, строго один экземпляр -->
+    <script>
+      (function() {
+        // Защита от повторной загрузки context.js при View Transitions
+        if (!window.__yaContextLoaded) {
+          var s = document.createElement('script');
+          s.src = 'https://yandex.ru/ads/system/context.js';
+          s.async = true;
+          document.head.appendChild(s);
+          window.__yaContextLoaded = true;
+        }
+      })();
     </script>
 
     <script is:inline>
-      window.yaContextCb = window.yaContextCb || [];
     </script>
     <ClientRouter />
   </head>
@@ -200,11 +191,13 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <div id="page-progress" class="page-progress" transition:persist aria-hidden="true"></div>
     <div id="route-status" class="sr-only" transition:persist aria-live="polite"></div>
     <Header />
-    <AdSlot id="R-A-19056160-14" className="max-w-6xl mt-4" />
+    <!-- Баннер 15 — над контентом, виден на всех страницах -->
+    <AdSlot id="R-A-19056160-15" className="max-w-6xl mt-4 mb-2" />
     <main id="main-content" tabindex="-1" class="main-content-transition grow px-4 py-8 pb-24 md:px-8 md:pb-8 lg:px-12">
       <slot />
     </main>
-    <AdSlot id="R-A-19056160-15" className="max-w-6xl mb-8" />
+    <!-- Баннер 16 — после контента, перед футером -->
+    <AdSlot id="R-A-19056160-16" className="max-w-6xl mb-8" />
     <Footer />
     <BottomNav />
     <CookieConsent />
