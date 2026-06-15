@@ -1,28 +1,33 @@
 ---
-import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi } from "../lib/api/recipes";
 
-// Получаем общее количество рецептов, не загружая все данные.
-const { total: dbTotal } = await fetchRecipesFromApi({ limit: 1 });
+// Получаем общее количество рецептов с бэкенда
+const { total: dbTotal, ok } = await fetchRecipesFromApi({ limit: 1 });
 
-// Генерируем случайный выбор: либо локальный, либо из БД
-const isLocal = Math.random() < (localRecipes.length / (localRecipes.length + dbTotal));
-
-let finalUrl = "/recipes";
-
-if (isLocal && localRecipes.length > 0) {
-  const randomLocal = localRecipes[Math.floor(Math.random() * localRecipes.length)];
-  finalUrl = `/recipe/local-${randomLocal.id}`;
-} else if (dbTotal > 0) {
-  // Выбираем случайную страницу
-  const randomPage = Math.floor(Math.random() * Math.ceil(dbTotal / 20)) + 1;
-  const { list } = await fetchRecipesFromApi({ page: randomPage, limit: 20 });
-  
-  if (list.length > 0) {
-    const randomDb = list[Math.floor(Math.random() * list.length)];
-    finalUrl = `/recipe/db-${randomDb.id}`;
-  }
+if (!ok || dbTotal === 0) {
+  // Если бэкенд недоступен — редирект на главную
+  return Astro.redirect("/");
 }
 
-return Astro.redirect(finalUrl);
+// Выбираем случайную страницу (20 рецептов на страницу)
+const perPage = 20;
+const totalPages = Math.max(1, Math.ceil(dbTotal / perPage));
+const randomPage = Math.floor(Math.random() * totalPages) + 1;
+
+// Загружаем рецепты со случайной страницы
+const { list } = await fetchRecipesFromApi({ page: randomPage, limit: perPage });
+
+if (list.length === 0) {
+  // На случай если страница пуста — пробуем первую
+  const { list: fallbackList } = await fetchRecipesFromApi({ page: 1, limit: perPage });
+  if (fallbackList.length > 0) {
+    const recipe = fallbackList[Math.floor(Math.random() * fallbackList.length)];
+    return Astro.redirect(`/recipe/db-${recipe.id}`);
+  }
+  return Astro.redirect("/recipes");
+}
+
+// Выбираем случайный рецепт из списка
+const recipe = list[Math.floor(Math.random() * list.length)];
+return Astro.redirect(`/recipe/db-${recipe.id}`);
 ---

@@ -2,7 +2,7 @@
 import { Icon } from "astro-icon/components";
 ---
 
-<header class="border-line bg-card-bg/60 sticky top-0 z-50 border-b backdrop-blur-md ">
+<header class="border-line bg-card-bg/60 sticky top-0 z-50 border-b backdrop-blur-md">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
     <a href="/" class="text-brand flex items-center gap-2 text-2xl font-bold transition-transform active:scale-95 md:text-3xl" aria-label="SwagEda — на главную">
       <img src="/favicon.svg" alt="" class="h-7 w-7 md:h-8 md:w-8" aria-hidden="true" />
@@ -11,9 +11,9 @@ import { Icon } from "astro-icon/components";
 
     <!-- Desktop Navigation -->
     <nav class="hidden items-center gap-8 md:flex" aria-label="Основная навигация">
-      <a href="/recipes" class="text-text-main hover:text-brand font-medium transition-colors">Все рецепты</a>
-      <a href="/favorites" class="text-text-main hover:text-brand font-medium transition-colors">Избранное</a>
-      
+      <a href="/recipes" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Все рецепты">Все рецепты</a>
+      <a href="/favorites" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Избранное">Избранное</a>
+      <a href="/random" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Показать случайный рецепт">Удиви меня</a>
       <div class="bg-line h-6 w-px"></div>
 
       <button
@@ -29,21 +29,13 @@ import { Icon } from "astro-icon/components";
 
     <!-- Mobile Controls -->
     <div class="flex items-center gap-3 md:hidden">
-      <button
-        type="button"
-        id="themeToggleMobile"
-        class="text-text-main flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-95"
-        aria-label="Переключить тему"
-      >
+      <button type="button" id="themeToggleMobile" class="text-text-main flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-95" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-6 w-6" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-6 w-6" aria-hidden="true" />
       </button>
     </div>
   </div>
 </header>
-
-<style>
-</style>
 
 <script>
   function setupHeader() {
@@ -55,7 +47,7 @@ import { Icon } from "astro-icon/components";
       localStorage.setItem("theme", isDark ? "dark" : "light");
     };
 
-    themeBtns.forEach(btn => btn.addEventListener("click", toggleTheme));
+    themeBtns.forEach((btn) => btn.addEventListener("click", toggleTheme));
   }
 
   setupHeader();

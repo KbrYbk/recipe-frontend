@@ -39,10 +39,10 @@ const isActive = (path: string) => {
   <a 
     href="/random" 
     class={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive("/random") ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
-    aria-label="Что приготовить?"
+    aria-label="Показать случайный рецепт"
   >
     <Icon name="lucide:dices" class="h-6 w-6" />
-    <span class="text-[10px] font-medium">Рандом</span>
+    <span class="text-[10px] font-medium">Выручай</span>
   </a>
 
   <a 
