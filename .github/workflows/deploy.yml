@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.3
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -35,16 +35,18 @@ jobs:
             # Можно явно указать HOST и PORT для Astro, чтобы Nginx всегда знал, где искать
             export HOST=127.0.0.1
             export PORT=4321 
-            
+
+            # Временно отключаем проверку SSL для сборки (если Astro делает запросы во время билда)
+            export NODE_TLS_REJECT_UNAUTHORIZED=0
+
             npm run build
 
             # Перезапуск процесса с ПРАВИЛЬНЫМ именем
             # Мы сначала удаляем старый, чтобы точно убить кэш в памяти
             pm2 delete recipe-frontend || true
-            
+
             # Запускаем с передачей переменных окружения
-            HOST=127.0.0.1 PORT=4321 NODE_ENV=production pm2 start dist/server/entry.mjs --name recipe-frontend
-            
+            HOST=127.0.0.1 PORT=4321 NODE_ENV=production NODE_TLS_REJECT_UNAUTHORIZED=0 pm2 start dist/server/entry.mjs --name recipe-frontend
             pm2 save
 
             # 5. Проверка статуса (Healthcheck)
