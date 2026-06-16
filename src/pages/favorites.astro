@@ -1,36 +1,36 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import RecipeCard from "../components/RecipeCard.astro";
-import recipes from "../data/recipes.json";
+import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
 
-// На стороне сервера мы не знаем, что в localStorage,
-// поэтому рендерим базовую страницу, а фильтрацию делаем на клиенте.
+// Загружаем все рецепты с бэкенда для отображения избранного
+const { list: allRecipes, ok } = await fetchRecipesFromApi({ limit: 1000 });
+const recipesData = ok ? allRecipes.map(mapBackendRecipe) : [];
 ---
 
 <Layout title="Избранные рецепты — SwagEda">
-  <script is:inline define:vars={{ recipes }}>
+  <script is:inline define:vars={{ recipes: recipesData }}>
     window.ALL_RECIPES = recipes;
   </script>
 
-  <div class="mx-auto max-w-7xl">
+  <div class="mx-auto max-w-7xl px-4">
     <header class="mb-8 text-center">
-      <h1 class="text-3xl font-bold text-text-main md:text-4xl">Мои любимые рецепты</h1>
-      <p class="text-text-muted">Ваша личная кулинарная книга</p>
+      <h1 class="text-text-main text-3xl font-bold md:text-4xl">Избранные рецепты</h1>
+      <p class="text-text-muted mt-2">Ваша личная кулинарная книга</p>
     </header>
 
-    <div id="favorites-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div id="favorites-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Список избранных рецептов">
       <!-- Сюда клиентский JS вставит карточки избранного -->
     </div>
 
-    <div id="empty-favorites" class="hidden flex-col items-center justify-center py-20 text-center">
+    <div id="empty-favorites" class="hidden flex-col items-center justify-center py-20 text-center" role="status">
       <div class="mb-4 rounded-full bg-accent-soft p-6">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 00-1.344 4.395L3 11h4.618c1.735 0 3.182 1.447 3.182 3.182V21l3-3v-7.618c0-1.735-1.447-3.182-3.182-3.182H4.318z" />
         </svg>
       </div>
-      <h2 class="text-xl font-semibold text-text-main">Тут пока пусто</h2>
-      <p class="text-text-muted">Добавьте рецепты в избранное, чтобы они появились здесь</p>
-      <a href="/recipes" class="mt-6 rounded-xl bg-brand px-6 py-3 font-bold text-white transition-all hover:bg-brand-hover">
+      <h2 class="text-text-main text-xl font-semibold">Тут пока пусто</h2>
+      <p class="text-text-muted mt-2">Добавьте рецепты в избранное, чтобы они появились здесь</p>
+      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-block rounded-xl px-6 py-3 font-bold text-white transition-all">
         Найти рецепты
       </a>
     </div>
@@ -47,6 +47,7 @@ import recipes from "../data/recipes.json";
 
     if (favorites.length === 0) {
       grid.innerHTML = "";
+      grid.classList.add("hidden");
       empty.classList.remove("hidden");
       empty.classList.add("flex");
       return;
@@ -54,38 +55,52 @@ import recipes from "../data/recipes.json";
 
     empty.classList.add("hidden");
     empty.classList.remove("flex");
+    grid.classList.remove("hidden");
 
     const recipesData = (window as any).ALL_RECIPES || [];
-    
-    favorites.forEach(id => {
-      // Robust ID matching: handle numbers, strings, and prefixes
-      const recipe = recipesData.find((r: any) => {
+    const fragment = document.createDocumentFragment();
+
+    favorites.forEach((favId) => {
+      // Ищем рецепт по любому формату ID
+      const recipe = recipesData.find((r) => {
         const rid = String(r.id);
-        return rid === String(id) || rid === `local-${id}` || rid === `db-${id}`;
+        return rid === favId || rid === `db-${favId}` || rid === `local-${favId}` || String(r.id) === favId;
       });
 
-      if (recipe) {
-        const card = document.createElement("div");
-        card.innerHTML = `
-          <div class="group relative overflow-hidden rounded-2xl border border-line bg-card-bg transition-all hover:shadow-lg active:scale-95">
-            <div class="aspect-video overflow-hidden">
-              <img src="${recipe.main_image}" alt="${recipe.title}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-            </div>
-            <div class="p-4">
-              <h3 class="mb-2 text-lg font-bold text-text-main transition-colors group-hover:text-brand">${recipe.title}</h3>
-              <p class="mb-4 line-clamp-2 text-sm text-text-muted">${recipe.description}</p>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 text-xs text-text-muted">
-                  <span class="flex items-center gap-1"><svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ${recipe.cooking_time} мин</span>
-                </div>
-                <a href="/recipe/${recipe.id}" class="rounded-lg bg-brand/10 px-3 py-1 text-xs font-semibold text-brand transition-colors hover:bg-brand hover:text-white">Смотреть</a>
-              </div>
+      if (!recipe) return;
+
+      const card = document.createElement("article");
+      card.className = "group relative overflow-hidden rounded-2xl border border-line bg-card-bg transition-all hover:shadow-lg";
+      card.setAttribute("role", "listitem");
+
+      const timeDisplay = recipe.cooking_time ? `${recipe.cooking_time} мин` : "";
+      const safeTitle = recipe.title.replace(/"/g, "&quot;");
+
+      card.innerHTML = `
+        <a href="/recipe/${recipe.id}" class="block">
+          <div class="aspect-video overflow-hidden">
+            <img
+              src="${recipe.main_image || "/default-share.jpg"}"
+              alt="${safeTitle}"
+              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+          </div>
+          <div class="p-4">
+            <h3 class="text-text-main mb-2 text-lg font-bold transition-colors group-hover:text-brand line-clamp-2">${recipe.title}</h3>
+            ${recipe.description ? `<p class="text-text-muted mb-3 line-clamp-2 text-sm">${recipe.description}</p>` : ""}
+            <div class="flex items-center justify-between">
+              ${timeDisplay ? `<span class="text-text-muted flex items-center gap-1 text-xs" aria-label="Время приготовления: ${timeDisplay}"><svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ${timeDisplay}</span>` : ""}
+              <span class="text-brand text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100">Смотреть →</span>
             </div>
           </div>
-        `;
-        grid.appendChild(card);
-      }
+        </a>
+      `;
+      fragment.appendChild(card);
     });
+
+    grid.innerHTML = "";
+    grid.appendChild(fragment);
   }
 
   document.addEventListener("astro:page-load", renderFavorites);

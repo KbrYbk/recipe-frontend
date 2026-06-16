@@ -197,88 +197,85 @@ const recipeMeta = recipe
         </div>
 
         <header class="mb-12">
-          <h1 class="text-text-main mb-6 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
+          <h1 class="text-text-main mb-4 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
 
-          <div class="flex flex-col justify-between gap-6 lg:flex-row">
-            <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
-              <span class="bg-card-bg border-line text-text-main flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium">
-                <Icon name="lucide:clock" class="text-brand h-5 w-5 shrink-0" />
-                <span class="tabular-nums">{cooking_time} мин</span>
+          <!-- Метки рецепта: время, сложность -->
+          <div class="mb-4 flex flex-wrap items-center gap-2">
+            <span class="bg-card-bg border-line text-text-main inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium sm:h-11 sm:rounded-xl sm:px-4" aria-label={`Время приготовления: ${cooking_time} минут`}>
+              <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
+              <span class="tabular-nums">{cooking_time} мин</span>
+            </span>
+
+            {difficulty && (
+              <span class="bg-accent-soft text-brand inline-flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold tracking-wide uppercase sm:h-11 sm:rounded-xl sm:px-4 sm:text-xs" aria-label={`Сложность: ${difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко"}`}>
+                <Icon name="lucide:flame" class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
+                <span>{difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко"}</span>
               </span>
+            )}
+          </div>
 
-              {difficulty && (
-                <span class="bg-accent-soft text-brand flex h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-bold tracking-wider uppercase">
-                  <Icon name="lucide:flame" class="h-5 w-5 shrink-0" />
-                  <span>{difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко"}</span>
-                </span>
-              )}
-
-              {/* <button
-                type="button"
-                id="likeBtn"
-                data-id={id}
-                data-count={recipe?.likes_count || 0}
-                class="bg-card-bg border-line flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold text-rose-500 transition-all hover:bg-rose-50 active:scale-95 disabled:opacity-70 disabled:hover:bg-transparent"
-              >
-                <Icon name="lucide:heart" class="heart-icon h-5 w-5 shrink-0" />
-                <span class="likes-count tabular-nums">{recipe?.likes_count || 0}</span>
-              </button> */}
-
-              <button
-                type="button"
-                id="favoriteBtn"
-                data-id={id}
-                class="bg-card-bg border-line text-text-main flex h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition-all hover:text-brand hover:border-brand active:scale-95"
-              >
-                <Icon name="lucide:bookmark" class="bookmark-icon h-5 w-5 shrink-0" />
-                <span>Избранное</span>
-              </button>
-
-              <div
-                id="ratingStars"
-                data-id={id}
-                data-avg={recipe?.average_rating || 0}
-                class="bg-card-bg border-line flex h-11 items-center justify-center gap-1 rounded-xl border px-4 py-2 text-sm font-bold text-amber-500"
-              >
-                <div class="stars-container flex gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      type="button"
-                      data-star={star}
-                      class="star-btn transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100"
-                      aria-label={`Оценить на ${star}`}
-                    >
-                      <Icon name="lucide:star" class="h-5 w-5 shrink-0" />
-                    </button>
-                  ))}
-                </div>
-                <div class="ml-2 text-text-main">
-                  <span class="avg-val font-bold">{recipe?.average_rating ? Number(recipe.average_rating).toFixed(1) : "0"}</span>
-                  <span class="user-val text-xs text-text-muted hidden"> (Ваша: <span class="val"></span>)</span>
-                </div>
+          <!-- Действия: рейтинг, избранное, печать, шаринг -->
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Рейтинг -->
+            <div
+              id="ratingStars"
+              data-id={id}
+              data-avg={recipe?.average_rating || 0}
+              class="bg-card-bg border-line flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold text-amber-500"
+              role="group"
+              aria-label={`Рейтинг: ${recipe?.average_rating ? Number(recipe.average_rating).toFixed(1) : "0"} из 5`}
+            >
+              <div class="stars-container flex gap-0.5" role="radiogroup" aria-label="Ваша оценка">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    type="button"
+                    data-star={star}
+                    class="star-btn rounded-md p-1 transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-label={`Оценить на ${star} ${star === 1 ? "звезду" : star < 5 ? "звезды" : "звёзд"}`}
+                    aria-pressed="false"
+                  >
+                    <Icon name="lucide:star" class="h-5 w-5 shrink-0" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+              <div class="ml-1 text-text-main">
+                <span class="avg-val font-bold">{recipe?.average_rating ? Number(recipe.average_rating).toFixed(1) : "0"}</span>
+                <span class="sr-only"> из 5</span>
+                <span class="user-val text-xs text-text-muted hidden"> (Ваша: <span class="val"></span>)</span>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                class="bg-card-bg border-line text-text-main hover:border-brand no-print flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border px-5 py-2 text-sm font-medium transition-all active:scale-95 sm:flex-initial"
-                aria-label="Печать рецепта"
-              >
-                <Icon name="lucide:printer" class="h-4 w-4 shrink-0" />
-                <span>Печать</span>
-              </button>
+            <button
+              type="button"
+              id="favoriteBtn"
+              data-id={id}
+              aria-label="Добавить в избранное"
+              aria-pressed="false"
+              class="bg-card-bg border-line text-text-main flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all hover:text-brand hover:border-brand active:scale-95"
+            >
+              <Icon name="lucide:bookmark" class="bookmark-icon h-4 w-4 shrink-0" aria-hidden="true" />
+              <span class="button-label">Избранное</span>
+            </button>
 
-              <button
-                type="button"
-                id="shareBtn"
-                class="bg-brand hover:bg-brand-hover shadow-brand/20 flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-5 py-2 text-sm font-bold text-white shadow-lg transition-all active:scale-95 sm:flex-initial"
-              >
-                <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" />
-                <span>Поделиться</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onclick="window.print()"
+              class="bg-card-bg border-line text-text-main hover:border-brand no-print flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-95"
+              aria-label="Печать рецепта"
+            >
+              <Icon name="lucide:printer" class="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span class="button-label">Печать</span>
+            </button>
+
+            <button
+              type="button"
+              id="shareBtn"
+              class="bg-brand hover:bg-brand-hover flex h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold text-white transition-all active:scale-95"
+              aria-label="Поделиться рецептом"
+            >
+              <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span class="button-label">Поделиться</span>
+            </button>
           </div>
         </header>
 
@@ -426,106 +423,76 @@ const recipeMeta = recipe
 </script>
 
 <script>
-  import { incrementLike, setRating } from "../../lib/api/recipes";
+  import { setRating } from "../../lib/api/recipes";
 
   function setupInteractions() {
-    const likeBtn = document.getElementById("likeBtn") as HTMLButtonElement;
-    const favBtn = document.getElementById("favoriteBtn") as HTMLButtonElement;
+    const favBtn = document.getElementById("favoriteBtn") as HTMLButtonElement | null;
     const ratingContainer = document.getElementById("ratingStars");
-    const recipeId = (likeBtn || favBtn || ratingContainer)?.dataset?.id;
+    const recipeId = (favBtn || ratingContainer)?.dataset?.id;
     if (!recipeId) return;
 
-    // Favorites logic
+    // === FAVORITES ===
     if (favBtn) {
       const favorites = JSON.parse(localStorage.getItem("swageda_favorites") || "[]");
       const isFav = favorites.includes(recipeId);
-      
-      if (isFav) {
-        favBtn.classList.add("text-brand", "border-brand");
-        const span = favBtn.querySelector("span");
-        if (span) span.textContent = "В избранном";
-        favBtn.querySelector("svg")?.classList.add("fill-current");
-      }
 
-      favBtn.onclick = () => {
+      const applyFavState = (active: boolean) => {
+        const icon = favBtn.querySelector(".bookmark-icon") as SVGElement | null;
+        const label = favBtn.querySelector(".button-label") as HTMLElement | null;
+        if (active) {
+          favBtn.classList.add("text-brand", "border-brand");
+          favBtn.setAttribute("aria-pressed", "true");
+          if (icon) icon.classList.add("fill-current");
+          if (label) label.textContent = "В избранном";
+        } else {
+          favBtn.classList.remove("text-brand", "border-brand");
+          favBtn.setAttribute("aria-pressed", "false");
+          if (icon) icon.classList.remove("fill-current");
+          if (label) label.textContent = "Избранное";
+        }
+      };
+
+      applyFavState(isFav);
+
+      favBtn.addEventListener("click", () => {
         const currentFavs = JSON.parse(localStorage.getItem("swageda_favorites") || "[]");
         const index = currentFavs.indexOf(recipeId);
-        
         if (index > -1) {
           currentFavs.splice(index, 1);
-          favBtn.classList.remove("text-brand", "border-brand");
-          const span = favBtn.querySelector("span");
-          if (span) span.textContent = "В избранное";
-          favBtn.querySelector("svg")?.classList.remove("fill-current");
+          applyFavState(false);
         } else {
           currentFavs.push(recipeId);
-          favBtn.classList.add("text-brand", "border-brand");
-          const span = favBtn.querySelector("span");
-          if (span) span.textContent = "В избранном";
-          favBtn.querySelector("svg")?.classList.add("fill-current");
+          applyFavState(true);
         }
         localStorage.setItem("swageda_favorites", JSON.stringify(currentFavs));
-      };
+      });
     }
 
-    // Likes
-    if (likeBtn) {
-      const likedRecipes = JSON.parse(localStorage.getItem("liked_recipes") || "[]");
-      if (likedRecipes.includes(recipeId)) {
-        likeBtn.disabled = true;
-        likeBtn.querySelector("svg")?.classList.add("fill-current");
-      }
-
-      likeBtn.onclick = async () => {
-        if (likedRecipes.includes(recipeId)) return;
-
-        const countEl = likeBtn.querySelector(".likes-count");
-        const currentCount = parseInt(likeBtn.dataset.count || "0");
-        if (countEl) countEl.textContent = String(currentCount + 1);
-
-        likeBtn.disabled = true;
-        likeBtn.querySelector("svg")?.classList.add("fill-current");
-
-        const res = await incrementLike(recipeId).catch(() => null);
-        if (res?.ok) {
-          likedRecipes.push(recipeId);
-          localStorage.setItem("liked_recipes", JSON.stringify(likedRecipes));
-        } else {
-          if (countEl) countEl.textContent = String(currentCount);
-          likeBtn.disabled = false;
-          likeBtn.querySelector("svg")?.classList.remove("fill-current");
-
-          if (res?.status === 403) alert("Вы уже голосовали");
-          else if (res?.status === 422) alert("Ошибка валидации (422)");
-          else alert(`Ошибка ${res?.status || "сети"}. Проверьте PUBLIC_ префикс для API_BASE_URL.`);
-        }
-      };
-    }
-
-    // Rating
+    // === RATING ===
     if (ratingContainer) {
       const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
       const userRating = myRatings[recipeId];
-      const stars = ratingContainer.querySelectorAll(".star-btn");
+      const stars = ratingContainer.querySelectorAll(".star-btn") as NodeListOf<HTMLButtonElement>;
       const avgValSpan = ratingContainer.querySelector(".avg-val");
       let isProcessing = false;
 
       const updateStarsUI = (val: number, isHover = false) => {
         stars.forEach((s) => {
-          const starNum = parseInt((s as HTMLElement).dataset.star || "0");
+          const starNum = parseInt(s.dataset.star || "0");
           const svg = s.querySelector("svg");
-          if (starNum <= val) {
-            svg?.classList.add("fill-current");
-            if (isHover) s.classList.add("scale-110");
-          } else {
-            svg?.classList.remove("fill-current");
-            if (isHover) s.classList.remove("scale-110");
+          const filled = starNum <= val;
+          if (svg) {
+            svg.classList.toggle("fill-current", filled);
+          }
+          s.setAttribute("aria-pressed", String(filled && !isHover));
+          if (isHover) {
+            s.classList.toggle("scale-110", filled);
           }
         });
       };
 
       const showUserRating = (val: number) => {
-        const userValEl = ratingContainer.querySelector(".user-val");
+        const userValEl = ratingContainer.querySelector(".user-val") as HTMLElement | null;
         const valSpan = userValEl?.querySelector(".val");
         if (userValEl && valSpan) {
           userValEl.classList.remove("hidden");
@@ -538,17 +505,17 @@ const recipeMeta = recipe
         updateStarsUI(userRating);
         showUserRating(userRating);
         stars.forEach((s) => {
-          (s as HTMLButtonElement).disabled = true;
+          s.disabled = true;
           s.classList.add("cursor-default");
           s.classList.remove("hover:scale-110", "active:scale-90");
         });
         ratingContainer.classList.add("opacity-90");
       } else {
-        // Добавляем эффекты наведения только если не голосовали
+        // Hover-эффект только если не голосовали
         stars.forEach((btn) => {
           btn.addEventListener("mouseenter", () => {
             if (isProcessing) return;
-            const val = parseInt((btn as HTMLElement).dataset.star || "0");
+            const val = parseInt(btn.dataset.star || "0");
             updateStarsUI(val, true);
           });
         });
@@ -560,17 +527,16 @@ const recipeMeta = recipe
       }
 
       stars.forEach((btn) => {
-        (btn as HTMLButtonElement).onclick = async () => {
+        btn.addEventListener("click", async () => {
           if (isProcessing || localStorage.getItem(`rated_${recipeId}`)) return;
-          
-          const rating = parseInt((btn as HTMLElement).dataset.star || "0");
+
+          const rating = parseInt(btn.dataset.star || "0");
           isProcessing = true;
-          
+
           // Визуально отключаем кнопки сразу
-          stars.forEach((s) => ((s as HTMLButtonElement).disabled = true));
+          stars.forEach((s) => { s.disabled = true; });
 
           try {
-            // Попытка получить IP для защиты от накрутки (базово)
             const ip = await fetch("https://api64.ipify.org?format=json")
               .then((r) => r.json())
               .then((d) => d.ip)
@@ -585,10 +551,10 @@ const recipeMeta = recipe
               myRatings[recipeId] = rating;
               localStorage.setItem("my_ratings", JSON.stringify(myRatings));
               localStorage.setItem(`rated_${recipeId}`, "true");
-              
+
               updateStarsUI(rating);
               showUserRating(rating);
-              
+
               // Анимация успеха
               ratingContainer.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
               setTimeout(() => ratingContainer.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
@@ -604,17 +570,16 @@ const recipeMeta = recipe
                 localStorage.setItem(`rated_${recipeId}`, "true");
               } else {
                 alert("Произошла ошибка при сохранении оценки. Попробуйте позже.");
-                // Возвращаем возможность клика если ошибка не "уже голосовал"
-                stars.forEach((s) => ((s as HTMLButtonElement).disabled = false));
+                stars.forEach((s) => { s.disabled = false; });
                 isProcessing = false;
               }
             }
           } catch (err) {
             console.error(err);
-            stars.forEach((s) => ((s as HTMLButtonElement).disabled = false));
+            stars.forEach((s) => { s.disabled = false; });
             isProcessing = false;
           }
-        };
+        });
       });
     }
   }
