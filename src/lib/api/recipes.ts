@@ -1,5 +1,8 @@
+import https from 'node:https';
 const PROJECT_HEADER = "X-Project-Key-ass";
-
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false
+});
 function getApiConfig() {
   const rawUrls = import.meta.env.PUBLIC_BACKEND_URLS;
   const baseUrls = rawUrls ? String(rawUrls).split(',').map(url => url.replace(/\/$/, "").trim()) : [
@@ -10,7 +13,6 @@ function getApiConfig() {
     key: import.meta.env.PROJECT_KEY ? String(import.meta.env.PROJECT_KEY) : "",
   };
 }
-
 async function fetchWithFallback(path: string, options: RequestInit = {}): Promise<Response> {
   const isServer = import.meta.env.SSR || typeof window === "undefined";
   
@@ -30,23 +32,31 @@ async function fetchWithFallback(path: string, options: RequestInit = {}): Promi
     ...(options.headers || {})
   };
 
+  // --- ДОБАВЛЯЕМ ВЫБОР АГЕНТА ---
+  const fetchOptions: RequestInit = { 
+    ...options, 
+    headers,
+    // Используем агент только в DEV, чтобы игнорировать TLS ошибки
+    agent: import.meta.env.DEV ? httpsAgent : undefined 
+  };
+
   for (const base of bases) {
     const apiPath = base.endsWith("/api") ? "" : "/api";
     const url = `${base}${apiPath}${path}`;
     try {
-      const response = await fetch(url, { ...options, headers });
+      // Используем fetchOptions вместо старого options
+      const response = await fetch(url, fetchOptions);
       if (response.status < 500) {
         return response;
       } else {
-        if (import.meta.env.DEV) console.warn(`Attempt failed for ${url} with status ${response.status}. Trying next fallback.`);
+        if (import.meta.env.DEV) console.warn(`Attempt failed for ${url} with status ${response.status}.`);
       }
     } catch (e) {
-      if (import.meta.env.DEV) console.error(`Network error for ${url}. Trying next fallback:`, e);
+      if (import.meta.env.DEV) console.error(`Network error for ${url}:`, e);
     }
   }
   throw new Error("All backend URLs failed to respond successfully.");
 }
-
 /** Прячет внешний origin картинок за /api-images/* (наш домен). */
 export function toImageProxyUrl(path: string | undefined | null): string | undefined {
   if (!path) return undefined;
@@ -142,7 +152,12 @@ export async function fetchRecipeById(id: string | number) {
     const response = await fetchWithFallback(`/getRecipes/${encodeURIComponent(cleanId)}`);
     if (!response.ok) return { item: null, ok: false, status: response.status };
     const result = await response.json();
-    return { item: result.data || result, ok: true, status: response.status };
+    const item = result.data || result;
+    // Бэкенд может вернуть 200 с пустым телом — считаем это как "не найдено"
+    if (!item || (typeof item === "object" && !Object.keys(item).length) || (typeof item === "object" && item.id == null)) {
+      return { item: null, ok: false, status: 404 };
+    }
+    return { item, ok: true, status: response.status };
   } catch (e) {
     if (import.meta.env.DEV) console.error(`❌ Ошибка загрузки рецепта ${id}:`, e);
     return { item: null, ok: false, status: 0 };

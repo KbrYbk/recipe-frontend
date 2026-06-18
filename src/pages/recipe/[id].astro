@@ -474,7 +474,18 @@ const recipeMeta = recipe
       const userRating = myRatings[recipeId];
       const stars = ratingContainer.querySelectorAll(".star-btn") as NodeListOf<HTMLButtonElement>;
       const avgValSpan = ratingContainer.querySelector(".avg-val");
+      const avgNum = parseFloat(ratingContainer.dataset.avg || "0");
       let isProcessing = false;
+
+      const fillStars = (val: number) => {
+        stars.forEach((s) => {
+          const starNum = parseInt(s.dataset.star || "0");
+          const svg = s.querySelector("svg");
+          if (svg) {
+            svg.classList.toggle("fill-current", starNum <= val);
+          }
+        });
+      };
 
       const updateStarsUI = (val: number, isHover = false) => {
         stars.forEach((s) => {
@@ -502,7 +513,8 @@ const recipeMeta = recipe
 
       // Инициализация при загрузке
       if (userRating) {
-        updateStarsUI(userRating);
+        // Пользователь уже голосовал: показываем его оценку и бекенд-среднее
+        fillStars(Math.round(avgNum));
         showUserRating(userRating);
         stars.forEach((s) => {
           s.disabled = true;
@@ -511,6 +523,9 @@ const recipeMeta = recipe
         });
         ratingContainer.classList.add("opacity-90");
       } else {
+        // Пользователь ещё не голосовал: показываем среднее с бекенда
+        fillStars(Math.round(avgNum));
+
         // Hover-эффект только если не голосовали
         stars.forEach((btn) => {
           btn.addEventListener("mouseenter", () => {
@@ -522,13 +537,15 @@ const recipeMeta = recipe
 
         ratingContainer.addEventListener("mouseleave", () => {
           if (isProcessing) return;
-          updateStarsUI(0);
+          fillStars(Math.round(avgNum));
         });
       }
 
       stars.forEach((btn) => {
         btn.addEventListener("click", async () => {
-          if (isProcessing || localStorage.getItem(`rated_${recipeId}`)) return;
+          if (isProcessing) return;
+          // Проверяем и localStorage-флаг, и наличие сохранённой оценки
+          if (localStorage.getItem(`rated_${recipeId}`) || myRatings[recipeId]) return;
 
           const rating = parseInt(btn.dataset.star || "0");
           isProcessing = true;
@@ -552,7 +569,9 @@ const recipeMeta = recipe
               localStorage.setItem("my_ratings", JSON.stringify(myRatings));
               localStorage.setItem(`rated_${recipeId}`, "true");
 
-              updateStarsUI(rating);
+              // Заполняем звёзды по среднему с бекенда
+              const displayAvg = newAvg ? Math.round(Number(newAvg)) : rating;
+              fillStars(displayAvg);
               showUserRating(rating);
 
               // Анимация успеха
@@ -567,6 +586,8 @@ const recipeMeta = recipe
               const status = res?.status;
               if (status === 403) {
                 alert("Вы уже оценивали этот рецепт");
+                myRatings[recipeId] = rating;
+                localStorage.setItem("my_ratings", JSON.stringify(myRatings));
                 localStorage.setItem(`rated_${recipeId}`, "true");
               } else {
                 alert("Произошла ошибка при сохранении оценки. Попробуйте позже.");
