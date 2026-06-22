@@ -259,63 +259,85 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <BottomNav />
     <CookieConsent />
     <script>
-      // Флаг состояния загрузки
-      let isTransitioning = false;
+      // Page loading indicator — прогресс-бар при переходах между страницами
+      (() => {
+        const KEY = "__pageLoading";
 
-      const startLoading = () => {
-        // Если мы уже в процессе загрузки — выходим, ничего не делаем
-        if (isTransitioning) return;
+        const bar = () => document.getElementById("page-progress");
+        const main = () => document.getElementById("main-content");
 
-        isTransitioning = true;
-        document.body.classList.add("is-loading-active");
+        const start = () => {
+          if (window[KEY]) return;
+          window[KEY] = true;
 
-        const progress = document.getElementById("page-progress");
-        const main = document.getElementById("main-content");
+          document.body.classList.add("is-loading-active");
 
-        if (progress) {
-          progress.classList.remove("is-done");
-          progress.classList.add("is-loading");
-          progress.style.transform = "scaleX(0)";
-        }
+          const p = bar();
+          const m = main();
 
-        if (main) {
-          main.classList.add("is-transitioning");
-        }
-      };
-
-      const stopLoading = () => {
-        // Сбрасываем флаг и убираем блокировку кликов
-        isTransitioning = false;
-        document.body.classList.remove("is-loading-active");
-
-        const progress = document.getElementById("page-progress");
-        const main = document.getElementById("main-content");
-
-        if (progress) {
-          progress.classList.replace("is-loading", "is-done");
-        }
-
-        if (main) {
-          main.classList.remove("is-transitioning");
-        }
-
-        setTimeout(() => {
-          const p = document.getElementById("page-progress");
-          if (p && !p.classList.contains("is-loading")) {
+          if (p) {
             p.classList.remove("is-done");
+            void p.offsetWidth; // reflow чтобы сбросить CSS-анимацию
+            p.classList.add("is-loading");
             p.style.transform = "scaleX(0)";
           }
-        }, 500);
-      };
+          if (m) m.classList.add("is-transitioning");
+        };
 
-      // Слушаем события Astro
-      document.addEventListener("astro:before-preparation", startLoading);
-      document.addEventListener("astro:page-load", stopLoading);
-      document.addEventListener("astro:after-preparation", () => {
-        // Если подготовка сорвалась (например, 404 или обрыв сети)
-        // мы должны разблокировать интерфейс
-        if (isTransitioning) stopLoading();
-      });
+        const stop = () => {
+          if (!window[KEY]) return;
+          window[KEY] = false;
+
+          document.body.classList.remove("is-loading-active");
+
+          const p = bar();
+          const m = main();
+
+          if (p) p.classList.replace("is-loading", "is-done");
+          if (m) m.classList.remove("is-transitioning");
+
+          setTimeout(() => {
+            const el = bar();
+            if (el && !el.classList.contains("is-loading")) {
+              el.classList.remove("is-done");
+              el.style.transform = "scaleX(0)";
+            }
+          }, 500);
+        };
+
+        // 1) Клик по внутренней ссылке → показываем прогресс-бар
+        document.addEventListener("click", (e) => {
+          const a = e.target?.closest?.("a[href]");
+          if (!a) return;
+          if (a.hostname !== location.hostname) return;
+          if (a.hasAttribute("download") || a.target === "_blank") return;
+          const href = a.getAttribute("href");
+          if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+          start();
+        });
+
+        // 2) beforeunload — навигация без перехвата (back/forward, адресная строка)
+        window.addEventListener("beforeunload", start);
+
+        // 3) Новая страница загрузилась — убираем индикатор
+        document.addEventListener("astro:page-load", stop);
+        window.addEventListener("load", () => setTimeout(stop, 100), { once: true });
+
+        // 4) Страховка: если DOM уже готов (скрипт загрузился после DOMContentLoaded)
+        if (document.readyState !== "loading") {
+          stop();
+        }
+
+        // 5) bfcache — возврат из кэша браузера
+        window.addEventListener("pageshow", (e) => {
+          if (e.persisted) stop();
+        });
+
+        // 6) Астро-transition events (если будут подключены)
+        document.addEventListener("astro:before-preparation", start);
+        document.addEventListener("astro:after-preparation", () => { if (window[KEY]) stop(); });
+      })();
     </script>
   </body>
 

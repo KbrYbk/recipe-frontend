@@ -577,6 +577,13 @@
   transition: opacity 0.25s ease;
 }
 
+/* На мобильных список не скроллится — индикатор не нужен */
+@media (max-width: 1023px) {
+  .ingredients-scroll-hint {
+    display: none;
+  }
+}
+
 .ingredients-scroll-hint__btn {
   /* Чтобы кнопка не перехватывала скролл при скрытии */
   pointer-events: auto;

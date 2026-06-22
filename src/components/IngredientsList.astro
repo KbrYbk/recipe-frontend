@@ -26,7 +26,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
     </div>
 
     <div class="relative">
-      <div class="ingredients-scroll-area overflow-y-auto overscroll-contain" data-ingredients-scroll tabindex="0" role="region" aria-label="Список ингредиентов, прокрутите чтобы увидеть все">
+      <div class="ingredients-scroll-area lg:overflow-y-auto lg:overscroll-contain" data-ingredients-scroll tabindex="0" role="region" aria-label="Список ингредиентов, прокрутите чтобы увидеть все">
         <ul class="space-y-3 pr-1">
           {
             ingredients.map((item, i) => {
