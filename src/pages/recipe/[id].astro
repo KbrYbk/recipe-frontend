@@ -60,18 +60,16 @@ const difficulty = recipe?.difficulty != null ? String(recipe.difficulty) : "";
 const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
 const pageTitle = recipe ? `${title} — SwagEda` : isBackendError ? "Технические неполадки — SwagEda" : "Рецепт не найден — SwagEda";
 const canonical = recipe ? `/recipe/${id}` : "/404";
-const origin = Astro.url.origin;
-// Перед созданием jsonLdRecipe добавим хелпер для абсолютных ссылок
+
 const toAbsUrl = (url: string) => {
   if (!url) return "";
   if (url.startsWith("http")) return url;
-  // Берем домен из конфига (https://swageda.ru)
   const siteUrl = Astro.site ? Astro.site.origin : "https://swageda.ru";
   const cleanPath = url.startsWith("/") ? url : `/${url}`;
   const finalPath = cleanPath.startsWith("/api-images") ? cleanPath : `/api-images${cleanPath}`;
-
   return `${siteUrl}${finalPath}`;
 };
+
 const jsonLdRecipe =
   recipe &&
   JSON.stringify({
@@ -86,7 +84,7 @@ const jsonLdRecipe =
     recipeIngredient: ingredients.map((i) => `${i.name}${i.amount || i.unit ? ` — ${i.amount ?? ""} ${i.unit ?? ""}`.trim() : ""}`),
     recipeInstructions: steps.map((step, index) => ({
       "@type": "HowToStep",
-      name: `Шаг ${step.order ?? index + 1}`, // Обязательно для карусели
+      name: `Шаг ${step.order ?? index + 1}`,
       url: `${Astro.site?.origin}${canonical}#step-${step.order ?? index + 1}`,
       position: step.order ?? index + 1,
       text: step.text ?? "",
@@ -97,7 +95,6 @@ const jsonLdRecipe =
         ? {
             "@type": "AggregateRating",
             ratingValue: recipe.average_rating,
-            // Ждем честный ratings_count от бэкенда
             reviewCount: recipe.ratings_count || recipe.likes_count || 1,
           }
         : undefined,
@@ -126,7 +123,7 @@ const jsonLdRecipe =
         }
       : undefined,
   });
-// Формируем объект для мета-тегов
+
 const recipeMeta = recipe
   ? {
       publishDate: recipe.created_at || recipe.updated_at,
@@ -154,7 +151,7 @@ const recipeMeta = recipe
                   <p class="mt-2 text-base text-text-muted leading-relaxed">
                     Наш сайт сейчас испытывает небольшие технические неполадки. Не переживайте, мы уже вовсю "колдуем" над плитой и исправляем проблему! Возвращайтесь совсем скоро.
                   </p>
-                  
+
                   <details class="mt-4 border-t border-brand/10 pt-4 text-xs text-text-muted">
                     <summary class="cursor-pointer font-medium hover:text-brand transition-colors focus:outline-none">
                       Технические детали (для отладки)
@@ -171,7 +168,7 @@ const recipeMeta = recipe
         <HttpNotFound />
       </>
     ) : (
-      <article class="mx-auto max-w-4xl px-4 py-8 md:py-12">
+      <article class="mx-auto max-w-4xl px-4 py-8 md:py-12" data-recipe-id={id}>
         {jsonLdRecipe && <script type="application/ld+json" set:html={jsonLdRecipe} />}
 
         <div class="no-print mb-8">
@@ -206,12 +203,21 @@ const recipeMeta = recipe
               <span class="tabular-nums">{cooking_time} мин</span>
             </span>
 
-            {difficulty && (
-              <span class="bg-accent-soft text-brand inline-flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold tracking-wide uppercase sm:h-11 sm:rounded-xl sm:px-4 sm:text-xs" aria-label={`Сложность: ${difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко"}`}>
-                <Icon name="lucide:flame" class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
-                <span>{difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко"}</span>
-              </span>
-            )}
+            {difficulty && (() => {
+              const d = difficulty;
+              const label = d === "hard" ? "Сложно" : d === "medium" ? "Средне" : "Легко";
+              const cls = d === "hard"
+                ? "bg-red-500/15 text-red-500"
+                : d === "medium"
+                  ? "bg-amber-500/15 text-amber-500"
+                  : "bg-emerald-500/15 text-emerald-500";
+              return (
+                <span class={`${cls} inline-flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold tracking-wide uppercase sm:h-11 sm:rounded-xl sm:px-4 sm:text-xs`} aria-label={`Сложность: ${label}`}>
+                  <Icon name="lucide:flame" class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
+                  <span>{label}</span>
+                </span>
+              );
+            })()}
           </div>
 
           <!-- Действия: рейтинг, избранное, печать, шаринг -->
@@ -306,120 +312,215 @@ const recipeMeta = recipe
           </aside>
 
           <div class="lg:col-span-2">
-            <section aria-labelledby="about-heading" class="mb-12">
-              <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold">
-                О рецепте
-              </h2>
+            {description && (
+              <section aria-labelledby="about-heading" class="mb-12">
+                <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold">
+                  О рецепте
+                </h2>
 
-              <div class="relative">
-                <div class="bg-brand/20 absolute top-0 bottom-0 -left-4 hidden w-1 rounded-full md:block" />
+                <div class="relative">
+                  <div class="bg-brand/20 absolute top-0 bottom-0 -left-4 hidden w-1 rounded-full md:block" />
 
-                <p class="text-text-muted mb-6 text-xl leading-relaxed italic">«{description}»</p>
-              </div>
-            </section>
+                  <p class="text-text-muted mb-6 text-xl leading-relaxed italic">«{description}»</p>
+                </div>
+              </section>
+            )}
 
             <VideoPlayer videoUrl={video_url} />
 
-             <AdSlot id="R-A-19056160-19" />
+            <AdSlot id="R-A-19056160-19" />
 
             <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
               <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
                 Приготовление
               </h2>
               <ol class="list-none space-y-12 p-0" aria-labelledby="steps-heading">
-                {steps.map((step, index) => (
-                  <li class="group relative">
-                    <div class="mb-4 flex gap-6">
-                      <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
-                        {step.order ?? index + 1}
+                {steps.map((step, index) => {
+                  const stepNum = step.order ?? index + 1;
+                  return (
+                    <li id={`step-${stepNum}`} class="group relative scroll-mt-24">
+                      <div class="mb-4 flex gap-6">
+                        <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
+                          {stepNum}
+                        </div>
+                        <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
                       </div>
-                      <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
-                    </div>
 
-                    {step.image ? (
-                      <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
-                        <img
-                          data-zoomable
-                          src={step.image}
-                          alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
-                          width={800}
-                          height={450}
-                          loading="lazy"
-                          decoding="async"
-                          class="image-zoom h-auto w-full"
-                        />
-                      </div>
-                    ) : null}
-                  </li>
-                ))}
+                      {step.image ? (
+                        <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
+                          <img
+                            data-zoomable
+                            src={step.image}
+                            alt={`Шаг ${stepNum}: иллюстрация`}
+                            width={800}
+                            height={450}
+                            loading="lazy"
+                            decoding="async"
+                            class="image-zoom h-auto w-full"
+                          />
+                        </div>
+                      ) : null}
+                    </li>
+                  );
+                })}
               </ol>
             </div>
           </div>
         </div>
         <!-- ЛЕНТА РЕКОМЕНДАЦИЙ (РСЯ Виджет) в самом низу рецепта -->
-             <div class="border-t border-line mt-12 pt-8 no-print">
-              <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>
-               <AdSlot id="R-A-19056160-14" isFeed={true} />
-            </div>
+        <div class="border-t border-line mt-12 pt-8 no-print">
+          <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>
+          <AdSlot id="R-A-19056160-14" isFeed={true} />
+        </div>
       </article>
     )
   }
 </Layout>
 
 <script is:inline>
-  function setupLightbox() {
-    let overlay = document.getElementById("image-lightbox");
-    if (!overlay) {
-      overlay = document.createElement("div");
-      overlay.id = "image-lightbox";
-      overlay.className = "image-lightbox";
-      overlay.innerHTML = '<button type="button" class="image-lightbox-close" aria-label="Закрыть увеличенное изображение">Esc</button><img alt="" />';
-      document.body.appendChild(overlay);
+(function(){
+/* === Lightbox === */
+function setupLightbox(){
+  var o=document.getElementById("image-lightbox");
+  if(!o){
+    o=document.createElement("div");
+    o.id="image-lightbox";
+    o.className="image-lightbox";
+    o.innerHTML='<button type="button" class="image-lightbox__close" aria-label="Закрыть"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><img class="image-lightbox__img" alt="" draggable="false"/><span class="image-lightbox__hint">Свайп вниз чтобы закрыть</span>';
+    document.body.appendChild(o);
 
-      const close = () => overlay.classList.remove("is-open");
-      const closeBtn = overlay.querySelector(".image-lightbox-close");
-      overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) close();
-      });
-      closeBtn?.addEventListener("click", close);
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") close();
-      });
+    var close=function(){
+      o.classList.remove("is-open");
+      // Reset zoom on close
+      var img=o.querySelector(".image-lightbox__img");
+      if(img){img.style.transform="scale(1)";img.style.transformOrigin="center center";}
+    };
+
+    var btn=o.querySelector(".image-lightbox__close");
+    o.addEventListener("click",function(e){if(e.target===o)close();});
+    if(btn)btn.addEventListener("click",close);
+    document.addEventListener("keydown",function(e){if(e.key==="Escape")close();});
+
+    /* Swipe down to close (mobile) */
+    var touchStartY=0;
+    var touchMoved=false;
+    o.addEventListener("touchstart",function(e){
+      touchStartY=e.touches[0].clientY;
+      touchMoved=false;
+    },{passive:true});
+    o.addEventListener("touchmove",function(e){
+      var dy=e.touches[0].clientY-touchStartY;
+      if(dy>40){touchMoved=true;}
+    },{passive:true});
+    o.addEventListener("touchend",function(e){
+      var dy=e.changedTouches[0].clientY-touchStartY;
+      if(dy>80&&touchMoved){close();}
+    },{passive:true});
+  }
+
+  var li=o.querySelector(".image-lightbox__img");
+  var z=document.querySelectorAll("img[data-zoomable]");
+  z.forEach(function(n){
+    if(n.dataset.lightboxBound==="1")return;
+    n.dataset.lightboxBound="1";
+    n.addEventListener("click",function(){
+      li.src=n.currentSrc||n.src;
+      li.alt=n.alt||"Увеличенное изображение";
+      li.style.transform="scale(1)";
+      li.style.transformOrigin="center center";
+      o.classList.add("is-open");
+    });
+  });
+}
+
+/* === Share button === */
+function setupShare(){
+  var b=document.getElementById("shareBtn");
+  if(!b||b.dataset.bound==="1")return;
+  b.dataset.bound="1";
+  b.addEventListener("click",function(){
+    if(navigator.share){
+      navigator.share({title:document.title,url:window.location.href}).catch(function(){});
+    }else{
+      navigator.clipboard.writeText(window.location.href).then(function(){
+        alert("Ссылка скопирована!");
+      }).catch(function(){});
     }
+  });
+}
 
-    const lightboxImage = overlay.querySelector("img");
-    const zoomables = document.querySelectorAll("img[data-zoomable]");
-    zoomables.forEach((node) => {
-      if (!(node instanceof HTMLImageElement)) return;
-      if (node.dataset.lightboxBound === "1") return;
-      node.dataset.lightboxBound = "1";
-      node.addEventListener("click", () => {
-        lightboxImage.src = node.currentSrc || node.src;
-        lightboxImage.alt = node.alt || "Увеличенное изображение";
-        overlay.classList.add("is-open");
-      });
-    });
+/* === Reading progress bar === */
+function setupReadingProgress(){
+  var bar=document.getElementById("reading-progress");
+  if(!bar){
+    bar=document.createElement("div");
+    bar.id="reading-progress";
+    bar.className="reading-progress";
+    bar.setAttribute("role","progressbar");
+    bar.setAttribute("aria-label","Прогресс чтения страницы");
+    bar.setAttribute("aria-valuenow","0");
+    bar.setAttribute("aria-valuemin","0");
+    bar.setAttribute("aria-valuemax","100");
+    bar.style.cssText="position:fixed;top:0;left:0;z-index:1001;height:3px;width:100%;background:#ff6900;opacity:0;transform-origin:left;transform:scaleX(0);pointer-events:none;transition:transform .1s linear,opacity .2s ease;";
+    document.body.appendChild(bar);
   }
+  var ticking=false;
+  function update(){
+    var st=window.scrollY||document.documentElement.scrollTop;
+    var dh=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+    var p=dh>0?Math.min((st/dh)*100,100):0;
+    bar.style.transform="scaleX("+(p/100)+")";
+    bar.setAttribute("aria-valuenow",String(Math.round(p)));
+    bar.style.opacity=(dh>50&&st>50)?"1":"0";
+    ticking=false;
+  }
+  window.addEventListener("scroll",function(){if(!ticking){requestAnimationFrame(update);ticking=true;}},{passive:true});
+  window.addEventListener("resize",update,{passive:true});
+  window.addEventListener("load",update);
+  setTimeout(update,500);
+  update();
+}
 
+/* === Scroll position persistence === */
+function setupScrollPersistence(){
+  var ae=document.querySelector("article[data-recipe-id]");
+  var rid=ae?ae.getAttribute("data-recipe-id"):"";
+  var key="recipe:scroll:"+rid;
+  if(!window.location.hash){
+    var sp=sessionStorage.getItem(key);
+    if(sp){
+      var restore=function(){
+        var dh=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+        if(dh>0)window.scrollTo(0,Math.round(parseFloat(sp)*dh));
+      };
+      requestAnimationFrame(restore);
+      setTimeout(restore,300);
+      setTimeout(restore,1000);
+    }
+  }
+  var saving=false;
+  var saveScroll=function(){
+    var dh=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+    if(dh>0)sessionStorage.setItem(key,String(Math.min(window.scrollY/dh,1)));
+    saving=false;
+  };
+  window.addEventListener("scroll",function(){if(!saving){requestAnimationFrame(saveScroll);saving=true;}},{passive:true});
+  window.addEventListener("beforeunload",saveScroll);
+  document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")saveScroll();});
+}
+
+/* === Init === */
+setupLightbox();
+setupShare();
+setupReadingProgress();
+setupScrollPersistence();
+document.addEventListener("astro:page-load",function(){
   setupLightbox();
-  document.addEventListener("astro:page-load", setupLightbox);
-
-  const shareBtn = document.getElementById("shareBtn");
-  if (shareBtn && shareBtn.dataset.bound !== "1") {
-    shareBtn.dataset.bound = "1";
-    shareBtn.addEventListener("click", async () => {
-      try {
-        if (navigator.share) {
-          await navigator.share({ title: document.title, url: window.location.href });
-        } else {
-          await navigator.clipboard.writeText(window.location.href);
-          alert("Ссылка скопирована!");
-        }
-      } catch (err) {
-        if (import.meta.env.DEV) console.error(err);
-      }
-    });
-  }
+  setupShare();
+  setupReadingProgress();
+  setupScrollPersistence();
+});
+})();
 </script>
 
 <script>
@@ -477,28 +578,14 @@ const recipeMeta = recipe
       const avgNum = parseFloat(ratingContainer.dataset.avg || "0");
       let isProcessing = false;
 
-      const fillStars = (val: number) => {
+      const renderStars = (val: number, isHover = false) => {
         stars.forEach((s) => {
           const starNum = parseInt(s.dataset.star || "0");
-          const svg = s.querySelector("svg");
-          if (svg) {
-            svg.classList.toggle("fill-current", starNum <= val);
-          }
-        });
-      };
-
-      const updateStarsUI = (val: number, isHover = false) => {
-        stars.forEach((s) => {
-          const starNum = parseInt(s.dataset.star || "0");
-          const svg = s.querySelector("svg");
           const filled = starNum <= val;
-          if (svg) {
-            svg.classList.toggle("fill-current", filled);
-          }
+          const svg = s.querySelector("svg");
+          if (svg) svg.classList.toggle("fill-current", filled);
           s.setAttribute("aria-pressed", String(filled && !isHover));
-          if (isHover) {
-            s.classList.toggle("scale-110", filled);
-          }
+          if (isHover) s.classList.toggle("scale-110", filled);
         });
       };
 
@@ -511,10 +598,8 @@ const recipeMeta = recipe
         }
       };
 
-      // Инициализация при загрузке
       if (userRating) {
-        // Пользователь уже голосовал: показываем его оценку и бекенд-среднее
-        fillStars(Math.round(avgNum));
+        renderStars(Math.round(avgNum));
         showUserRating(userRating);
         stars.forEach((s) => {
           s.disabled = true;
@@ -523,34 +608,30 @@ const recipeMeta = recipe
         });
         ratingContainer.classList.add("opacity-90");
       } else {
-        // Пользователь ещё не голосовал: показываем среднее с бекенда
-        fillStars(Math.round(avgNum));
+        renderStars(Math.round(avgNum));
 
-        // Hover-эффект только если не голосовали
         stars.forEach((btn) => {
           btn.addEventListener("mouseenter", () => {
             if (isProcessing) return;
             const val = parseInt(btn.dataset.star || "0");
-            updateStarsUI(val, true);
+            renderStars(val, true);
           });
         });
 
         ratingContainer.addEventListener("mouseleave", () => {
           if (isProcessing) return;
-          fillStars(Math.round(avgNum));
+          renderStars(Math.round(avgNum));
         });
       }
 
       stars.forEach((btn) => {
         btn.addEventListener("click", async () => {
           if (isProcessing) return;
-          // Проверяем и localStorage-флаг, и наличие сохранённой оценки
           if (localStorage.getItem(`rated_${recipeId}`) || myRatings[recipeId]) return;
 
           const rating = parseInt(btn.dataset.star || "0");
           isProcessing = true;
 
-          // Визуально отключаем кнопки сразу
           stars.forEach((s) => { s.disabled = true; });
 
           try {
@@ -569,16 +650,13 @@ const recipeMeta = recipe
               localStorage.setItem("my_ratings", JSON.stringify(myRatings));
               localStorage.setItem(`rated_${recipeId}`, "true");
 
-              // Заполняем звёзды по среднему с бекенда
               const displayAvg = newAvg ? Math.round(Number(newAvg)) : rating;
-              fillStars(displayAvg);
+              renderStars(displayAvg);
               showUserRating(rating);
 
-              // Анимация успеха
               ratingContainer.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
               setTimeout(() => ratingContainer.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
 
-              // Обновляем средний балл
               if (avgValSpan) {
                 avgValSpan.textContent = newAvg ? Number(newAvg).toFixed(1) : String(rating);
               }

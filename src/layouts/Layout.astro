@@ -91,113 +91,170 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <div set:html={(() => {
-      const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
-        ? String(import.meta.env.PUBLIC_BACKEND_URLS).split(',')[0].replace(/\/$/, '')
-        : import.meta.env.API_BASE_URL
-        ? String(import.meta.env.API_BASE_URL).replace(/\/$/, '')
-        : '';
-      return apiBase ? `<link rel="preconnect" href="${apiBase}" crossorigin />` : '';
-    })()}></div>
-    <slot name="head" />
-    <script is:inline>
-      const applyTheme = () => {
-        let theme;
-        if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
-          theme = localStorage.getItem("theme");
-        } else {
-          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        }
-        if (theme === "dark") {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      };
-
-      applyTheme();
-      document.addEventListener("astro:after-swap", applyTheme);
-
-      // Защита от копирования: добавление ссылки на источник
-      document.addEventListener("copy", (event) => {
-        const selection = document.getSelection();
-        if (selection && selection.toString().length > 30) {
-          const pagelink = `\n\nИсточник: ${document.location.href}\n© SwagEda — Твоя уютная кухня`;
-          const copytext = selection.toString() + pagelink;
-          if (event.clipboardData) {
-            event.clipboardData.setData("text/plain", copytext);
-            event.preventDefault();
-          }
-        }
-      });
-    </script>
-    <!-- Yandex.Metrika counter -->
-    <script is:inline type="text/javascript">
-      (function (m, e, t, r, i, k, a) {
-        m[i] =
-          m[i] ||
-          function () {
-            (m[i].a = m[i].a || []).push(arguments);
-          };
-        m[i].l = 1 * new Date();
-        for (var j = 0; j < document.scripts.length; j++) {
-          if (document.scripts[j].src === r) {
-            return;
-          }
-        }
-        ((k = e.createElement(t)), (a = e.getElementsByTagName(t)[0]), (k.async = 1), (k.src = r), a.parentNode.insertBefore(k, a));
-      })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id=108404580", "ym");
-
-      ym(108404580, "init", { ssr: true, webvisor: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/108404580" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-    <script is:inline>
-      document.addEventListener("astro:after-navigation", () => {
-        ym(108404580, "hit", window.location.href);
-      });
-    </script>
-    <!-- Yandex Context JS — загружаем один раз, строго один экземпляр -->
-    <script>
-      (function() {
-        // Защита от повторной загрузки context.js при View Transitions
-        if (!window.__yaContextLoaded) {
-          var s = document.createElement('script');
-          s.src = 'https://yandex.ru/ads/system/context.js';
-          s.async = true;
-          document.head.appendChild(s);
-          window.__yaContextLoaded = true;
-        }
-      })();
-    </script>
-
-    <script is:inline>
-    </script>
-    <ClientRouter />
   </head>
+  <div
+    set:html={(() => {
+      const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
+        ? String(import.meta.env.PUBLIC_BACKEND_URLS)
+            .split(",")[0]
+            .replace(/\/$/, "")
+        : import.meta.env.API_BASE_URL
+          ? String(import.meta.env.API_BASE_URL).replace(/\/$/, "")
+          : "";
+      return apiBase ? `<link rel="preconnect" href="${apiBase}" crossorigin />` : "";
+    })()}
+  />
+  <slot name="head" />
+  <script is:inline>
+    const applyTheme = () => {
+      let theme;
+      if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+        theme = localStorage.getItem("theme");
+      } else {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    };
+
+    applyTheme();
+    document.addEventListener("astro:after-swap", applyTheme);
+
+    // Защита от копирования: добавление ссылки на источник
+    document.addEventListener("copy", (event) => {
+      const selection = document.getSelection();
+      if (selection && selection.toString().length > 30) {
+        const pagelink = `\n\nИсточник: ${document.location.href}\n© SwagEda — Твоя уютная кухня`;
+        const copytext = selection.toString() + pagelink;
+        if (event.clipboardData) {
+          event.clipboardData.setData("text/plain", copytext);
+          event.preventDefault();
+        }
+      }
+    });
+  </script>
+  <!-- Yandex.Metrika counter -->
+  <script is:inline type="text/javascript">
+    (function (m, e, t, r, i, k, a) {
+      m[i] =
+        m[i] ||
+        function () {
+          (m[i].a = m[i].a || []).push(arguments);
+        };
+      m[i].l = 1 * new Date();
+      for (var j = 0; j < document.scripts.length; j++) {
+        if (document.scripts[j].src === r) {
+          return;
+        }
+      }
+      ((k = e.createElement(t)), (a = e.getElementsByTagName(t)[0]), (k.async = 1), (k.src = r), a.parentNode.insertBefore(k, a));
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id=108404580", "ym");
+
+    ym(108404580, "init", { ssr: true, webvisor: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/108404580" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
+  <script is:inline>
+    document.addEventListener("astro:after-navigation", () => {
+      ym(108404580, "hit", window.location.href);
+    });
+  </script>
+  <!-- Yandex Context JS — загружаем один раз, строго один экземпляр -->
+  <script>
+    (function () {
+      // Защита от повторной загрузки context.js при View Transitions
+      if (!window.__yaContextLoaded) {
+        var s = document.createElement("script");
+        s.src = "https://yandex.ru/ads/system/context.js";
+        s.async = true;
+        document.head.appendChild(s);
+        window.__yaContextLoaded = true;
+      }
+    })();
+  </script>
+
+  <script is:inline>
+    (function () {
+      window.yaContextCb = window.yaContextCb || [];
+
+      var _fullscreenRendered = false;
+
+      function initFullscreenAd() {
+        // Fullscreen и floor-рекламу рендерим только ОДИН раз за сессию страницы
+        // При View Transition НЕ перезапускаем — они уже в DOM
+        if (_fullscreenRendered) return;
+        _fullscreenRendered = true;
+
+        window.yaContextCb.push(function () {
+          if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
+            try {
+              window.Ya.Context.AdvManager.render({
+                blockId: "R-A-19056160-20",
+                type: "fullscreen",
+                platform: "touch",
+              });
+            } catch (e) {
+              console.error("Fullscreen ad error:", e);
+            }
+
+            try {
+              window.Ya.Context.AdvManager.render({
+                blockId: "R-A-19056160-21",
+                type: "floorAd",
+                platform: "touch",
+              });
+            } catch (e) {
+              console.error("Floor ad error:", e);
+            }
+          }
+        });
+      }
+
+      // Ждём, пока context.js инициализируется, но не дольше 5 секунд
+      var attempts = 0;
+      var maxAttempts = 50;
+      var checkInterval = setInterval(function () {
+        attempts++;
+        if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
+          clearInterval(checkInterval);
+          initFullscreenAd();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          // context.js не ответил за 5 сек — всё равно пытаемся
+          initFullscreenAd();
+        }
+      }, 100);
+    })();
+  </script>
+  <ClientRouter />
+
   <body class="flex min-h-screen flex-col antialiased">
     <!-- Боковые липкие баннеры для больших мониторов (экраны шире 1560px) -->
     <!-- Они зафиксированы по бокам экрана и не перекрывают основной контент -->
     <div class="hidden min-[1560px]:block">
-      <div class="fixed left-4 top-28 z-40 w-[160px] h-[600px] overflow-hidden no-print">
+      <div class="no-print fixed top-28 left-4 z-40 h-[600px] w-[160px] overflow-hidden">
         <AdSlot id="R-A-19056160-22" className="sticky top-28" />
       </div>
-      <div class="fixed right-4 top-28 z-40 w-[160px] h-[600px] overflow-hidden no-print">
+      <div class="no-print fixed top-28 right-4 z-40 h-[600px] w-[160px] overflow-hidden">
         <AdSlot id="R-A-19056160-23" className="sticky top-28" />
       </div>
     </div>
 
     <a href="#main-content" class="skip-to-main">Перейти к основному контенту</a>
     <div id="page-progress" class="page-progress" transition:persist aria-hidden="true"></div>
+    <!-- Reading progress bar is created by JS to survive Astro transitions -->
     <div id="route-status" class="sr-only" transition:persist aria-live="polite"></div>
     <Header />
     <!-- Баннер 15 — над контентом, виден на всех страницах -->
-    <AdSlot id="R-A-19056160-15" className="max-w-6xl mt-4 mb-2" />
+    <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" />
     <main id="main-content" tabindex="-1" class="main-content-transition grow px-4 py-8 pb-24 md:px-8 md:pb-8 lg:px-12">
       <slot />
     </main>
     <!-- Баннер 16 — после контента, перед футером -->
-    <AdSlot id="R-A-19056160-16" className="max-w-6xl mb-8" />
+    <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" />
     <Footer />
     <BottomNav />
     <CookieConsent />
@@ -261,4 +318,6 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
       });
     </script>
   </body>
+
+
 </html>

@@ -22,37 +22,54 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
         <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" />
         Ингредиенты
       </h2>
-      <button data-reset-ingredients={recipeSlug} class="text-text-muted hover:text-brand text-xs font-medium transition-colors cursor-pointer"> Сбросить </button>
+      <button data-reset-ingredients={recipeSlug} class="text-text-muted hover:text-brand cursor-pointer text-xs font-medium transition-colors"> Сбросить </button>
     </div>
 
-    <ul class="space-y-3">
-      {
-        ingredients.map((item, i) => {
-          const cbId = `ing-${recipeSlug}-${i}`;
-          return (
-            <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors">
-              <div class="flex h-6 shrink-0 items-center">
-                <input
-                  id={cbId}
-                  type="checkbox"
-                  data-ingredient-checkbox
-                  data-recipe-slug={recipeSlug}
-                  class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded-md transition-all checked:scale-110"
-                />
-              </div>
-              <label for={cbId} class="flex flex-1 cursor-pointer flex-col select-none">
-                <span class="text-text-main leading-tight font-medium">{item.name}</span>
-                {item.amount && (
-                  <span class="text-text-muted text-xs font-bold italic opacity-80">
-                    {item.amount} {item.unit}
-                  </span>
-                )}
-              </label>
-            </li>
-          );
-        })
-      }
-    </ul>
+    <div class="relative">
+      <div class="ingredients-scroll-area overflow-y-auto overscroll-contain" data-ingredients-scroll tabindex="0" role="region" aria-label="Список ингредиентов, прокрутите чтобы увидеть все">
+        <ul class="space-y-3 pr-1">
+          {
+            ingredients.map((item, i) => {
+              const cbId = `ing-${recipeSlug}-${i}`;
+              return (
+                <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors">
+                  <div class="flex h-6 shrink-0 items-center">
+                    <input
+                      id={cbId}
+                      type="checkbox"
+                      data-ingredient-checkbox
+                      data-recipe-slug={recipeSlug}
+                      class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded-md transition-all checked:scale-110"
+                    />
+                  </div>
+                  <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all select-none">
+                    <span class="ingredient-name text-text-main leading-tight font-medium">{item.name}</span>
+                    {item.amount && (
+                      <span class="ingredient-amount text-text-muted text-xs font-bold italic opacity-80">
+                        {item.amount} {item.unit}
+                      </span>
+                    )}
+                  </label>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </div>
+
+      <!-- Индикатор: показывает что есть ещё ингредиенты и сколько осталось -->
+      <div class="ingredients-scroll-hint absolute inset-x-0 bottom-0 z-10 flex items-end justify-center pb-2" data-scroll-hint aria-hidden="true">
+        <button
+          type="button"
+          class="ingredients-scroll-hint__btn bg-card-bg/95 border-line text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm transition-all hover:shadow-xl active:scale-95"
+          data-scroll-down-btn
+          tabindex="-1"
+        >
+          <span data-remaining-count>{ingredients.length}</span> ингредиентов внизу
+          <Icon name="lucide:chevron-down" class="h-3.5 w-3.5 animate-bounce" />
+        </button>
+      </div>
+    </div>
 
     <button
       data-copy-ingredients
@@ -71,13 +88,20 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
     const resetBtn = document.querySelector(`[data-reset-ingredients="${slug}"]`);
     const copyBtn = document.querySelector("[data-copy-ingredients]");
 
-    // Логика чекбоксов (сохранение)
+    // Логика чекбоксов (сохранение + зачёркивание)
+    const updateCheckedState = (input: HTMLInputElement) => {
+      const label = input.closest("li")?.querySelector(".ingredient-label");
+      label?.classList.toggle("is-checked", input.checked);
+    };
+
     checkboxes.forEach((input) => {
       const key = `recipe:ing:${slug}:${input.id}`;
       input.checked = localStorage.getItem(key) === "1";
+      updateCheckedState(input);
 
       input.addEventListener("change", () => {
         localStorage.setItem(key, input.checked ? "1" : "0");
+        updateCheckedState(input);
       });
     });
 
@@ -86,6 +110,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       checkboxes.forEach((input) => {
         input.checked = false;
         localStorage.removeItem(`recipe:ing:${slug}:${input.id}`);
+        updateCheckedState(input);
       });
     });
 
@@ -109,4 +134,59 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
   // Запуск
   initIngredients();
   document.addEventListener("astro:after-swap", initIngredients);
+
+  // === Scroll hint: показывает сколько ингредиентов осталось и даёт прокрутить ===
+  function initScrollHint() {
+    const scrollArea = document.querySelector<HTMLElement>("[data-ingredients-scroll]");
+    const hint = document.querySelector<HTMLElement>("[data-scroll-hint]");
+    const remainingEl = document.querySelector<HTMLElement>("[data-remaining-count]");
+    const scrollDownBtn = document.querySelector<HTMLElement>("[data-scroll-down-btn]");
+    if (!scrollArea || !hint) return;
+
+    const items = scrollArea.querySelectorAll<HTMLElement>("[data-ingredient-checkbox]");
+    const totalItems = items.length;
+
+    const updateHint = () => {
+      const scrollBottom = scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight;
+      const isScrollable = scrollArea.scrollHeight > scrollArea.clientHeight;
+      const atBottom = scrollBottom < 12;
+
+      // Считаем сколько ингредиентов ниже видимой области
+      let hiddenCount = 0;
+      if (isScrollable && !atBottom) {
+        const areaRect = scrollArea.getBoundingClientRect();
+        const visibleBottom = areaRect.bottom - 8; // небольшой порог
+        items.forEach((item) => {
+          const itemRect = item.getBoundingClientRect();
+          if (itemRect.top >= visibleBottom) {
+            hiddenCount++;
+          }
+        });
+      }
+
+      // Показываем/скрываем индикатор
+      const showHint = isScrollable && !atBottom && hiddenCount > 0;
+      hint.style.opacity = showHint ? "1" : "0";
+      hint.style.pointerEvents = showHint ? "auto" : "none";
+      hint.setAttribute("aria-hidden", String(!showHint));
+
+      // Обновляем счётчик
+      if (remainingEl) {
+        remainingEl.textContent = String(hiddenCount);
+      }
+    };
+
+    scrollArea.addEventListener("scroll", updateHint, { passive: true });
+    window.addEventListener("resize", updateHint);
+    // Небольшая задержка для корректного расчёта после рендера
+    requestAnimationFrame(updateHint);
+
+    // Кнопка «прокрутить вниз» — скроллит на одну экранную высоту
+    scrollDownBtn?.addEventListener("click", () => {
+      scrollArea.scrollBy({ top: scrollArea.clientHeight * 0.7, behavior: "smooth" });
+    });
+  }
+
+  initScrollHint();
+  document.addEventListener("astro:after-swap", initScrollHint);
 </script>
