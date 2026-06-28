@@ -5,7 +5,6 @@ import Footer from "../components/Footer.astro";
 import BottomNav from "../components/BottomNav.astro";
 import CookieConsent from "../components/CookieConsent.astro";
 import AdSlot from "../components/AdSlot.astro";
-import { ClientRouter } from "astro:transitions";
 interface Props {
   title: string;
   description?: string;
@@ -237,7 +236,6 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
       }, 100);
     })();
   </script>
-  <ClientRouter />
 
   <body class="flex min-h-screen flex-col antialiased">
     <!-- Боковые липкие баннеры для больших мониторов (экраны шире 1560px) -->
@@ -252,9 +250,8 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     </div>
 
     <a href="#main-content" class="skip-to-main">Перейти к основному контенту</a>
-    <div id="page-progress" class="page-progress" transition:persist aria-hidden="true"></div>
-    <!-- Reading progress bar is created by JS to survive Astro transitions -->
-    <div id="route-status" class="sr-only" transition:persist aria-live="polite"></div>
+    <div id="page-progress" class="page-progress" aria-hidden="true"></div>
+    <div id="route-status" class="sr-only" aria-live="polite"></div>
     <Header />
     <!-- Баннер 15 — над контентом, виден на всех страницах -->
     <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" />
