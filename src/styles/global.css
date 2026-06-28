@@ -273,11 +273,6 @@
     box-shadow: none !important;
     text-shadow: none !important;
   }
-  :root {
-    --text-main: #000000 !important;
-    --page-bg: #ffffff !important;
-    --card-bg: #ffffff !important;
-  }
 
   /* 0. УБИВАЕМ ПУСТЫЕ СТРАНИЦЫ И РАСШИРЯЕМ РАБОЧУЮ ЗОНУ */
   html,

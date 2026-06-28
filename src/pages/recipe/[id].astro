@@ -281,6 +281,47 @@ const recipeMeta = recipe
               <Icon name="lucide:bookmark" class="bookmark-icon h-4 w-4 shrink-0" aria-hidden="true" />
               <span class="button-label">Избранное</span>
             </button>
+            <script is:inline>
+              (function () {
+                var btn = document.getElementById("favoriteBtn");
+                if (!btn || !btn.dataset.id) return;
+                var recipeId = btn.dataset.id;
+                var key = "swageda_favorites";
+                try {
+                  var favs = JSON.parse(localStorage.getItem(key) || "[]");
+                } catch (e) {
+                  var favs = [];
+                }
+                var isActive = favs.indexOf(recipeId) > -1;
+                var icon = btn.querySelector(".bookmark-icon");
+                var label = btn.querySelector(".button-label");
+                function setActive(active) {
+                  btn.classList.toggle("text-brand", active);
+                  btn.classList.toggle("border-brand", active);
+                  btn.setAttribute("aria-pressed", active ? "true" : "false");
+                  if (icon) icon.classList.toggle("fill-current", active);
+                  if (label) label.textContent = active ? "В избранном" : "Избранное";
+                }
+                setActive(isActive);
+                btn.addEventListener("click", function () {
+                  var list;
+                  try {
+                    list = JSON.parse(localStorage.getItem(key) || "[]");
+                  } catch (e) {
+                    list = [];
+                  }
+                  var idx = list.indexOf(recipeId);
+                  if (idx > -1) {
+                    list.splice(idx, 1);
+                    setActive(false);
+                  } else {
+                    list.push(recipeId);
+                    setActive(true);
+                  }
+                  localStorage.setItem(key, JSON.stringify(list));
+                });
+              })();
+            </script>
 
             <button
               type="button"
@@ -396,4 +437,4 @@ const recipeMeta = recipe
   }
 </Layout>
 
-<script src="../../scripts/recipe-interactions.ts"></script>
+<script type="module" src="../../scripts/recipe-interactions.ts"></script>

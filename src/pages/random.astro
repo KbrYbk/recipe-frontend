@@ -1,8 +1,24 @@
 ---
 import { fetchRecipesFromApi } from "../lib/api/recipes";
 
+// Кэш total в памяти процесса (TTL 5 мин) — убирает лишний API-запрос на каждый заход
+const TOTAL_TTL_MS = 5 * 60 * 1000;
+let totalCache: { value: number; expires: number } | null = null;
+
+async function getDbTotal(): Promise<{ total: number; ok: boolean }> {
+  const now = Date.now();
+  if (totalCache && totalCache.expires > now) {
+    return { total: totalCache.value, ok: true };
+  }
+  const res = await fetchRecipesFromApi({ limit: 1 });
+  if (res.ok && res.total > 0) {
+    totalCache = { value: res.total, expires: now + TOTAL_TTL_MS };
+  }
+  return { total: res.total, ok: res.ok };
+}
+
 // Получаем общее количество рецептов с бэкенда
-const { total: dbTotal, ok } = await fetchRecipesFromApi({ limit: 1 });
+const { total: dbTotal, ok } = await getDbTotal();
 
 if (!ok || dbTotal === 0) {
   // Если бэкенд недоступен — редирект на главную

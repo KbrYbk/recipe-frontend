@@ -1,17 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { fetchRecipesFromApi, mapBackendRecipe } from "../lib/api/recipes";
-
-// Загружаем все рецепты с бэкенда для отображения избранного
-const { list: allRecipes, ok } = await fetchRecipesFromApi({ limit: 1000 });
-const recipesData = ok ? allRecipes.map(mapBackendRecipe) : [];
 ---
 
 <Layout title="Избранные рецепты — SwagEda">
-  <script is:inline define:vars={{ recipes: recipesData }}>
-    window.ALL_RECIPES = recipes;
-  </script>
-
   <div class="mx-auto max-w-7xl px-4">
     <header class="mb-8 text-center">
       <h1 class="text-text-main text-3xl font-bold md:text-4xl">Избранные рецепты</h1>
@@ -38,10 +29,13 @@ const recipesData = ok ? allRecipes.map(mapBackendRecipe) : [];
 </Layout>
 
 <script>
-  function renderFavorites() {
+  // Рендер избранного: читаем id из localStorage, грузим каждый рецепт по отдельности
+  async function renderFavorites() {
     const grid = document.getElementById("favorites-grid");
     const empty = document.getElementById("empty-favorites");
     const favorites = JSON.parse(localStorage.getItem("swageda_favorites") || "[]");
+
+    console.log("[favorites] ids from localStorage:", favorites);
 
     if (!grid || !empty) return;
 
@@ -57,38 +51,56 @@ const recipesData = ok ? allRecipes.map(mapBackendRecipe) : [];
     empty.classList.remove("flex");
     grid.classList.remove("hidden");
 
-    const recipesData = (window as any).ALL_RECIPES || [];
+    // Загружаем каждый избранный рецепт по отдельности (параллельно) через наш API endpoint
+    // id в localStorage хранится с префиксом ("db-123"), API endpoint сам стрипнет и найдёт рецепт
+    const recipes = (
+      await Promise.all(
+        favorites.map(async (id) => {
+          try {
+            const url = `/api/recipe/${encodeURIComponent(id)}`;
+            console.log("[favorites] fetching:", url);
+            const res = await fetch(url);
+            console.log("[favorites] response status:", res.status, "for", id);
+            if (!res.ok) return null;
+            return await res.json();
+          } catch (e) {
+            console.error("[favorites] fetch error for", id, e);
+            return null;
+          }
+        })
+      )
+    ).filter(Boolean);
+
+    console.log("[favorites] loaded recipes:", recipes.length);
+
     const fragment = document.createDocumentFragment();
 
-    favorites.forEach((favId) => {
-      // Ищем рецепт по любому формату ID
-      const recipe = recipesData.find((r) => {
-        const rid = String(r.id);
-        return rid === favId || rid === `db-${favId}` || rid === `local-${favId}` || String(r.id) === favId;
-      });
-
-      if (!recipe) return;
-
+    recipes.forEach((recipe) => {
       const card = document.createElement("article");
       card.className = "group relative overflow-hidden rounded-2xl border border-line bg-card-bg transition-all hover:shadow-lg";
       card.setAttribute("role", "listitem");
 
       const timeDisplay = recipe.cooking_time ? `${recipe.cooking_time} мин` : "";
-      const safeTitle = recipe.title.replace(/"/g, "&quot;");
+      const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const safeTitle = esc(recipe.title || "");
+      const safeDesc = esc(recipe.description || "");
+      const safeImg = esc(recipe.main_image || "/default-share.jpg");
+      const safeId = encodeURIComponent(recipe.id || "");
 
       card.innerHTML = `
-        <a href="/recipe/${recipe.id}" class="block">
+        <a href="/recipe/${safeId}" class="block">
           <div class="aspect-video overflow-hidden">
             <img
-              src="${recipe.main_image || "/default-share.jpg"}"
+              src="${safeImg}"
               alt="${safeTitle}"
               class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
+              decoding="async"
             />
           </div>
           <div class="p-4">
-            <h3 class="text-text-main mb-2 text-lg font-bold transition-colors group-hover:text-brand line-clamp-2">${recipe.title}</h3>
-            ${recipe.description ? `<p class="text-text-muted mb-3 line-clamp-2 text-sm">${recipe.description}</p>` : ""}
+            <h3 class="text-text-main mb-2 text-lg font-bold transition-colors group-hover:text-brand line-clamp-2">${safeTitle}</h3>
+            ${recipe.description ? `<p class="text-text-muted mb-3 line-clamp-2 text-sm">${safeDesc}</p>` : ""}
             <div class="flex items-center justify-between">
               ${timeDisplay ? `<span class="text-text-muted flex items-center gap-1 text-xs" aria-label="Время приготовления: ${timeDisplay}"><svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ${timeDisplay}</span>` : ""}
               <span class="text-brand text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100">Смотреть →</span>
@@ -103,5 +115,9 @@ const recipesData = ok ? allRecipes.map(mapBackendRecipe) : [];
     grid.appendChild(fragment);
   }
 
-  document.addEventListener("astro:page-load", renderFavorites);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", renderFavorites);
+  } else {
+    renderFavorites();
+  }
 </script>

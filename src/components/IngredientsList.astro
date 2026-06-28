@@ -133,7 +133,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 
   // Запуск
   initIngredients();
-  document.addEventListener("astro:after-swap", initIngredients);
+  document.addEventListener("astro:page-load", initIngredients);
 
   // === Scroll hint: показывает сколько ингредиентов осталось и даёт прокрутить ===
   function initScrollHint() {
@@ -188,5 +188,5 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
   }
 
   initScrollHint();
-  document.addEventListener("astro:after-swap", initScrollHint);
+  document.addEventListener("astro:page-load", initScrollHint);
 </script>

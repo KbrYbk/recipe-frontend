@@ -1,4 +1,21 @@
-import { setRating } from "../lib/api/recipes";
+console.log("[recipe-interactions] script loaded, API_BASE will be resolved");
+/* === Rating API (inlined to keep this file dependency-free for <script type="module">) === */
+const API_BASE = (() => {
+  const raw = (import.meta.env.PUBLIC_BACKEND_URLS || import.meta.env.API_BASE_URL || "") as string;
+  const base = String(raw).split(",")[0].replace(/\/$/, "");
+  console.log("[recipe-interactions] API_BASE=", JSON.stringify(base));
+  return base;
+})();
+
+async function setRating(id: string | number, rating: number, ip: string) {
+  const cleanId = String(id).replace(/^(db-|local-)/, "");
+  const res = await fetch(`${API_BASE}/setRating/${encodeURIComponent(cleanId)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rating, ip }),
+  });
+  return res;
+}
 
 /* === Lightbox === */
 function setupLightbox() {
@@ -183,7 +200,11 @@ function setupInteractions() {
   const favBtn = document.getElementById("favoriteBtn") as HTMLButtonElement | null;
   const ratingContainer = document.getElementById("ratingStars");
   const recipeId = (favBtn || ratingContainer)?.dataset?.id;
-  if (!recipeId) return;
+  if (!recipeId) {
+    console.warn("[recipe-interactions] setupInteractions: recipeId is empty, favBtn=", favBtn, "ratingContainer=", ratingContainer);
+    return;
+  }
+  console.log("[recipe-interactions] setupInteractions: recipeId=", recipeId, "favBtn=", !!favBtn);
 
   // === FAVORITES ===
   if (favBtn) {
@@ -344,12 +365,15 @@ function setupInteractions() {
 
 /* === Init === */
 function init() {
-  setupLightbox();
-  setupShare();
-  setupReadingProgress();
-  setupScrollPersistence();
-  setupInteractions();
+  try {
+    setupLightbox();
+    setupShare();
+    setupReadingProgress();
+    setupScrollPersistence();
+    setupInteractions();
+  } catch (e) {
+    console.error("[recipe-interactions] init error:", e);
+  }
 }
 
 init();
-document.addEventListener("astro:page-load", init);

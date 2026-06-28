@@ -73,6 +73,5 @@ import { Icon } from "astro-icon/components";
   // Запускаем инициализацию сразу
   initCookieBanner();
 
-  // И поддерживаем Astro View Transitions
-  document.addEventListener("astro:after-swap", initCookieBanner);
+  document.addEventListener("astro:page-load", initCookieBanner);
 </script>
