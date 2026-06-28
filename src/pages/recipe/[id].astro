@@ -58,8 +58,46 @@ const ingredients = normalizeIngredients(recipe?.ingredients);
 const steps = (recipe?.steps as { order?: number; text?: string; image?: string }[] | undefined) ?? [];
 const difficulty = recipe?.difficulty != null ? String(recipe.difficulty) : "";
 const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
-const pageTitle = recipe ? `${title} — SwagEda` : isBackendError ? "Технические неполадки — SwagEda" : "Рецепт не найден — SwagEda";
+const pageTitle = recipe ? `${title} — SwagEDa` : isBackendError ? "Технические неполадки — SwagEda" : "Рецепт не найден — SwagEda";
 const canonical = recipe ? `/recipe/${id}` : "/404";
+
+// Персонализированные keywords для страницы рецепта
+const recipeKeywords = recipe
+  ? [
+      title,
+      `${title} рецепт`,
+      `как приготовить ${title.toLowerCase()}`,
+      recipe.cuisine ? `рецепт ${recipe.cuisine} ${title.toLowerCase()}` : null,
+      recipe.category
+        ? typeof recipe.category === "object"
+          ? `${recipe.category.title} рецепты`
+          : `${recipe.category} рецепты`
+        : null,
+      recipe.difficulty
+        ? recipe.difficulty === "easy"
+          ? "простой рецепт"
+          : recipe.difficulty === "medium"
+            ? "рецепт средней сложности"
+            : "сложный рецепт"
+        : null,
+      ingredients.length > 0 ? `рецепт с ${ingredients.slice(0, 3).map((i) => i.name).join(", ").toLowerCase()}` : null,
+      `${cooking_time} минут`,
+      "пошаговый рецепт",
+      "рецепт с фото",
+    ].filter(Boolean).join(", ")
+  : undefined;
+
+// Organization schema — для единообразия бренда на всех страницах
+const siteOrigin = Astro.site ? Astro.site.origin : "https://swageda.ru";
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "SwagEda",
+  alternateName: ["СвэгЕда", "СвегЕда", "Свагеда", "swageda", "swag eda", "сваг еда"],
+  url: siteOrigin,
+  logo: `${siteOrigin}/android-chrome-512x512.png`,
+  description: "SwagEda — агрегатор кулинарных рецептов. Быстрая загрузка, доступный интерфейс, пошаговые инструкции.",
+};
 
 const toAbsUrl = (url: string) => {
   if (!url) return "";
@@ -133,7 +171,8 @@ const recipeMeta = recipe
   : undefined;
 ---
 
-<Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe} ogType="article" recipeData={recipeMeta}>
+<Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe} keywords={recipeKeywords} ogType="article" recipeData={recipeMeta}>
+<script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} is:inline />
   {
     !recipe ? (
       <>

@@ -34,7 +34,11 @@ function collectionHref(page: number) {
 const description = `Лучшие рецепты в категории ${title.toLowerCase()} на SwagEda. Пошаговые инструкции и фото.`;
 ---
 
-<Layout title={`${title} — SwagEda`} description={description}>
+<Layout
+  title={`${title} — SwagEda`}
+  description={description}
+  keywords={`${title.toLowerCase()} рецепты, ${title.toLowerCase()} рецепт, как приготовить ${title.toLowerCase()}, лучшие ${title.toLowerCase()}, ${title.toLowerCase()} с фото, пошаговые рецепты ${title.toLowerCase()}, домашняя кухня, рецепты на каждый день`}
+>
   <div class="mx-auto max-w-6xl px-4">
     <header class="border-line mb-12 border-b py-10 md:py-16">
       <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: title }]} />

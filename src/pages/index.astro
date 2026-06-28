@@ -50,13 +50,28 @@ const webSiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "SwagEda",
-  "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда"],
+  "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
   "url": siteUrl
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "SwagEda",
+  "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "swageda", "swag eda", "сваг еда"],
+  "url": siteUrl,
+  "logo": `${siteUrl}/android-chrome-512x512.png`,
+  "description": "SwagEda — агрегатор кулинарных рецептов. Быстрая загрузка, доступный интерфейс, пошаговые инструкции.",
 };
 ---
 
-<Layout title="SwagEda — Твоя уютная кухня" description="SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов: от завтраков до ужинов. Готовим просто, вкусно и с любовью.">
+<Layout
+  title="SwagEda — Твоя уютная кухня"
+  description="SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов: от завтраков до ужинов. Готовим просто, вкусно и с любовью."
+  keywords="рецепты, кулинария, свэгеда, СвэгЕда, свегеда, СвегЕда, свагеда, Свагеда, SwagEda, swageda, swag eda, сваг еда, рецепты дома, пошаговые рецепты, вкусные рецепты, быстрые рецепты, домашняя кухня, готовим дома, что приготовить"
+>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(webSiteSchema)} />
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(organizationSchema)} />
 
   <div class="mx-auto max-w-6xl px-4">
     {

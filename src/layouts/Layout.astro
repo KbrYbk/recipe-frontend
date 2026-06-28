@@ -12,6 +12,7 @@ interface Props {
   image?: string;
   canonical?: string;
   noindex?: boolean;
+  keywords?: string;
   ogType?: "website" | "article";
   // Добавляем пропс для данных рецепта
   recipeData?: {
@@ -21,7 +22,11 @@ interface Props {
   };
 }
 
-const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg", canonical, noindex = false, ogType = "website", recipeData } = Astro.props;
+const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg", canonical, noindex = false, ogType = "website", keywords, recipeData } = Astro.props;
+
+// Глобальные fallback-keywords при отсутствии персонализированных
+const globalKeywords = "рецепты, кулинария, свэгеда, СвэгЕда, свегеда, СвегЕда, свагеда, Свагеда, SwagEda, swageda, swag eda, сваг еда, рецепты дома, пошаговые рецепты, вкусные рецепты, быстрые рецепты, домашняя кухня, готовим дома, что приготовить";
+const finalKeywords = keywords ?? globalKeywords;
 
 // 1. Сначала определяем базовый URL сайта (из конфига или текущего окружения)
 const siteURL = Astro.site ? Astro.site.origin : Astro.url.origin;
@@ -47,7 +52,7 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
 
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content="рецепты, кулинария, свэгеда, свегеда, свагеда, SwagEda, вкусные рецепты, быстрые рецепты, пошаговые рецепты, домашняя кухня" />
+    <meta name="keywords" content={finalKeywords} />
     <link rel="canonical" href={canonicalHref} />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
 
