@@ -128,7 +128,6 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     };
 
     applyTheme();
-    document.addEventListener("astro:page-load", applyTheme);
 
     // Защита от копирования: добавление ссылки на источник
     document.addEventListener("copy", (event) => {
@@ -326,7 +325,6 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
         window.addEventListener("beforeunload", start);
 
         // 3) Новая страница загрузилась — убираем индикатор
-        document.addEventListener("astro:page-load", stop);
         window.addEventListener("load", () => setTimeout(stop, 100), { once: true });
 
         // 4) Страховка: если DOM уже готов (скрипт загрузился после DOMContentLoaded)
@@ -339,9 +337,6 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
           if (e.persisted) stop();
         });
 
-        // 6) Астро-transition events (если будут подключены)
-        document.addEventListener("astro:before-preparation", start);
-        document.addEventListener("astro:after-preparation", () => { if (window[KEY]) stop(); });
       })();
     </script>
   </body>

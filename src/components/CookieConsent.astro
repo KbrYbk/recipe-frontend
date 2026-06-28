@@ -70,8 +70,5 @@ import { Icon } from "astro-icon/components";
     ); // Обработчик сработает только один раз
   }
 
-  // Запускаем инициализацию сразу
   initCookieBanner();
-
-  document.addEventListener("astro:page-load", initCookieBanner);
 </script>

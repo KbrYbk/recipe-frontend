@@ -105,14 +105,6 @@ const containerId = `yandex_rtb_${id.replace(/-/g, '_')}_${uniqueSuffix}`;
         observer.observe(el);
       }
     }
-
-    // Поддержка Astro View Transitions — пере-обсервим после смены страницы
-    document.addEventListener("astro:page-load", function() {
-      var el = document.getElementById(containerId);
-      if (el && observer) {
-        observer.observe(el);
-      }
-    });
   })();
 </script>
 
