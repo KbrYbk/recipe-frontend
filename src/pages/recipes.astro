@@ -12,14 +12,12 @@ import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from ".
 
 const url = Astro.url;
 const qRaw = url.searchParams.get("q")?.trim() || "";
-const categoryId = url.searchParams.get("categoryId")?.trim() || ""; // categoryId from URL, for display/highlighting
+const categoryId = url.searchParams.get("categoryId")?.trim() || "";
 const categoryLegacy = url.searchParams.get("category")?.trim() || "";
-// effectiveCategoryId is used for actual filtering/fetching. It's cleared if qRaw is present.
 const effectiveCategoryId = qRaw ? "" : categoryId;
 const difficultyFilter = url.searchParams.get("difficulty")?.trim() || "all";
 const currentPage = parseInt(url.searchParams.get("page") || "1");
 
-// 1. Параллельная загрузка (самый быстрый способ)
 const [categoriesData, recipesData] = await Promise.all([
   fetchCategoriesFromApi(),
   fetchRecipesFromApi({
@@ -88,6 +86,8 @@ function recipesHref(overrides: Record<string, string | number | undefined>) {
   return s ? `/recipes?${s}` : "/recipes";
 }
 
+const VISIBLE_CATEGORIES = 4;
+
 const categories = categoriesData.filter((c: any) => c.title).slice(0, 20);
 const difficultyMap = [
   { label: "Все", value: "all" },
@@ -95,6 +95,28 @@ const difficultyMap = [
   { label: "Средне", value: "medium" },
   { label: "Сложно", value: "hard" },
 ];
+
+const timeOptions = [
+  { label: "до 15 мин", value: "15" },
+  { label: "до 30 мин", value: "30" },
+  { label: "до 1 часа", value: "60" },
+  { label: "больше часа", value: "9999" },
+];
+
+const ratingOptions = [
+  { label: "4+ звезды", value: "4" },
+  { label: "3+ звезды", value: "3" },
+  { label: "любой", value: "0" },
+];
+
+const sortOptions = [
+  { label: "Сначала новые", value: "newest" },
+  { label: "По названию (А-Я)", value: "name" },
+];
+
+const sortParam = url.searchParams.get("sort")?.trim() || "newest";
+const maxTimeParam = url.searchParams.get("maxTime")?.trim() || "";
+const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
 ---
 
 <Layout
@@ -126,25 +148,47 @@ const difficultyMap = [
       </div>
     </header>
 
-    <div class="flex flex-col gap-12 lg:flex-row">
-      <aside class="w-full shrink-0 lg:w-64">
-        <div class="lg:sticky lg:top-24">
+    <!-- Горизонтальная полоса сортировки -->
+    <div class="mb-6 flex flex-wrap items-center gap-3">
+      <span class="text-text-muted text-sm font-semibold">Сортировка:</span>
+      <div class="flex flex-wrap gap-2" id="sort-filters">
+        {sortOptions.map((s) => (
+          <a
+            href={recipesHref({ sort: s.value })}
+            class:list={[
+              "rounded-full border px-4 py-1.5 text-sm transition-all",
+              sortParam === s.value
+                ? "border-brand text-brand bg-brand/5 font-semibold"
+                : "border-line text-text-muted hover:border-brand/50 hover:text-brand"
+            ]}
+          >
+            {s.label}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-8 lg:flex-row">
+      <aside class="w-full shrink-0 lg:w-72">
+        <div class="bg-card-bg border-line lg:sticky lg:top-24 lg:max-h-[calc(100vh-10rem)] lg:flex lg:flex-col rounded-3xl border p-6 shadow-sm">
           <h2 class="text-text-main mb-6 flex items-center gap-2 text-xl font-bold">
             <Icon name="lucide:filter" class="text-brand h-5 w-5" />
             Фильтры
           </h2>
 
-          <div class="space-y-8">
+          <div class="filter-scroll-area flex-1 lg:overflow-y-auto lg:overscroll-contain" data-filters-scroll tabindex="0" role="region" aria-label="Фильтры рецептов, прокрутите чтобы увидеть все">
+          <div class="space-y-6">
+            <!-- Категории — аккордеон -->
             <div>
-              <h3 class="text-text-muted mb-4 text-sm font-semibold tracking-wider uppercase">Категории</h3>
-              <ul class="space-y-2" id="category-filters">
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
+              <ul class="space-y-1" id="category-filters" role="list">
                 <li>
                   <a href={recipesHref({ categoryId: undefined })} class:list={["block rounded-lg px-3 py-2 transition-colors", !categoryId && !categoryLegacy && "bg-brand/10 text-brand font-bold"]}>
                     Все
                   </a>
                 </li>
                 {
-                  categories.map((c: any) => (
+                  categories.slice(0, VISIBLE_CATEGORIES).map((c: any) => (
                     <li>
                       <a
                         href={recipesHref({ categoryId: c.id })}
@@ -156,16 +200,45 @@ const difficultyMap = [
                   ))
                 }
               </ul>
+
+              {categories.length > VISIBLE_CATEGORIES && (
+                <div class="mt-2">
+                  <button
+                    type="button"
+                    class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors"
+                    data-category-toggle
+                    aria-expanded="false"
+                  >
+                    <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron />
+                    Ещё {categories.length - VISIBLE_CATEGORIES} категорий
+                  </button>
+                  <ul class="mt-2 hidden space-y-1" data-category-hidden>
+                    {
+                      categories.slice(VISIBLE_CATEGORIES).map((c: any) => (
+                        <li>
+                          <a
+                            href={recipesHref({ categoryId: c.id })}
+                            class:list={["hover:bg-brand/5 block rounded-lg px-3 py-2 transition-colors", String(categoryId) === String(c.id) && "bg-brand/10 text-brand font-bold"]}
+                          >
+                            {c.title}
+                          </a>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+              )}
             </div>
 
+            <!-- Сложность -->
             <div>
-              <h3 class="text-text-muted mb-4 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
               <div class="flex flex-wrap gap-2" id="difficulty-filters">
                 {
                   difficultyMap.map((d) => (
                     <a
                       href={recipesHref({ difficulty: d.value })}
-                      class:list={["rounded-full border px-4 py-1 text-xs transition-all", difficultyFilter === d.value ? "border-brand text-brand bg-brand/5" : "border-line text-text-muted"]}
+                      class:list={["rounded-full border px-4 py-1.5 text-xs transition-all", difficultyFilter === d.value ? "border-brand text-brand bg-brand/5 font-semibold" : "border-line text-text-muted hover:border-brand/50 hover:text-brand"]}
                     >
                       {d.label}
                     </a>
@@ -174,12 +247,63 @@ const difficultyMap = [
               </div>
             </div>
 
+            <!-- Время приготовления -->
+            <div>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Время</h3>
+              <div class="flex flex-wrap gap-2" id="time-filters">
+                {timeOptions.map((t) => (
+                  <a
+                    href={recipesHref({ maxTime: t.value })}
+                    class:list={[
+                      "rounded-full border px-4 py-1.5 text-xs transition-all",
+                      maxTimeParam === t.value
+                        ? "border-brand text-brand bg-brand/5 font-semibold"
+                        : "border-line text-text-muted hover:border-brand/50 hover:text-brand"
+                    ]}
+                  >
+                    {t.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <!-- Рейтинг -->
+            <div>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Рейтинг</h3>
+              <div class="flex flex-wrap gap-2" id="rating-filters">
+                {ratingOptions.map((r) => (
+                  <a
+                    href={recipesHref({ minRating: r.value })}
+                    class:list={[
+                      "rounded-full border px-4 py-1.5 text-xs transition-all",
+                      minRatingParam === r.value
+                        ? "border-brand text-brand bg-brand/5 font-semibold"
+                        : "border-line text-text-muted hover:border-brand/50 hover:text-brand"
+                    ]}
+                  >
+                    {r.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <!-- Сброс фильтров -->
+            {(difficultyFilter !== "all" || maxTimeParam || minRatingParam || categoryId) && (
+              <a
+                href={recipesHref({ difficulty: "all", maxTime: "", minRating: "", categoryId: undefined })}
+                class="border-line text-text-muted hover:text-brand mt-2 block rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors hover:border-brand/50"
+              >
+                Сбросить фильтры
+              </a>
+            )}
+
             <AdSlot id="R-A-19056160-18" className="hidden lg:block" />
+          </div>
           </div>
         </div>
       </aside>
 
-      <div class="grow">
+      <div class="grow min-w-0">
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
           {
             filteredRecipes.map((recipe, index) => (
@@ -226,3 +350,23 @@ const difficultyMap = [
     </div>
   </div>
 </Layout>
+
+<script>
+  function initCategoryAccordion() {
+    const toggle = document.querySelector("[data-category-toggle]");
+    const hidden = document.querySelector("[data-category-hidden]");
+    const chevron = document.querySelector("[data-category-chevron]");
+    if (!toggle || !hidden) return;
+
+    toggle.addEventListener("click", () => {
+      const isHidden = hidden.classList.contains("hidden");
+      hidden.classList.toggle("hidden", !isHidden);
+      toggle.setAttribute("aria-expanded", String(isHidden));
+      if (chevron) {
+        chevron.style.transform = isHidden ? "rotate(180deg)" : "rotate(0deg)";
+      }
+    });
+  }
+
+  initCategoryAccordion();
+</script>
