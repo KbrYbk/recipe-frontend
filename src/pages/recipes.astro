@@ -308,12 +308,12 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
           {
             filteredRecipes.map((recipe, index) => (
               <>
-                <RecipeCard recipe={recipe} />
-                {index === 5 && (
-                  <div class="bg-card-bg border-line no-print flex min-h-[350px] flex-col justify-between rounded-[2rem] border p-6">
-                    <AdSlot id="R-A-19056160-24" className="my-auto" />
+                {index === 2 && (
+                  <div class="md:col-span-2 no-print min-w-0" data-ad-wrapper>
+                    <AdSlot id="R-A-19056160-24" />
                   </div>
                 )}
+                <RecipeCard recipe={recipe} />
               </>
             ))
           }
@@ -368,5 +368,20 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
     });
   }
 
+  // Скрыть обёртку in-feed рекламы, если она не отрисовалась (adblock / нет рекламодателя)
+  function initEmptyAdCleanup() {
+    document.querySelectorAll("[data-ad-wrapper]").forEach((wrapper) => {
+      setTimeout(() => {
+        const adSlot = wrapper.querySelector(".ad-slot");
+        if (!adSlot) { wrapper.remove(); return; }
+        const yandexDiv = adSlot.querySelector("div[id^='yandex_rtb_']");
+        if (!yandexDiv || yandexDiv.children.length === 0) {
+          wrapper.remove();
+        }
+      }, 4000);
+    });
+  }
+
   initCategoryAccordion();
+  initEmptyAdCleanup();
 </script>
