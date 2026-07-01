@@ -1,0 +1,62 @@
+---
+interface Props {
+  recipeId: string;
+}
+const { recipeId } = Astro.props;
+---
+<favorite-button data-id={recipeId}>
+  <button
+    type="button"
+    aria-label="Добавить в избранное"
+    aria-pressed="false"
+    class="favorite-btn bg-card-bg border-line text-text-main flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all hover:text-brand hover:border-brand active:scale-95"
+  >
+    <slot />
+    <span class="button-label">Избранное</span>
+  </button>
+</favorite-button>
+
+<script>
+  class FavoriteButton extends HTMLElement {
+    connectedCallback() {
+      const btn = this.querySelector('.favorite-btn');
+      const icon = this.querySelector('.bookmark-icon');
+      const label = this.querySelector('.button-label');
+      const recipeId = this.dataset.id;
+      const key = "swageda_favorites";
+
+      if (!btn || !recipeId) return;
+
+      const getFavs = () => {
+        try { return JSON.parse(localStorage.getItem(key) || "[]"); } 
+        catch { return []; }
+      };
+
+      const applyFavState = (active: boolean) => {
+        btn.classList.toggle("text-brand", active);
+        btn.classList.toggle("border-brand", active);
+        btn.setAttribute("aria-pressed", String(active));
+        if (icon) icon.classList.toggle("fill-current", active);
+        if (label) label.textContent = active ? "В избранном" : "Избранное";
+      };
+
+      applyFavState(getFavs().includes(recipeId));
+
+      btn.addEventListener("click", () => {
+        let list = getFavs();
+        const index = list.indexOf(recipeId);
+        
+        if (index > -1) {
+          list.splice(index, 1);
+          applyFavState(false);
+        } else {
+          list.push(recipeId);
+          applyFavState(true);
+        }
+        localStorage.setItem(key, JSON.stringify(list));
+      });
+    }
+  }
+
+  customElements.define('favorite-button', FavoriteButton);
+</script>

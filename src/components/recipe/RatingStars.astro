@@ -1,0 +1,150 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  recipeId: string;
+  averageRating: number;
+}
+const { recipeId, averageRating } = Astro.props;
+---
+<rating-stars data-id={recipeId} data-avg={averageRating}>
+  <div
+    class="rating-container bg-card-bg border-line flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold text-amber-500 transition-colors"
+    role="group"
+    aria-label={`Рейтинг: ${averageRating ? Number(averageRating).toFixed(1) : "0"} из 5`}
+  >
+    <div class="stars-container flex gap-0.5" role="radiogroup" aria-label="Ваша оценка">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          type="button"
+          data-star={star}
+          class="star-btn rounded-md p-1 transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          aria-label={`Оценить на ${star}`}
+          aria-pressed="false"
+        >
+          <Icon name="lucide:star" class="h-5 w-5 shrink-0" aria-hidden="true" />
+        </button>
+      ))}
+    </div>
+    <div class="ml-1 text-text-main">
+      <span class="avg-val font-bold">{averageRating ? Number(averageRating).toFixed(1) : "0"}</span>
+      <span class="sr-only"> из 5</span>
+      <span class="user-val text-xs text-text-muted hidden"> (Ваша: <span class="val"></span>)</span>
+    </div>
+  </div>
+</rating-stars>
+
+<script>
+  const API_BASE = (() => {
+    const raw = (import.meta.env.PUBLIC_BACKEND_URLS || import.meta.env.API_BASE_URL || "") as string;
+    return String(raw).split(",")[0].replace(/\/$/, "");
+  })();
+
+  class RatingStars extends HTMLElement {
+    connectedCallback() {
+      const container = this.querySelector('.rating-container');
+      const stars = this.querySelectorAll<HTMLButtonElement>('.star-btn');
+      const avgValSpan = this.querySelector('.avg-val');
+      const userValContainer = this.querySelector('.user-val');
+      const userValSpan = this.querySelector('.val');
+      
+      const recipeId = this.dataset.id;
+      const avgNum = parseFloat(this.dataset.avg || "0");
+      
+      if (!recipeId || !container) return;
+
+      const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
+      const userRating = myRatings[recipeId];
+      let isProcessing = false;
+
+      const renderStars = (val: number, isHover = false) => {
+        stars.forEach((s) => {
+          const starNum = parseInt(s.dataset.star || "0");
+          const filled = starNum <= val;
+          const svg = s.querySelector("svg");
+          if (svg) svg.classList.toggle("fill-current", filled);
+          s.setAttribute("aria-pressed", String(filled && !isHover));
+          if (isHover) s.classList.toggle("scale-110", filled);
+        });
+      };
+
+      const lockRating = (val: number) => {
+        renderStars(val);
+        if (userValContainer && userValSpan) {
+          userValContainer.classList.remove("hidden");
+          userValSpan.textContent = String(val);
+        }
+        stars.forEach(s => {
+          s.disabled = true;
+          s.classList.add("cursor-default");
+          s.classList.remove("hover:scale-110", "active:scale-90");
+        });
+        container.classList.add("opacity-90");
+      };
+
+      if (userRating) {
+        lockRating(userRating);
+        return; // Уже голосовал
+      }
+
+      // Интерактив для новых оценок
+      renderStars(Math.round(avgNum));
+
+      stars.forEach((btn) => {
+        btn.addEventListener("mouseenter", () => {
+          if (!isProcessing) renderStars(parseInt(btn.dataset.star || "0"), true);
+        });
+
+        btn.addEventListener("click", async () => {
+          if (isProcessing) return;
+          isProcessing = true;
+          stars.forEach(s => s.disabled = true);
+          
+          const rating = parseInt(btn.dataset.star || "0");
+          
+          try {
+            const ipRes = await fetch("https://api64.ipify.org?format=json").catch(() => null);
+            const ip = ipRes ? (await ipRes.json()).ip : "0.0.0.0";
+            
+            const cleanId = String(recipeId).replace(/^(db-|local-)/, "");
+            const res = await fetch(`${API_BASE}/setRating/${encodeURIComponent(cleanId)}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ rating, ip }),
+            });
+
+            if (res.ok) {
+              const result = await res.json();
+              const newAvg = result?.data?.average_rating || result?.average_rating;
+              
+              myRatings[recipeId] = rating;
+              localStorage.setItem("my_ratings", JSON.stringify(myRatings));
+              
+              if (avgValSpan && newAvg) avgValSpan.textContent = Number(newAvg).toFixed(1);
+              lockRating(rating);
+              container.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
+              setTimeout(() => container.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
+            } else {
+              alert(res.status === 403 ? "Вы уже оценивали этот рецепт" : "Произошла ошибка при сохранении.");
+              if (res.status === 403) lockRating(rating);
+              else {
+                stars.forEach(s => s.disabled = false);
+                isProcessing = false;
+              }
+            }
+          } catch (err) {
+            console.error(err);
+            stars.forEach(s => s.disabled = false);
+            isProcessing = false;
+          }
+        });
+      });
+
+      container.addEventListener("mouseleave", () => {
+        if (!isProcessing) renderStars(Math.round(avgNum));
+      });
+    }
+  }
+
+  customElements.define('rating-stars', RatingStars);
+</script>

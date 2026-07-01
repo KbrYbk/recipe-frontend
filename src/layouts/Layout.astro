@@ -41,6 +41,33 @@ if (canonicalHref.endsWith("/") && canonicalURL.pathname !== "/") {
 
 // 4. Формируем абсолютный путь к картинке
 const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).href;
+
+// 5. Единый JSON-LD граф: WebSite + Organization рендерим одной разметкой.
+// За счёт @graph это один <script>, а сущности остаются логически разделены.
+const jsonLdGraph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "SwagEda",
+      "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
+      "url": siteURL,
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": `${siteURL}/recipes?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "Organization",
+      "name": "SwagEda",
+      "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
+      "url": siteURL,
+      "logo": `${siteURL}/android-chrome-512x512.png`,
+      "description": "SwagEda — агрегатор кулинарных рецептов. Быстрая загрузка, доступный интерфейс, пошаговые инструкции.",
+    },
+  ],
+};
 ---
 
 <!doctype html>
@@ -53,7 +80,7 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <meta name="description" content={description} />
     <meta name="keywords" content={finalKeywords} />
     <link rel="canonical" href={canonicalHref} />
-    {noindex && <meta name="robots" content="noindex,nofollow" />}
+    {noindex && <meta name="robots" content="noindex,follow" />}
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -68,6 +95,8 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImage} />
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph)}</script>
 
     {
       ogType === "article" && recipeData && (
@@ -98,7 +127,7 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
-  </head>
+ </head>
   <div
     set:html={(() => {
       const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
@@ -141,7 +170,7 @@ const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).hr
         }
       }
     });
-  </script>
+ </script>
   <!-- Yandex.Metrika counter -->
   <script is:inline type="text/javascript">
     (function (m, e, t, r, i, k, a) {

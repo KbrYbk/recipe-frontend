@@ -14,6 +14,12 @@ import BackendErrorAlert from "../../components/BackendErrorAlert.astro";
 import { fetchRecipeById, mapBackendRecipe } from "../../lib/api/recipes";
 import { normalizeIngredients } from "../../lib/normalizeIngredients";
 
+import ReadingProgress from "../../components/recipe/ReadingProgress.astro";
+import FavoriteButton from "../../components/recipe/FavoriteButton.astro";
+import ShareButton from "../../components/recipe/ShareButton.astro";
+import RatingStars from "../../components/recipe/RatingStars.astro";
+import RecipeLightbox from "../../components/recipe/RecipeLightbox.astro";
+
 const { id } = Astro.params;
 const cleanId = id?.replace(/^(local-|db-)/, "");
 
@@ -88,18 +94,6 @@ const recipeKeywords = recipe
     ].filter(Boolean).join(", ")
   : undefined;
 
-// Organization schema — для единообразия бренда на всех страницах
-const siteOrigin = Astro.site ? Astro.site.origin : "https://swageda.ru";
-const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "SwagEda",
-  alternateName: ["СвэгЕда", "СвегЕда", "Свагеда", "swageda", "swag eda", "сваг еда"],
-  url: siteOrigin,
-  logo: `${siteOrigin}/android-chrome-512x512.png`,
-  description: "SwagEda — агрегатор кулинарных рецептов. Быстрая загрузка, доступный интерфейс, пошаговые инструкции.",
-};
-
 const toAbsUrl = (url: string) => {
   if (!url) return "";
   if (url.startsWith("http")) return url;
@@ -151,6 +145,7 @@ const jsonLdRecipe =
       : undefined,
     keywords: recipe.keywords || undefined,
     datePublished: recipe.created_at,
+    dateModified: recipe.updated_at ?? recipe.created_at,
     video: video_url
       ? {
           "@type": "VideoObject",
@@ -170,10 +165,16 @@ const recipeMeta = recipe
       author: recipe.user?.name,
     }
   : undefined;
+
+  const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
+const difficultyClass = difficulty === "hard"
+  ? "bg-red-500/15 text-red-500"
+  : difficulty === "medium"
+    ? "bg-amber-500/15 text-amber-500"
+    : "bg-emerald-500/15 text-emerald-500";
 ---
 
 <Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe} keywords={recipeKeywords} ogType="article" recipeData={recipeMeta}>
-<script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} is:inline />
   {
     !recipe ? (
       <>
@@ -187,8 +188,11 @@ const recipeMeta = recipe
         <HttpNotFound />
       </>
     ) : (
-      <article class="mx-auto max-w-4xl px-4 py-8 md:py-12" data-recipe-id={id}>
-        {jsonLdRecipe && <script type="application/ld+json" set:html={jsonLdRecipe} />}
+      <>
+        <ReadingProgress />
+
+        <article class="mx-auto max-w-4xl px-4 py-8 md:py-12" data-recipe-id={id}>
+          {jsonLdRecipe && <script type="application/ld+json" set:html={jsonLdRecipe} />}
 
         <div class="no-print mb-8">
           <Breadcrumbs
@@ -212,161 +216,67 @@ const recipeMeta = recipe
           </a>
         </div>
 
-        <header class="mb-12">
-          <h1 class="text-text-main mb-4 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
+          <header class="mb-12">
+            <h1 class="text-text-main mb-4 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
 
           <!-- Метки рецепта: время, сложность -->
-          <div class="mb-4 flex flex-wrap items-center gap-2">
-            <span class="bg-card-bg border-line text-text-main inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium sm:h-11 sm:rounded-xl sm:px-4" aria-label={`Время приготовления: ${cooking_time} минут`}>
+            <div class="mb-4 flex flex-wrap items-center gap-2">
+              <span class="bg-card-bg border-line text-text-main inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium sm:h-11 sm:rounded-xl sm:px-4" aria-label={`Время приготовления: ${cooking_time} минут`}>
               <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
               <span class="tabular-nums">{cooking_time} мин</span>
             </span>
 
-            {difficulty && (() => {
-              const d = difficulty;
-              const label = d === "hard" ? "Сложно" : d === "medium" ? "Средне" : "Легко";
-              const cls = d === "hard"
-                ? "bg-red-500/15 text-red-500"
-                : d === "medium"
-                  ? "bg-amber-500/15 text-amber-500"
-                  : "bg-emerald-500/15 text-emerald-500";
-              return (
-                <span class={`${cls} inline-flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold tracking-wide uppercase sm:h-11 sm:rounded-xl sm:px-4 sm:text-xs`} aria-label={`Сложность: ${label}`}>
-                  <Icon name="lucide:flame" class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
-                  <span>{label}</span>
-                </span>
-              );
-            })()}
-          </div>
-
-          <!-- Действия: рейтинг, избранное, печать, шаринг -->
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- Рейтинг -->
-            <div
-              id="ratingStars"
-              data-id={id}
-              data-avg={recipe?.average_rating || 0}
-              class="bg-card-bg border-line flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold text-amber-500"
-              role="group"
-              aria-label={`Рейтинг: ${recipe?.average_rating ? Number(recipe.average_rating).toFixed(1) : "0"} из 5`}
-            >
-              <div class="stars-container flex gap-0.5" role="radiogroup" aria-label="Ваша оценка">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    type="button"
-                    data-star={star}
-                    class="star-btn rounded-md p-1 transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                    aria-label={`Оценить на ${star} ${star === 1 ? "звезду" : star < 5 ? "звезды" : "звёзд"}`}
-                    aria-pressed="false"
-                  >
-                    <Icon name="lucide:star" class="h-5 w-5 shrink-0" aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-              <div class="ml-1 text-text-main">
-                <span class="avg-val font-bold">{recipe?.average_rating ? Number(recipe.average_rating).toFixed(1) : "0"}</span>
-                <span class="sr-only"> из 5</span>
-                <span class="user-val text-xs text-text-muted hidden"> (Ваша: <span class="val"></span>)</span>
-              </div>
+            {difficulty && (
+              <span class={`${difficultyClass} inline-flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold tracking-wide uppercase sm:h-11 sm:rounded-xl sm:px-4 sm:text-xs`} aria-label={`Сложность: ${difficultyLabel}`}>
+                <Icon name="lucide:flame" class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
+                <span>{difficultyLabel}</span>
+              </span>
+            )}
             </div>
 
-            <button
-              type="button"
-              id="favoriteBtn"
-              data-id={id}
-              aria-label="Добавить в избранное"
-              aria-pressed="false"
-              class="bg-card-bg border-line text-text-main flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all hover:text-brand hover:border-brand active:scale-95"
-            >
-              <Icon name="lucide:bookmark" class="bookmark-icon h-4 w-4 shrink-0" aria-hidden="true" />
-              <span class="button-label">Избранное</span>
-            </button>
-            <script is:inline>
-              (function () {
-                var btn = document.getElementById("favoriteBtn");
-                if (!btn || !btn.dataset.id) return;
-                var recipeId = btn.dataset.id;
-                var key = "swageda_favorites";
-                try {
-                  var favs = JSON.parse(localStorage.getItem(key) || "[]");
-                } catch (e) {
-                  var favs = [];
-                }
-                var isActive = favs.indexOf(recipeId) > -1;
-                var icon = btn.querySelector(".bookmark-icon");
-                var label = btn.querySelector(".button-label");
-                function setActive(active) {
-                  btn.classList.toggle("text-brand", active);
-                  btn.classList.toggle("border-brand", active);
-                  btn.setAttribute("aria-pressed", active ? "true" : "false");
-                  if (icon) icon.classList.toggle("fill-current", active);
-                  if (label) label.textContent = active ? "В избранном" : "Избранное";
-                }
-                setActive(isActive);
-                btn.addEventListener("click", function () {
-                  var list;
-                  try {
-                    list = JSON.parse(localStorage.getItem(key) || "[]");
-                  } catch (e) {
-                    list = [];
-                  }
-                  var idx = list.indexOf(recipeId);
-                  if (idx > -1) {
-                    list.splice(idx, 1);
-                    setActive(false);
-                  } else {
-                    list.push(recipeId);
-                    setActive(true);
-                  }
-                  localStorage.setItem(key, JSON.stringify(list));
-                });
-              })();
-            </script>
+            <div class="flex flex-wrap items-center gap-3">
+              <RatingStars recipeId={id} averageRating={recipe.average_rating || 0} />
+              <FavoriteButton recipeId={id}>
+                <Icon name="lucide:bookmark" class="bookmark-icon h-4 w-4 shrink-0" aria-hidden="true" />
+              </FavoriteButton>
 
-            <button
-              type="button"
-              onclick="window.print()"
-              class="bg-card-bg border-line text-text-main hover:border-brand no-print flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-95"
-              aria-label="Печать рецепта"
-            >
-              <Icon name="lucide:printer" class="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span class="button-label">Печать</span>
-            </button>
+              <button
+                type="button"
+                onclick="window.print()"
+                class="bg-card-bg border-line text-text-main hover:border-brand no-print flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-95"
+                aria-label="Печать рецепта"
+              >
+                <Icon name="lucide:printer" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span class="button-label">Печать</span>
+              </button>
 
-            <button
-              type="button"
-              id="shareBtn"
-              class="bg-brand hover:bg-brand-hover flex h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold text-white transition-all active:scale-95"
-              aria-label="Поделиться рецептом"
-            >
-              <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span class="button-label">Поделиться</span>
-            </button>
-          </div>
-        </header>
+              <ShareButton>
+                <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" aria-hidden="true" />
+              </ShareButton>
+            </div>
+          </header>
 
-        <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl">
-          {main_image ? (
-            <Image
-              src={main_image}
-              alt={`Фото готового блюда: ${title}`}
-              width={1200}
-              height={675}
-              data-zoomable
-              class="image-zoom h-full w-full object-cover"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              style={`view-transition-name: recipe-image-${id}`}
-            />
+          <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl">
+            {main_image ? (
+              <Image
+                src={main_image}
+                alt={`Фото готового блюда: ${title}`}
+                width={1200}
+                height={675}
+                data-zoomable
+                class="image-zoom h-full w-full object-cover"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+                style={`view-transition-name: recipe-image-${id}`}
+              />
           ) : (
             <div class="flex h-full w-full items-center justify-center">
               <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
             </div>
           )}
-        </div>
+          </div>
 
-        <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
             <IngredientsList ingredients={ingredients} recipeSlug={id ?? "recipe"} />
           </aside>
 
@@ -393,40 +303,45 @@ const recipeMeta = recipe
               <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
                 Приготовление
               </h2>
-              <div class="space-y-12">
+              <ol class="space-y-12">
                 {steps.map((step, index) => (
                   <>
-                    <div key={index} class="group relative scroll-mt-24">
-                      <div class="mb-4 flex gap-6">
-                        <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
-                          {step.order ?? index + 1}
+                    <li key={index} class="group relative scroll-mt-24">
+                        <div class="mb-4 flex gap-6">
+                          <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
+                            {step.order ?? index + 1}
+                          </div>
+                          <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
                         </div>
-                        <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
-                      </div>
 
-                      {step.image ? (
-                        <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
-                          <img
-                            data-zoomable
-                            src={step.image}
-                            alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
-                            width={800}
-                            height={450}
-                            loading="lazy"
-                            decoding="async"
-                            class="image-zoom h-auto w-full"
-                          />
-                        </div>
-                      ) : null}
-                    </div>
+                        {step.image ? (
+                          <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
+                            <img
+                              data-zoomable
+                              tabindex="0"
+                              role="button"
+                              aria-label={`Увеличить изображение: Шаг ${step.order ?? index + 1}`}
+                              src={step.image}
+                              alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
+                              width={800}
+                              height={450}
+                              loading="lazy"
+                              decoding="async"
+                              class="image-zoom h-auto w-full"
+                            />
+                          </div>
+                        ) : null}
+                    </li>
+                    
+                
                     {(index + 1) % 4 === 0 && index < steps.length - 1 && (
-                      <div key={`ad-after-${index}`} class="mb-4">
+                      <li key={`ad-after-${index}`} class="mb-4">
                         <AdSlot id="R-A-19056160-13" className="block" refreshInterval={60} />
-                      </div>
+                      </li>
                     )}
                   </>
                 ))}
-              </div>
+              </ol>
             </div>
           </div>
         </div>
@@ -436,8 +351,62 @@ const recipeMeta = recipe
           <AdSlot id="R-A-19056160-14" isFeed={true} refreshInterval={60} />
         </div>
       </article>
+        
+        <!-- В самом низу страницы кидаем глобальные модалки/оверлеи -->
+        <RecipeLightbox />
+
+        <script>
+          // Находим контейнер или просто получаем ID из data-атрибута
+          const article = document.querySelector('article[data-recipe-id]');
+          const rid = article?.dataset.recipeId;
+
+          if (rid) {
+            const STORAGE_PREFIX = "recipe:scroll:";
+            const key = STORAGE_PREFIX + rid;
+            
+            // Восстановление
+            if (!window.location.hash && sessionStorage.getItem(key)) {
+              setTimeout(() => {
+                const saved = sessionStorage.getItem(key);
+                if (saved) {
+                  const sp = parseFloat(saved);
+                  const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                  if (dh > 0) window.scrollTo(0, Math.round(sp * dh));
+                }
+              }, 300);
+            }
+
+            // Троттлинг
+            let ticking = false;
+            const saveScroll = () => {
+              if (ticking) return;
+              ticking = true;
+              requestAnimationFrame(() => {
+                const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                if (dh > 0) {
+                  sessionStorage.setItem(key, String(Math.min(window.scrollY / dh, 1)));
+                }
+                ticking = false;
+              });
+            };
+
+            // Очистка старых данных (оставляем только последние 10)
+            try {
+              const keys = Object.keys(sessionStorage).filter(k => k.startsWith(STORAGE_PREFIX));
+              if (keys.length > 10) {
+                keys.sort().slice(0, keys.length - 10).forEach(k => sessionStorage.removeItem(k));
+              }
+            } catch (e) {}
+
+            // Сохранение
+            window.addEventListener("scroll", saveScroll, { passive: true });
+            window.addEventListener("pagehide", saveScroll);
+            document.addEventListener("visibilitychange", () => {
+              if (document.visibilityState === "hidden") saveScroll();
+            });
+          }
+        </script>
+      </>
     )
   }
 </Layout>
-
-<script type="module" src="../../scripts/recipe-interactions.ts"></script>

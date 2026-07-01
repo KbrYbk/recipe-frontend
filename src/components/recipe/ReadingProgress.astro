@@ -1,0 +1,53 @@
+<reading-progress
+  class="bg-brand pointer-events-none fixed top-0 left-0 z-[1001] h-[3px] w-full origin-left scale-x-0 opacity-0 transition-[transform,opacity] duration-100 ease-linear"
+  role="progressbar"
+  aria-label="Прогресс чтения страницы"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="0"></reading-progress>
+
+<script>
+  class ReadingProgress extends HTMLElement {
+    private ticking = false;
+
+    connectedCallback() {
+      // Биндим контекст, чтобы легко удалить слушатель потом
+      this.update = this.update.bind(this);
+
+      window.addEventListener("scroll", this.onScroll.bind(this), { passive: true });
+      window.addEventListener("resize", this.update, { passive: true });
+
+      // Инициализация
+      setTimeout(this.update, 500);
+      this.update();
+    }
+
+    disconnectedCallback() {
+      // Обязательно чистим слушатели для View Transitions!
+      window.removeEventListener("scroll", this.onScroll.bind(this));
+      window.removeEventListener("resize", this.update);
+    }
+
+    private onScroll() {
+      if (!this.ticking) {
+        requestAnimationFrame(() => {
+          this.update();
+          this.ticking = false;
+        });
+        this.ticking = true;
+      }
+    }
+
+    private update() {
+      const st = window.scrollY || document.documentElement.scrollTop;
+      const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const p = dh > 0 ? Math.min((st / dh) * 100, 100) : 0;
+
+      this.style.transform = `scaleX(${p / 100})`;
+      this.setAttribute("aria-valuenow", String(Math.round(p)));
+      this.style.opacity = dh > 50 && st > 50 ? "1" : "0";
+    }
+  }
+
+  customElements.define("reading-progress", ReadingProgress);
+</script>

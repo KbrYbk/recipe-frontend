@@ -1,0 +1,69 @@
+---
+import { Icon } from "astro-icon/components";
+---
+<recipe-lightbox>
+  <dialog class="fullscreen-modal backdrop:bg-black/90 m-auto bg-transparent border-none max-w-[100vw] max-h-[100vh] w-full h-full p-0">
+    <button type="button" class="close-modal text-white absolute top-4 right-4 z-50 p-2 opacity-70 hover:opacity-100 transition-opacity" aria-label="Закрыть">
+      <Icon name="lucide:x" class="w-8 h-8" />
+    </button>
+    <div class="w-full h-full flex items-center justify-center p-4">
+      <img src="" alt="Увеличенное фото" class="modal-img object-contain max-w-full max-h-full" />
+    </div>
+    <span class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-sm">Esc или клик вне фото для закрытия</span>
+  </dialog>
+</recipe-lightbox>
+
+<script>
+  class RecipeLightbox extends HTMLElement {
+    connectedCallback() {
+      const dialog = this.querySelector('dialog');
+      const img = this.querySelector('.modal-img') as HTMLImageElement;
+      const closeBtn = this.querySelector('.close-modal');
+      
+      if (!dialog || !img) return;
+
+      const triggers = document.querySelectorAll<HTMLImageElement>('img[data-zoomable]');
+      
+      const openModal = (e: Event) => {
+        const target = e.currentTarget as HTMLImageElement;
+        img.src = target.currentSrc || target.src;
+        dialog.showModal();
+        document.body.style.overflow = 'hidden'; // Блокируем скролл страницы
+      };
+
+      const closeModal = () => {
+        dialog.close();
+      };
+
+      // Слушаем нативное событие закрытия, чтобы надежно разблокировать скролл
+      dialog.addEventListener('close', () => {
+        document.body.style.overflow = '';
+      });
+
+      triggers.forEach(t => {
+        t.style.cursor = 'zoom-in';
+        t.addEventListener('click', openModal);
+      });
+
+      closeBtn?.addEventListener('click', closeModal);
+      
+      dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) closeModal();
+      });
+
+      // Очистка при View Transitions
+      this.disconnectedCallback = () => {
+        triggers.forEach(t => t.removeEventListener('click', openModal));
+        document.body.style.overflow = '';
+      };
+    }
+  }
+
+  customElements.define('recipe-lightbox', RecipeLightbox);
+</script>
+
+<style>
+  dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+</style>
