@@ -261,6 +261,8 @@ const difficultyClass = difficulty === "hard"
               <Image
                 src={main_image}
                 alt={`Фото готового блюда: ${title}`}
+                widths={[450, 800, 1200]} 
+                sizes="(max-width: 768px) 450px, (max-width: 1200px) 800px, 1200px"
                 width={1200}
                 height={675}
                 data-zoomable
