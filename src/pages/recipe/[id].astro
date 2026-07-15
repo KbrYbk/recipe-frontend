@@ -65,7 +65,7 @@ const ingredients = normalizeIngredients(recipe?.ingredients);
 const steps = (recipe?.steps as { order?: number; text?: string; image?: string }[] | undefined) ?? [];
 const difficulty = recipe?.difficulty != null ? String(recipe.difficulty) : "";
 const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
-const pageTitle = recipe ? `${title} — SwagEDa` : isBackendError ? "Технические неполадки — SwagEda" : "Рецепт не найден — SwagEda";
+const pageTitle = recipe ? `${title} — SwagEda` : isBackendError ? "Технические неполадки — SwagEda" : "Рецепт не найден — SwagEda";
 const canonical = recipe ? `/recipe/${id}` : "/404";
 
 // Персонализированные keywords для страницы рецепта

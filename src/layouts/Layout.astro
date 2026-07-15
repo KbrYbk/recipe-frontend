@@ -5,6 +5,7 @@ import Footer from "../components/Footer.astro";
 import BottomNav from "../components/BottomNav.astro";
 import CookieConsent from "../components/CookieConsent.astro";
 import AdSlot from "../components/AdSlot.astro";
+import PageProgress from "../components/ui/PageProgress.astro";
 interface Props {
   title: string;
   description?: string;
@@ -21,10 +22,20 @@ interface Props {
   };
 }
 
-const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/default-share.jpg", canonical, noindex = false, ogType = "website", keywords, recipeData } = Astro.props;
+const {
+  title,
+  description = "Лучшие рецепты для каждого: просто, вкусно и понятно.",
+  image = "/default-share.jpg",
+  canonical,
+  noindex = false,
+  ogType = "website",
+  keywords,
+  recipeData,
+} = Astro.props;
 
 // Глобальные fallback-keywords при отсутствии персонализированных
-const globalKeywords = "рецепты, кулинария, свэгеда, СвэгЕда, свегеда, СвегЕда, свагеда, Свагеда, SwagEda, swageda, swag eda, сваг еда, рецепты дома, пошаговые рецепты, вкусные рецепты, быстрые рецепты, домашняя кухня, готовим дома, что приготовить";
+const globalKeywords =
+  "рецепты, кулинария, свэгеда, СвэгЕда, свегеда, СвегЕда, свагеда, Свагеда, SwagEda, swageda, swag eda, сваг еда, рецепты дома, пошаговые рецепты, вкусные рецепты, быстрые рецепты, домашняя кухня, готовим дома, что приготовить";
 const finalKeywords = keywords ?? globalKeywords;
 
 // 1. Сначала определяем базовый URL сайта (из конфига или текущего окружения)
@@ -49,25 +60,30 @@ const jsonLdGraph = {
   "@graph": [
     {
       "@type": "WebSite",
-      "name": "SwagEda",
-      "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
-      "url": siteURL,
-      "potentialAction": {
+      name: "SwagEda",
+      alternateName: ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
+      url: siteURL,
+      potentialAction: {
         "@type": "SearchAction",
-        "target": `${siteURL}/recipes?q={search_term_string}`,
+        target: `${siteURL}/recipes?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },
     {
       "@type": "Organization",
-      "name": "SwagEda",
-      "alternateName": ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
-      "url": siteURL,
-      "logo": `${siteURL}/android-chrome-512x512.png`,
-      "description": "SwagEda — агрегатор кулинарных рецептов. Быстрая загрузка, доступный интерфейс, пошаговые инструкции.",
+      name: "SwagEda",
+      alternateName: ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
+      url: siteURL,
+      logo: `${siteURL}/android-chrome-512x512.png`,
+      description: "SwagEda — агрегатор кулинарных рецептов. Быстрая загрузка, доступный интерфейс, пошаговые инструкции.",
     },
   ],
 };
+const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
+  ? String(import.meta.env.PUBLIC_BACKEND_URLS)
+      .split(",")[0]
+      .replace(/\/$/, "")
+  : import.meta.env.API_BASE_URL?.replace(/\/$/, "") || "";
 ---
 
 <!doctype html>
@@ -96,7 +112,7 @@ const jsonLdGraph = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImage} />
 
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph)}</script>
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph)} />
 
     {
       ogType === "article" && recipeData && (
@@ -127,159 +143,28 @@ const jsonLdGraph = {
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
- </head>
-  <div
-    set:html={(() => {
-      const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
-        ? String(import.meta.env.PUBLIC_BACKEND_URLS)
-            .split(",")[0]
-            .replace(/\/$/, "")
-        : import.meta.env.API_BASE_URL
-          ? String(import.meta.env.API_BASE_URL).replace(/\/$/, "")
-          : "";
-      return apiBase ? `<link rel="preconnect" href="${apiBase}" crossorigin />` : "";
-    })()}
-  />
-  <slot name="head" />
-  <script is:inline>
-    const applyTheme = () => {
-      let theme;
-      if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
-        theme = localStorage.getItem("theme");
-      } else {
-        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      }
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    };
-
-    applyTheme();
-
-    // Защита от копирования: добавление ссылки на источник
-    document.addEventListener("copy", (event) => {
-      const selection = document.getSelection();
-      if (selection && selection.toString().length > 30) {
-        const pagelink = `\n\nИсточник: ${document.location.href}\n© SwagEda — Твоя уютная кухня`;
-        const copytext = selection.toString() + pagelink;
-        if (event.clipboardData) {
-          event.clipboardData.setData("text/plain", copytext);
-          event.preventDefault();
-        }
-      }
-    });
- </script>
-  <!-- Yandex.Metrika counter -->
-  <script is:inline type="text/javascript">
-    (function (m, e, t, r, i, k, a) {
-      m[i] =
-        m[i] ||
-        function () {
-          (m[i].a = m[i].a || []).push(arguments);
-        };
-      m[i].l = 1 * new Date();
-      for (var j = 0; j < document.scripts.length; j++) {
-        if (document.scripts[j].src === r) {
-          return;
-        }
-      }
-      ((k = e.createElement(t)), (a = e.getElementsByTagName(t)[0]), (k.async = 1), (k.src = r), a.parentNode.insertBefore(k, a));
-    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id=108404580", "ym");
-
-    ym(108404580, "init", { ssr: true, webvisor: true, clickmap: true, ecommerce: "dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce: true, trackLinks: true });
-  </script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/108404580" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-  <!-- /Yandex.Metrika counter -->
-  <script is:inline>
-    document.addEventListener("astro:after-navigation", () => {
-      ym(108404580, "hit", window.location.href);
-    });
-  </script>
-  <!-- Yandex Context JS — загружаем один раз, строго один экземпляр -->
-  <script>
-    (function () {
-      // Защита от повторной загрузки context.js при View Transitions
-      if (!window.__yaContextLoaded) {
-        var s = document.createElement("script");
-        s.src = "https://yandex.ru/ads/system/context.js";
-        s.async = true;
-        document.head.appendChild(s);
-        window.__yaContextLoaded = true;
-      }
-    })();
-  </script>
-
-  <script is:inline>
-    (function () {
-      window.yaContextCb = window.yaContextCb || [];
-
-      var _fullscreenRendered = false;
-
-      function initFullscreenAd() {
-        // Fullscreen и floor-рекламу рендерим только ОДИН раз за сессию страницы
-        // При View Transition НЕ перезапускаем — они уже в DOM
-        if (_fullscreenRendered) return;
-        _fullscreenRendered = true;
-
-        window.yaContextCb.push(function () {
-          if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
-            try {
-              window.Ya.Context.AdvManager.render({
-                blockId: "R-A-19056160-20",
-                type: "fullscreen",
-                platform: "touch",
-              });
-            } catch (e) {
-              console.error("Fullscreen ad error:", e);
-            }
-
-            try {
-              window.Ya.Context.AdvManager.render({
-                blockId: "R-A-19056160-21",
-                type: "floorAd",
-                platform: "touch",
-              });
-            } catch (e) {
-              console.error("Floor ad error:", e);
-            }
-          }
-        });
-      }
-
-      // Ждём, пока context.js инициализируется, но не дольше 5 секунд
-      var attempts = 0;
-      var maxAttempts = 50;
-      var checkInterval = setInterval(function () {
-        attempts++;
-        if (window.Ya && window.Ya.Context && window.Ya.Context.AdvManager) {
-          clearInterval(checkInterval);
-          initFullscreenAd();
-        } else if (attempts >= maxAttempts) {
-          clearInterval(checkInterval);
-          // context.js не ответил за 5 сек — всё равно пытаемся
-          initFullscreenAd();
-        }
-      }, 100);
-    })();
-  </script>
+    {apiBase && <link rel="preconnect" href={apiBase} crossorigin />}
+    <script is:inline>
+      const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    </script>
+    <slot name="head" />
+  </head>
 
   <body class="flex min-h-screen flex-col antialiased">
+    <noscript><div><img src="https://mc.yandex.ru/watch/108404580" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- Боковые липкие баннеры для больших мониторов (экраны шире 1560px) -->
     <!-- Они зафиксированы по бокам экрана и не перекрывают основной контент -->
     <div class="hidden min-[1560px]:block">
-      <div class="no-print fixed top-28 left-4 z-40 h-[600px] w-[160px] overflow-hidden">
+      <div class="no-print fixed top-28 left-4 z-40 h-150 w-40 overflow-hidden">
         <AdSlot id="R-A-19056160-22" className="sticky top-28" />
       </div>
-      <div class="no-print fixed top-28 right-4 z-40 h-[600px] w-[160px] overflow-hidden">
+      <div class="no-print fixed top-28 right-4 z-40 h-150 w-40 overflow-hidden">
         <AdSlot id="R-A-19056160-23" className="sticky top-28" />
       </div>
     </div>
-
     <a href="#main-content" class="skip-to-main">Перейти к основному контенту</a>
-    <div id="page-progress" class="page-progress" aria-hidden="true"></div>
-    <div id="route-status" class="sr-only" aria-live="polite"></div>
+    <PageProgress />
     <Header />
     <!-- Баннер 15 — над контентом, виден на всех страницах -->
     <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" />
@@ -292,83 +177,9 @@ const jsonLdGraph = {
     <BottomNav />
     <CookieConsent />
     <script>
-      // Page loading indicator — прогресс-бар при переходах между страницами
-      (() => {
-        const KEY = "__pageLoading";
-
-        const bar = () => document.getElementById("page-progress");
-        const main = () => document.getElementById("main-content");
-
-        const start = () => {
-          if (window[KEY]) return;
-          window[KEY] = true;
-
-          document.body.classList.add("is-loading-active");
-
-          const p = bar();
-          const m = main();
-
-          if (p) {
-            p.classList.remove("is-done");
-            void p.offsetWidth; // reflow чтобы сбросить CSS-анимацию
-            p.classList.add("is-loading");
-            p.style.transform = "scaleX(0)";
-          }
-          if (m) m.classList.add("is-transitioning");
-        };
-
-        const stop = () => {
-          if (!window[KEY]) return;
-          window[KEY] = false;
-
-          document.body.classList.remove("is-loading-active");
-
-          const p = bar();
-          const m = main();
-
-          if (p) p.classList.replace("is-loading", "is-done");
-          if (m) m.classList.remove("is-transitioning");
-
-          setTimeout(() => {
-            const el = bar();
-            if (el && !el.classList.contains("is-loading")) {
-              el.classList.remove("is-done");
-              el.style.transform = "scaleX(0)";
-            }
-          }, 500);
-        };
-
-        // 1) Клик по внутренней ссылке → показываем прогресс-бар
-        document.addEventListener("click", (e) => {
-          const a = e.target?.closest?.("a[href]");
-          if (!a) return;
-          if (a.hostname !== location.hostname) return;
-          if (a.hasAttribute("download") || a.target === "_blank") return;
-          const href = a.getAttribute("href");
-          if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
-          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-          start();
-        });
-
-        // 2) beforeunload — навигация без перехвата (back/forward, адресная строка)
-        window.addEventListener("beforeunload", start);
-
-        // 3) Новая страница загрузилась — убираем индикатор
-        window.addEventListener("load", () => setTimeout(stop, 100), { once: true });
-
-        // 4) Страховка: если DOM уже готов (скрипт загрузился после DOMContentLoaded)
-        if (document.readyState !== "loading") {
-          stop();
-        }
-
-        // 5) bfcache — возврат из кэша браузера
-        window.addEventListener("pageshow", (e) => {
-          if (e.persisted) stop();
-        });
-
-      })();
+      import "../scripts/metrics.js";
+      import "../scripts/ads.js";
+      import "../scripts/copy-protection.js";
     </script>
   </body>
-
-
 </html>

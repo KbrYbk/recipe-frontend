@@ -1,0 +1,86 @@
+<!-- Page loading indicator — прогресс-бар при переходах между страницами -->
+<div id="page-progress" class="page-progress" aria-hidden="true"></div>
+<div id="route-status" class="sr-only" aria-live="polite"></div>
+
+<script>
+  (() => {
+    const KEY = "__pageLoading";
+    const _window = window as any;
+    const bar = () => document.getElementById("page-progress");
+    const main = () => document.getElementById("main-content");
+    const status = () => document.getElementById("route-status");
+
+    const start = () => {
+      if (_window[KEY]) return;
+      _window[KEY] = true;
+
+      document.body.classList.add("is-loading-active");
+
+      const p = bar();
+      const m = main();
+      const s = status();
+
+      if (p) {
+        p.classList.remove("is-done");
+        void p.offsetWidth; // reflow чтобы сбросить CSS-анимацию
+        p.classList.add("is-loading");
+        p.style.transform = "scaleX(0)";
+      }
+      if (m) m.classList.add("is-transitioning");
+      if (s) s.textContent = "Загрузка страницы...";
+    };
+
+    const stop = () => {
+      if (!_window[KEY]) return;
+      _window[KEY] = false;
+
+      document.body.classList.remove("is-loading-active");
+
+      const p = bar();
+      const m = main();
+      const s = status();
+
+      if (p) p.classList.replace("is-loading", "is-done");
+      if (m) m.classList.remove("is-transitioning");
+      if (s) s.textContent = "";
+
+      setTimeout(() => {
+        const el = bar();
+        if (el && !el.classList.contains("is-loading")) {
+          el.classList.remove("is-done");
+          el.style.transform = "scaleX(0)";
+        }
+      }, 500);
+    };
+
+    // 1) Клик по внутренней ссылке → показываем прогресс-бар
+    document.addEventListener("click", (e) => {
+      if (e.defaultPrevented) return;
+      const target = e.target as Element | null;
+      const a = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a) return;
+      if (a.hostname !== location.hostname) return;
+      if (a.hasAttribute("download") || a.target === "_blank") return;
+      const href = a.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      start();
+    });
+
+    // 2) beforeunload — навигация без перехвата (back/forward, адресная строка)
+    window.addEventListener("beforeunload", start);
+
+    // 3) Новая страница загрузилась — убираем индикатор
+    window.addEventListener("load", () => setTimeout(stop, 100), { once: true });
+
+    // 4) Страховка: если DOM уже готов (скрипт загрузился после DOMContentLoaded)
+    if (document.readyState !== "loading") {
+      stop();
+    }
+
+    // 5) bfcache — возврат из кэша браузера
+    window.addEventListener("pageshow", (e) => {
+      if (e.persisted) stop();
+    });
+  })();
+</script>
