@@ -512,15 +512,42 @@
   }
 }
 
-/* === Ingredients scroll area === */
-.ingredients-scroll-area {
-  /* На мобильных — без ограничений */
-  max-height: none;
+/* === Thin scrollbars (общие для всех внутренних скроллеров) === */
+.ingredients-scroll-area,
+.filter-scroll-area {
   /* Стилизованный тонкий скроллбар */
   scrollbar-width: thin;
   scrollbar-color: var(--border-subtle) transparent;
   /* Плавный скролл для программной прокрутки */
   scroll-behavior: smooth;
+}
+
+/* Webkit-скроллбар для Chrome / Edge / Safari */
+.ingredients-scroll-area::-webkit-scrollbar,
+.filter-scroll-area::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ingredients-scroll-area::-webkit-scrollbar-track,
+.filter-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ingredients-scroll-area::-webkit-scrollbar-thumb,
+.filter-scroll-area::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 9999px;
+}
+
+.ingredients-scroll-area::-webkit-scrollbar-thumb:hover,
+.filter-scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-dim);
+}
+
+/* === Ingredients scroll area === */
+.ingredients-scroll-area {
+  /* На мобильных — без ограничений */
+  max-height: none;
 }
 
 /* На десктопе — ограничиваем высоту, чтобы список скроллился внутри */
@@ -529,48 +556,6 @@
     /* Занимает всё доступное пространство в сайдбаре минус заголовок, кнопку и отступы сверху/снизу */
     max-height: calc(100vh - 20rem);
   }
-}
-
-/* Webkit-скроллбар для Chrome / Edge / Safari */
-.ingredients-scroll-area::-webkit-scrollbar {
-  width: 4px;
-}
-
-.ingredients-scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.ingredients-scroll-area::-webkit-scrollbar-thumb {
-  background-color: var(--border-subtle);
-  border-radius: 9999px;
-}
-
-.ingredients-scroll-area::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-dim);
-}
-
-/* === Filters sidebar scroll area (recipes.astro) === */
-.filter-scroll-area {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-subtle) transparent;
-  scroll-behavior: smooth;
-}
-
-.filter-scroll-area::-webkit-scrollbar {
-  width: 4px;
-}
-
-.filter-scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.filter-scroll-area::-webkit-scrollbar-thumb {
-  background-color: var(--border-subtle);
-  border-radius: 9999px;
-}
-
-.filter-scroll-area::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-dim);
 }
 
 /* Зачёркивание отмеченных ингредиентов */
@@ -614,8 +599,11 @@
 }
 
 /* =========================
-   Recipes page filter sidebar
+   Header hide-on-scroll
    ========================= */
+.site-header.header-hidden {
+  transform: translateY(-100%);
+}
 
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
@@ -627,6 +615,10 @@
   .animate-fade-in {
     animation: none !important;
     opacity: 1 !important;
+  }
+
+  .site-header {
+    transition: none !important;
   }
 
   html {

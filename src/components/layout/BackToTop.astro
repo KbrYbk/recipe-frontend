@@ -1,0 +1,112 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<button id="backToTop" type="button" class="back-to-top" aria-label="Вернуться наверх" tabindex="-1">
+  <Icon name="lucide:arrow-up" class="h-5 w-5" aria-hidden="true" />
+</button>
+
+<style>
+  .back-to-top {
+    position: fixed;
+    left: 50%;
+    bottom: 6rem;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-subtle);
+    background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+    color: var(--brand-primary);
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 0.75rem);
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .back-to-top.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+
+  .back-to-top:hover {
+    background: var(--brand-primary);
+    color: #fff;
+  }
+
+  .back-to-top:active {
+    transform: translate(-50%, 0) scale(0.94);
+  }
+
+  @media (min-width: 768px) {
+    .back-to-top {
+      bottom: 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .back-to-top {
+      transition: opacity 0.3s ease;
+    }
+  }
+</style>
+
+<script>
+  function setupBackToTop() {
+    const btn = document.getElementById("backToTop");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    const showThreshold = 300;
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const onScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY <= showThreshold) {
+        btn.classList.remove("is-visible");
+        btn.setAttribute("tabindex", "-1");
+      } else {
+        const delta = currentScrollY - lastScrollY;
+        if (delta < -6) {
+          btn.classList.add("is-visible");
+          btn.setAttribute("tabindex", "0");
+        } else if (delta > 6) {
+          btn.classList.remove("is-visible");
+          btn.setAttribute("tabindex", "-1");
+        }
+      }
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            onScroll();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
+  }
+
+  setupBackToTop();
+</script>

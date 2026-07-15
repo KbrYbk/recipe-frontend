@@ -1,33 +1,101 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Icon } from 'astro-icon/components';
 ---
 
-<Layout title="О проекте — SwagEda" description="Узнайте больше о SwagEda — высокопроизводительном агрегаторе рецептов. Мы ценим скорость, доступность и чистую семантику для вашего комфортного поиска рецептов.">
-  <main class="max-w-4xl mx-auto px-4 py-12">
-    <section class="space-y-8">
-      <h1 class="text-4xl md:text-5xl font-bold text-text-main">О проекте SwagEda</h1>
-      <p class="text-xl text-text-muted leading-relaxed border-l-4 border-brand pl-6">
-        <strong>SwagEda</strong> — это не просто книга рецептов. Это высокопроизводительный агрегатор, созданный для тех, кто ценит скорость и чистоту интерфейса.
+<Layout title="О проекте — SwagEda" description="SwagEda — уютная кухня, а не корпорация. Более 31 000 рецептов в одном быстром и честном месте: без попапов, регистраций и «подпишись, чтобы увидеть ингредиенты».">
+  <main class="mx-auto max-w-4xl px-4 py-12 md:py-16">
+    <!-- Hero -->
+    <section class="mb-14 text-center">
+      <span class="inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-brand">
+        <Icon name="lucide:utensils" class="h-4 w-4" aria-hidden="true" />
+        Уютная кухня, а не корпорация
+      </span>
+      <h1 class="mt-5 text-4xl font-extrabold text-text-main md:text-5xl">
+        Привет! Рад, что заглянул к нам на кухню 👋
+      </h1>
+      <p class="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-text-muted">
+        SwagEda — это место, где рецепты не прячутся за десятком попапов и пятиминутным видео. Мы сделали сайт таким, каким сами хотели бы пользоваться: быстрым, честным и без лишнего шума.
       </p>
+    </section>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-10">
-        <div class="p-6 bg-accent-soft rounded-xl border border-line">
-          <h3 class="text-lg font-semibold mb-2 text-brand">⚡ Скорость</h3>
-          <p class="text-sm opacity-80">Astro-генерация. Загрузка за миллисекунды даже на плохом интернете.</p>
-        </div>
-        <div class="p-6 bg-accent-soft rounded-xl border border-line">
-          <h3 class="text-lg font-semibold mb-2 text-brand">♿ Доступность</h3>
-          <p class="text-sm opacity-80">Соблюдение стандартов WCAG и чистая семантика для всех устройств.</p>
-        </div>
-        <div class="p-6 bg-accent-soft rounded-xl border border-line">
-          <h3 class="text-lg font-semibold mb-2 text-brand">📂 Масштаб</h3>
-          <p class="text-sm opacity-80">База из 31,000+ рецептов с мгновенным поиском и фильтрацией.</p>
+    <!-- Story -->
+    <section class="mb-14">
+      <div class="rounded-3xl border border-line bg-card-bg p-8 shadow-sm md:p-10">
+        <h2 class="mb-4 flex items-center gap-2 text-2xl font-bold text-text-main">
+          <Icon name="lucide:chef-hat" class="h-6 w-6 text-brand" aria-hidden="true" />
+          Коротко о нас
+        </h2>
+        <div class="space-y-4 text-text-muted leading-relaxed">
+          <p>
+            Мы собрали <strong class="text-text-main">31 000+</strong> рецептов в одном месте и прикрутили к ним интерфейс, который открывается быстрее, чем закипает чайник. Никакой магии — просто нормальный современный код.
+          </p>
+          <p>
+            Никакой регистрации ради «полного рецепта». Никаких «подпишись, чтобы увидеть ингредиенты». Заходи, находи что-то вкусное и — пошёл готовить.
+          </p>
         </div>
       </div>
+    </section>
 
-      <div class="max-w-none">
-        <p>Мы убрали всё лишнее: тяжелые JS-библиотеки, навязчивую рекламу и сложную навигацию. Наша цель — дать вам рецепт здесь и сейчас.</p>
+    <!-- Features -->
+    <section class="mb-14">
+      <h2 class="mb-6 text-center text-2xl font-bold text-text-main">За что нас (надеемся) полюбят</h2>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div class="rounded-3xl border border-line bg-card-bg p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+          <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-brand">
+            <Icon name="lucide:zap" class="h-6 w-6" aria-hidden="true" />
+          </div>
+          <h3 class="mb-2 text-lg font-semibold text-text-main">Скорость</h3>
+          <p class="text-sm text-text-muted">Собрано на Astro — страницы открываются за миллисекунды, даже если ваш интернет решил вздремнуть.</p>
+        </div>
+        <div class="rounded-3xl border border-line bg-card-bg p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+          <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-brand">
+            <Icon name="lucide:users" class="h-6 w-6" aria-hidden="true" />
+          </div>
+          <h3 class="mb-2 text-lg font-semibold text-text-main">Доступность</h3>
+          <p class="text-sm text-text-muted">Чистая семантика и WCAG-дружелюбность: зайдёт и с телефона, и с экранными читалками, и с бабушкиного планшета.</p>
+        </div>
+        <div class="rounded-3xl border border-line bg-card-bg p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+          <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-brand">
+            <Icon name="lucide:soup" class="h-6 w-6" aria-hidden="true" />
+          </div>
+          <h3 class="mb-2 text-lg font-semibold text-text-main">Масштаб</h3>
+          <p class="text-sm text-text-muted">База из 31 000+ рецептов с мгновенным поиском и фильтрами..</p>
+        </div>
       </div>
+    </section>
+
+    <!-- "Чем мы НЕ являемся" -->
+    <section class="mb-14">
+      <div class="rounded-3xl border border-line bg-accent-soft/50 p-8">
+        <h2 class="mb-5 flex items-center gap-2 text-2xl font-bold text-text-main">
+          <Icon name="lucide:crown" class="h-6 w-6 text-brand" aria-hidden="true" />
+          А чем мы НЕ являемся 🤷
+        </h2>
+        <ul class="space-y-3 text-text-muted">
+          <li class="flex items-start gap-3">
+            <Icon name="lucide:x" class="mt-1 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+            <span>Не глянцевым журналом с «изысканными» блюдами из трюфелей и золотых ложек.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <Icon name="lucide:x" class="mt-1 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+            <span>Не платформой, где за каждый клик просят email и подписку на рассылку «только лучшее».</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <Icon name="lucide:x" class="mt-1 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+            <span>Не ИИ-генератором текстов про «раскрытие вкуса» — рецепты реальные, проверенные жизнью.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="text-center">
+      <p class="mb-5 text-lg text-text-muted">Довольно читать про себя любимых — пора что-то приготовить.</p>
+      <a href="/recipes" class="btn-primary inline-flex items-center gap-2 text-lg">
+        <Icon name="lucide:utensils-crossed" class="h-5 w-5" aria-hidden="true" />
+        Листать рецепты
+      </a>
     </section>
   </main>
 </Layout>

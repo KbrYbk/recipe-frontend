@@ -1,32 +1,78 @@
 ---
-import Layout from '../layouts/Layout.astro';
-const today = new Date().toLocaleDateString('ru-RU');
+import Layout from "../layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+const lastUpdated = "15 июля 2026";
 ---
 
-<Layout title="Политика конфиденциальности — SwagEda" description="Политика конфиденциальности SwagEda: узнайте, как мы защищаем ваши данные и обеспечиваем анонимность. Мы используем только необходимые технические cookies.">
-  <main class="max-w-3xl mx-auto px-4 py-12">
-    <article class="max-w-none">
-      <h1 class="text-3xl font-extrabold mb-2">Политика конфиденциальности</h1>
-      <p class="text-sm text-text-muted mb-8">Последнее обновление: {today}</p>
+<Layout
+  title="Политика конфиденциальности — SwagEda"
+  description="Политика конфиденциальности SwagEda: мы за анонимность, используем только нужные технические cookies и Яндекс.Метрику, передаём данные по HTTPS и никому их не продаём."
+>
+  <main class="mx-auto max-w-3xl px-4 py-12 md:py-16">
+    <header class="mb-10 text-center">
+      <span class="bg-accent-soft text-brand inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold">
+        <Icon name="lucide:shield-check" class="h-4 w-4" aria-hidden="true" />
+        Скучно, но важно
+      </span>
+      <h1 class="text-text-main mt-4 text-4xl font-extrabold">Политика конфиденциальности</h1>
+      <p class="text-text-muted mt-3 text-sm">Обновлено: {lastUpdated}</p>
+    </header>
 
-      <section class="mb-10">
-        <h2 class="text-xl font-bold text-brand mb-4 uppercase tracking-wider text-sm">1. Принципы сбора данных</h2>
-        <p>Мы за анонимность. SwagEda не требует регистрации и не собирает ваши паспортные данные, клички собак или девичьи фамилии матерей.</p>
+    <div class="space-y-5">
+      <section class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm md:p-8">
+        <div class="mb-3 flex items-center gap-3">
+          <div class="bg-accent-soft text-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <Icon name="lucide:eye-off" class="h-5 w-5" aria-hidden="true" />
+          </div>
+          <h2 class="text-text-main text-xl font-bold">1. Мы за анонимность</h2>
+        </div>
+        <p class="text-text-muted leading-relaxed">
+          SwagEda не требует регистрации и не собирает ваши паспортные данные, клички собак или девичьи фамилии мам. Заходишь — и сразу готовишь. Без анкет и «расскажи о себе».
+        </p>
       </section>
 
-      <section class="mb-10">
-        <h2 class="text-xl font-bold text-brand mb-4 uppercase tracking-wider text-sm">2. Cookies и Аналитика</h2>
-        <p>Для корректной работы лайков и понимания того, не положил ли наш «ультраменьший» бэкендер сервер в очередной раз, мы используем технические Cookie и Яндекс.Метрику.</p>
+      <section class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm md:p-8">
+        <div class="mb-3 flex items-center gap-3">
+          <div class="bg-accent-soft text-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <Icon name="lucide:bell" class="h-5 w-5" aria-hidden="true" />
+          </div>
+          <h2 class="text-text-main text-xl font-bold">2. Cookies и аналитика</h2>
+        </div>
+        <p class="text-text-muted leading-relaxed">
+          Чтобы лайки не терялись и мы понимали, не «положил» ли опять наш ультраменьший бэкендер сервер в очередной раз, мы используем технические Cookie и Яндекс.Метрику. Это про цифры и удобство, а
+          не про слежку за вами.
+        </p>
       </section>
 
-      <section class="mb-10">
-        <h2 class="text-xl font-bold text-brand mb-4 uppercase tracking-wider text-sm">3. Ваша безопасность</h2>
-        <p>Все данные передаются по зашифрованному протоколу HTTPS. Мы не передаем информацию третьим лицам, если только они не придут с официальным запросом от правоохранительных органов.</p>
+      <section class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm md:p-8">
+        <div class="mb-3 flex items-center gap-3">
+          <div class="bg-accent-soft text-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <Icon name="lucide:shield-check" class="h-5 w-5" aria-hidden="true" />
+          </div>
+          <h2 class="text-text-main text-xl font-bold">3. Ваша безопасность</h2>
+        </div>
+        <p class="text-text-muted leading-relaxed">Все данные передаются по зашифрованному протоколу HTTPS. Мы не передаём информацию третьим лицам.</p>
       </section>
 
-      <div class="p-4 bg-accent-soft rounded-lg text-sm italic">
-        Остались вопросы? Пишите на <a href="mailto:privacy@swageda.ru" class="text-brand underline">privacy@swageda.ru</a>.
-      </div>
-    </article>
+      <section class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm md:p-8">
+        <div class="mb-3 flex items-center gap-3">
+          <div class="bg-accent-soft text-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <Icon name="lucide:heart" class="h-5 w-5" aria-hidden="true" />
+          </div>
+          <h2 class="text-text-main text-xl font-bold">4. Ваши права</h2>
+        </div>
+        <p class="text-text-muted leading-relaxed">
+          Хотите узнать, что мы о вас знаем, или вообще всё стереть? Напишите нам — и мы разберёмся, без бюрократии и бесконечных форм.
+        </p>
+      </section>
+    </div>
+
+    <div class="border-line bg-accent-soft mt-10 rounded-3xl border p-6 text-center">
+      <p class="text-text-main">Остались вопросы или паранойя не отпускает?</p>
+      <a href="mailto:privacy@swageda.ru" class="btn-primary mt-3 inline-flex items-center gap-2">
+        <Icon name="lucide:mail" class="h-5 w-5" aria-hidden="true" />
+        Написать на privacy@swageda.ru
+      </a>
+    </div>
   </main>
 </Layout>

@@ -1,26 +1,49 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Icon } from 'astro-icon/components';
 ---
 
-<Layout title="Контакты — SwagEda" description="Есть вопросы или предложения по работе SwagEda? Свяжитесь с нашей командой поддержки. Мы рады обратной связи и готовы помочь вам с любыми техническими вопросами.">
-  <main class="max-w-2xl mx-auto px-4 py-20 text-center">
-    <h1 class="text-4xl font-bold mb-4 text-text-main">Контакты</h1>
-    <p class="text-text-muted mb-12">Нашли баг или есть идея? Пишите, мы не кусаемся.</p>
+<Layout title="Контакты — SwagEda" description="Свяжитесь с командой SwagEda: техподдержка support@swageda.ru, сотрудничество и реклама ads@swageda.ru. Мы реальные, отвечаем по-человечески и не кусаемся.">
+  <main class="mx-auto max-w-2xl px-4 py-12 text-center md:py-16">
+    <span class="inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-brand">
+      <Icon name="lucide:message-circle" class="h-4 w-4" aria-hidden="true" />
+      Мы реальные
+    </span>
+    <h1 class="mt-4 text-4xl font-extrabold text-text-main">Контакты</h1>
+    <p class="mx-auto mt-3 max-w-xl text-text-muted">
+      Нашли баг, есть идея или просто хочется сказать «спасибо»? Пишите — мы не кусаемся и отвечаем по-человечески, а не автоответом «Ваше обращение принято».
+    </p>
 
-    <!-- <div class="space-y-4">
-      <a href="mailto:support@swageda.ru"
-         class="group block p-6 border-2 border-brand rounded-2xl hover:bg-brand hover:text-white transition-colors duration-200">
-        <span class="block text-sm text-text-muted group-hover:text-white transition-colors">Техподдержка</span>
-        <strong class="text-xl group-hover:text-white transition-colors">support@swageda.ru</strong>
+    <div class="mt-10 space-y-4 text-left">
+      <a
+        href="mailto:support@swageda.ru"
+        class="group flex items-center gap-4 rounded-3xl border-2 border-line p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-accent-soft"
+      >
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand text-white">
+          <Icon name="lucide:life-buoy" class="h-6 w-6" aria-hidden="true" />
+        </div>
+        <div>
+          <p class="text-sm text-text-muted">Техподдержка и всё-всё-всё</p>
+          <p class="text-lg font-bold text-text-main transition-colors group-hover:text-brand">support@swageda.ru</p>
+        </div>
       </a>
 
-      <a href="mailto:ads@swageda.ru"
-         class="group block p-6 border border-line rounded-2xl hover:border-brand transition-all duration-200">
-        <span class="block text-sm text-text-muted group-hover:text-brand transition-colors">Сотрудничество</span>
-        <strong class="text-xl group-hover:text-brand transition-colors">ads@swageda.ru</strong>
+      <a
+        href="mailto:ads@swageda.ru"
+        class="group flex items-center gap-4 rounded-3xl border border-line p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-accent-soft"
+      >
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-brand">
+          <Icon name="lucide:megaphone" class="h-6 w-6" aria-hidden="true" />
+        </div>
+        <div>
+          <p class="text-sm text-text-muted">Сотрудничество и реклама</p>
+          <p class="text-lg font-bold text-text-main transition-colors group-hover:text-brand">ads@swageda.ru</p>
+        </div>
       </a>
-    </div> -->
+    </div>
 
-    <p class="mt-12 text-sm text-text-muted">Отвечаем в течение 24 часов.</p>
+    <p class="mx-auto mt-10 max-w-md text-sm text-text-muted">
+      Обычно отвечаем в течение 24 часов. А если сервер опять «положил слабоумный бэкендер» — чуть дольше, но точно ответим 🤝
+    </p>
   </main>
 </Layout>
