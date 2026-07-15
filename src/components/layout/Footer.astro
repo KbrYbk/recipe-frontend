@@ -3,7 +3,7 @@ import { Icon } from "astro-icon/components";
 const currentYear = new Date().getFullYear();
 ---
 
-<footer class="border-line bg-card-bg no-print mt-20 border-t transition-colors">
+<footer class="border-line bg-card-bg print:hidden mt-20 border-t transition-colors">
   <div class="mx-auto max-w-6xl px-4 py-12 md:px-8 lg:px-12">
     <div class="grid grid-cols-1 gap-12 md:grid-cols-4">
       <!-- Колонки 1-2: Описание проекта -->

@@ -310,7 +310,7 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
             filteredRecipes.map((recipe, index) => (
               <>
                 {index === 2 && (
-                  <div class="md:col-span-2 no-print min-w-0" data-ad-wrapper>
+                  <div class="md:col-span-2 print:hidden min-w-0" data-ad-wrapper>
                     <AdSlot id="R-A-19056160-24" />
                   </div>
                 )}
@@ -345,7 +345,7 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
       </div>
     </div>
 
-    <div class="border-t border-line mt-12 pt-8 no-print">
+    <div class="border-t border-line mt-12 pt-8 print:hidden">
       <h3 class="text-text-main mb-6 text-2xl font-bold">Популярные рецепты:</h3>
       <AdSlot id="R-A-19056160-14" isFeed={true} />
     </div>

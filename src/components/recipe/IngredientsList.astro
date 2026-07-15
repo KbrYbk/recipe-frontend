@@ -16,9 +16,9 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 ---
 
 <div class="group" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
-  <div class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm transition-all hover:shadow-lg">
+  <div class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm transition-all hover:shadow-lg print:border-0 print:bg-transparent print:p-0 print:shadow-none">
     <div class="mb-6 flex w-full flex-wrap items-baseline justify-between gap-y-2">
-      <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap">
+      <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
         <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" />
         Ингредиенты
       </h2>
@@ -26,24 +26,24 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
     </div>
 
     <div class="relative">
-      <div class="ingredients-scroll-area lg:overflow-y-auto lg:overscroll-contain" data-ingredients-scroll tabindex="0" role="region" aria-label="Список ингредиентов, прокрутите чтобы увидеть все">
-        <ul class="space-y-3 pr-1">
+      <div class="ingredients-scroll-area lg:overflow-y-auto lg:overscroll-contain print:max-h-none print:overflow-visible" data-ingredients-scroll tabindex="0" role="region" aria-label="Список ингредиентов, прокрутите чтобы увидеть все">
+        <ul class="space-y-3 pr-1 print:columns-2 print:gap-x-4 print:space-y-1">
           {
             ingredients.map((item, i) => {
               const cbId = `ing-${recipeSlug}-${i}`;
               return (
-                <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors">
+                <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors print:rounded-none print:border-b print:border-gray-200 print:py-1 print:gap-2">
                   <div class="flex h-6 shrink-0 items-center">
                     <input
                       id={cbId}
                       type="checkbox"
                       data-ingredient-checkbox
                       data-recipe-slug={recipeSlug}
-                      class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded-md transition-all checked:scale-110"
+                      class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded-md transition-all checked:scale-110 print:h-3 print:w-3 print:appearance-none print:rounded-none print:border print:border-black"
                     />
                   </div>
                   <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all select-none">
-                    <span class="ingredient-name text-text-main leading-tight font-medium">{item.name}</span>
+                    <span class="ingredient-name text-text-main leading-tight font-medium print:text-[10pt]">{item.name}</span>
                     {item.amount && (
                       <span class="ingredient-amount text-text-muted text-xs font-bold italic opacity-80">
                         {item.amount} {item.unit}
@@ -58,7 +58,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       </div>
 
       <!-- Индикатор: показывает что есть ещё ингредиенты и сколько осталось -->
-      <div class="ingredients-scroll-hint absolute inset-x-0 bottom-0 z-10 flex items-end justify-center pb-2" data-scroll-hint aria-hidden="true">
+      <div class="ingredients-scroll-hint absolute inset-x-0 bottom-0 z-10 flex items-end justify-center pb-2 print:hidden" data-scroll-hint aria-hidden="true">
         <button
           type="button"
           class="ingredients-scroll-hint__btn bg-card-bg/95 border-line text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm transition-all hover:shadow-xl active:scale-95"

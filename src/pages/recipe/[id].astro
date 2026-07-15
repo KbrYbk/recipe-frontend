@@ -194,7 +194,7 @@ const difficultyClass = difficulty === "hard"
         <article class="mx-auto max-w-4xl px-4 py-8 md:py-12" data-recipe-id={id}>
           {jsonLdRecipe && <script type="application/ld+json" set:html={jsonLdRecipe} />}
 
-        <div class="no-print mb-8">
+        <div class="print:hidden mb-8">
           <Breadcrumbs
             items={[
               { name: "Рецепты", href: "/recipes" },
@@ -210,17 +210,17 @@ const difficultyClass = difficulty === "hard"
             ]}
           />
 
-          <a href="/recipes" class="group text-brand mt-4 inline-flex items-center text-sm font-bold">
+          <a href="/recipes" class="group text-brand mt-4 inline-flex items-center text-sm font-bold print:hidden">
             <Icon name="lucide:arrow-left" class="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
             Назад к списку
           </a>
         </div>
 
           <header class="mb-12">
-            <h1 class="text-text-main mb-4 text-4xl font-bold md:text-5xl lg:text-7xl">{title}</h1>
+            <h1 class="text-text-main mb-4 text-4xl font-bold md:text-5xl lg:text-7xl print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-extrabold">{title}</h1>
 
           <!-- Метки рецепта: время, сложность -->
-            <div class="mb-4 flex flex-wrap items-center gap-2">
+            <div class="mb-4 flex flex-wrap items-center gap-2 print:mb-2">
               <span class="bg-card-bg border-line text-text-main inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium sm:h-11 sm:rounded-xl sm:px-4" aria-label={`Время приготовления: ${cooking_time} минут`}>
               <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
               <span class="tabular-nums">{cooking_time} мин</span>
@@ -242,8 +242,8 @@ const difficultyClass = difficulty === "hard"
 
               <button
                 type="button"
-                onclick="window.print()"
-                class="bg-card-bg border-line text-text-main hover:border-brand no-print flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-95"
+                id="printRecipeBtn"
+                class="bg-card-bg border-line text-text-main hover:border-brand print:hidden flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-95"
                 aria-label="Печать рецепта"
               >
                 <Icon name="lucide:printer" class="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -256,17 +256,17 @@ const difficultyClass = difficulty === "hard"
             </div>
           </header>
 
-          <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl">
+          <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl print:mb-4 print:aspect-auto print:border-0 print:shadow-none print:bg-transparent print:rounded-none print:overflow-visible">
             {main_image ? (
               <Image
                 src={main_image}
                 alt={`Фото готового блюда: ${title}`}
-                widths={[450, 800, 1200]} 
+                widths={[450, 800, 1200]}
                 sizes="(max-width: 768px) 450px, (max-width: 1200px) 800px, 1200px"
                 width={1200}
                 height={675}
                 data-zoomable
-                class="image-zoom h-full w-full object-cover"
+                class="image-zoom h-full w-full object-cover print:float-right print:h-auto print:w-[130px] print:max-w-[130px] print:rounded print:grayscale print:ml-3 print:mb-3"
                 loading="eager"
                 fetchpriority="high"
                 decoding="async"
@@ -285,14 +285,14 @@ const difficultyClass = difficulty === "hard"
           <div class="lg:col-span-2">
             {description && (
               <section aria-labelledby="about-heading" class="mb-12">
-                <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold">
+                <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
                   О рецепте
                 </h2>
 
                 <div class="relative">
                   <div class="bg-brand/20 absolute top-0 bottom-0 -left-4 hidden w-1 rounded-full md:block" />
 
-                  <p class="text-text-muted mb-6 text-xl leading-relaxed italic">«{description}»</p>
+                  <p class="text-text-muted mb-6 text-xl leading-relaxed italic print:mb-3 print:text-[10pt] print:not-italic">«{description}»</p>
                 </div>
               </section>
             )}
@@ -302,22 +302,22 @@ const difficultyClass = difficulty === "hard"
             <AdSlot id="R-A-19056160-19" refreshInterval={30} />
 
             <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
-              <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold">
+              <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
                 Приготовление
               </h2>
               <ol class="space-y-12">
                 {steps.map((step, index) => (
                   <>
-                    <li key={index} class="group relative scroll-mt-24">
-                        <div class="mb-4 flex gap-6">
-                          <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" aria-hidden="true">
+                    <li key={index} class="group relative scroll-mt-24 print:mb-3 print:break-inside-avoid print:border-b print:border-gray-200">
+                        <div class="mb-4 flex gap-6 print:mb-2 print:gap-2">
+                          <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white print:h-[18pt] print:w-[18pt] print:min-w-[18pt] print:text-[9pt] print:border print:border-black print:bg-transparent print:text-black" aria-hidden="true">
                             {step.order ?? index + 1}
                           </div>
-                          <p class="text-text-main pt-1 text-lg leading-relaxed">{step.text}</p>
+                          <p class="text-text-main pt-1 text-lg leading-relaxed print:pt-0 print:text-[10pt] print:leading-snug">{step.text}</p>
                         </div>
 
                         {step.image ? (
-                          <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800">
+                          <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800 print:ml-4 print:max-w-[300px] print:border-0 print:shadow-none print:rounded">
                             <img
                               data-zoomable
                               tabindex="0"
@@ -329,7 +329,7 @@ const difficultyClass = difficulty === "hard"
                               height={450}
                               loading="lazy"
                               decoding="async"
-                              class="image-zoom h-auto w-full"
+                              class="image-zoom h-auto w-full print:float-none print:my-2 print:max-w-[300px]"
                             />
                           </div>
                         ) : null}
@@ -348,7 +348,7 @@ const difficultyClass = difficulty === "hard"
           </div>
         </div>
         <!-- ЛЕНТА РЕКОМЕНДАЦИЙ (РСЯ Виджет) в самом низу рецепта -->
-        <div class="border-t border-line mt-12 pt-8 no-print">
+        <div class="border-t border-line mt-12 pt-8 print:hidden">
           <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>
           <AdSlot id="R-A-19056160-14" isFeed={true} refreshInterval={60} />
         </div>
@@ -365,7 +365,7 @@ const difficultyClass = difficulty === "hard"
           if (rid) {
             const STORAGE_PREFIX = "recipe:scroll:";
             const key = STORAGE_PREFIX + rid;
-            
+
             // Восстановление
             if (!window.location.hash && sessionStorage.getItem(key)) {
               setTimeout(() => {
@@ -405,6 +405,63 @@ const difficultyClass = difficulty === "hard"
             window.addEventListener("pagehide", saveScroll);
             document.addEventListener("visibilitychange", () => {
               if (document.visibilityState === "hidden") saveScroll();
+            });
+          }
+
+          // --- Печать рецепта: будим lazy-картинки, чтобы попали в вывод ---
+          // При печати браузер НЕ подгружает lazy-картинки, до которых не доскроллили.
+          // loading="lazy" при обычном просмотре оставляем — ради скорости.
+          function wakeLazyImages() {
+            document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+              img.loading = "eager";
+              if (!img.complete) {
+                const src = img.currentSrc || img.src;
+                if (src) img.src = src;
+              }
+            });
+          }
+
+          // Ловим Ctrl+P
+          window.addEventListener("beforeprint", wakeLazyImages);
+          if (window.matchMedia) {
+            window.matchMedia("print").addEventListener("change", (e) => {
+              if (e.matches) wakeLazyImages();
+            });
+          }
+
+          const printRecipe = () => {
+            wakeLazyImages();
+            const pending = Array.from(document.querySelectorAll("img")).filter((img) => !img.complete);
+            if (pending.length === 0) {
+              window.print();
+              return;
+            }
+            let remaining = pending.length;
+            let printed = false;
+            const finish = () => {
+              if (printed) return;
+              printed = true;
+              window.print();
+            };
+            pending.forEach((img) => {
+              const done = () => {
+                remaining -= 1;
+                if (remaining <= 0) finish();
+              };
+              if (img.complete) done();
+              else {
+                img.addEventListener("load", done, { once: true });
+                img.addEventListener("error", done, { once: true });
+              }
+            });
+            setTimeout(finish, 2000); // страховка, если картинка зависла
+          };
+
+          const printBtn = document.getElementById("printRecipeBtn");
+          if (printBtn) {
+            printBtn.addEventListener("click", (e) => {
+              e.preventDefault();
+              printRecipe();
             });
           }
         </script>

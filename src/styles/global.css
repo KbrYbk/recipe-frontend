@@ -263,8 +263,11 @@
   }
 }
 
+/* === Print: минимальный reset ===
+   Вся элементная стилизация вынесена в `print:`-утилиты Tailwind прямо в разметку
+   (recipe/[id].astro, IngredientsList.astro, Layout-компоненты). Здесь только то,
+   что невозможно выразить utility-классом. */
 @media print {
-  /* 0. СБРОС ТЕМНОЙ ТЕМЫ ДЛЯ ПЕЧАТИ */
   *,
   *::before,
   *::after {
@@ -274,215 +277,37 @@
     text-shadow: none !important;
   }
 
-  /* 0. УБИВАЕМ ПУСТЫЕ СТРАНИЦЫ И РАСШИРЯЕМ РАБОЧУЮ ЗОНУ */
-  html,
-  body,
-  main {
-    height: auto !important;
-    min-height: 0 !important;
-    background-color: white !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .container,
-  .main-content,
-  .layout-wrapper,
-  main > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: block !important;
-  }
-
-  /* 1. СКРЫТИЕ ИНТЕРФЕЙСА */
-  header,
-  footer,
-  .no-print,
-  button,
-  a[href="/recipes"],
-  .video-section,
-  iframe,
-  .comments-section {
-    display: none !important;
-  }
-
-  /* 2. НАСТРОЙКА ЛИСТА */
   @page {
     margin: 0.8cm 1.2cm;
   }
 
+  html,
   body {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
-    color: black !important;
+  }
+
+  body {
     font-size: 10pt;
-    line-height: 1.2;
+    line-height: 1.15;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* 3. ЗАГОЛОВКИ И МЕТА-ДАННЫЕ */
-  h1 {
-    font-size: 18pt;
-    margin: 0 0 0.1cm 0 !important;
-    border-bottom: 1.5px solid #000;
-    padding-bottom: 0.05cm;
-  }
-
-  h2,
-  aside h2 {
-    font-size: 12pt !important;
-    margin: 0.2cm 0 0.1cm 0 !important;
-    border-bottom: 1px solid #ccc;
-    text-transform: uppercase;
+  main {
     padding: 0 !important;
   }
 
-  div[class*="flex items-center gap"] {
-    margin: 0 0 0.1cm 0 !important;
-    padding: 0 !important;
-    display: flex !important;
+  /* На печати прячем всё интерактивное и служебное */
+  button,
+  iframe {
+    display: none !important;
   }
 
-  [data-astro-icon],
   svg {
     color: black !important;
-    fill: black !important;
-    width: 11pt !important;
-    height: 11pt !important;
-  }
-
-  /* 4. КОМПАКТНОЕ ФОТО (ИСПРАВЛЕНИЕ FLOAT) */
-  .aspect-video,
-  div[class*="bg-card-bg"] {
-    aspect-ratio: auto !important;
-    height: auto !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    display: inline !important;
-  }
-
-  img {
-    max-width: 130px !important;
-    float: right !important;
-    margin: 0 0 0.2cm 0.3cm !important;
-    border-radius: 4px !important;
-    filter: grayscale(100%);
-    break-inside: avoid;
-  }
-
-  /* 5. ИНГРЕДИЕНТЫ (ПОЛНАЯ ЧИСТКА) */
-  aside div.border-line {
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  aside ul {
-    column-count: 2;
-    column-gap: 0.5cm;
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none !important;
-  }
-
-  aside ul.space-y-4 > * + * {
-    margin-top: 0 !important;
-  }
-
-  aside li {
-    padding: 0.1cm 0 !important;
-    margin: 0 !important;
-    border-bottom: 0.5px solid #eee !important;
-    gap: 0.2cm !important;
-    display: flex !important;
-    align-items: center !important;
-    break-inside: avoid;
-  }
-
-  aside input[type="checkbox"] {
-    display: block !important;
-    appearance: none;
-    -webkit-appearance: none;
-    width: 10pt !important;
-    height: 10pt !important;
-    border: 1px solid #000 !important;
-    background: #fff !important;
-    border-radius: 2px;
-    margin: 0 !important;
-    flex-shrink: 0;
-  }
-
-  aside span {
-    font-size: 10pt !important;
-    line-height: 1.1 !important;
-  }
-
-  /* 6. ИНСТРУКЦИЯ (ШАГИ)*/
-  .space-y-12 > * + * {
-    margin-top: 0 !important;
-  }
-
-  .group.relative {
-    margin: 0 !important;
-    padding: 0 !important;
-    border-bottom: 0.5px solid #eee;
-  }
-
-  .mb-4.flex.gap-6 {
-    margin: 0.2cm 0 !important;
-    gap: 0.3cm !important;
-    break-inside: avoid;
-    display: flex !important;
-  }
-
-  .bg-brand.h-10.w-10 {
-    width: 18pt !important;
-    height: 18pt !important;
-    min-width: 18pt !important;
-    font-size: 9pt !important;
-    background: transparent !important;
-    color: black !important;
-    border: 1px solid black !important;
-    border-radius: 50%;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .text-text-main,
-  p {
-    font-size: 10pt !important;
-    margin: 0 !important;
-    line-height: 1.2 !important;
-  }
-
-  /* 7. ССЫЛКИ */
-  a {
-    text-decoration: none !important;
-    color: black !important;
-  }
-
-  /* Картинки внутри шагов делаем компактнее для печати */
-  .group.relative img {
-    max-width: 300px !important;
-    margin-top: 0.2cm !important;
-    border-radius: 8px !important;
-    float: none !important;
-  }
-
-  .group.relative div.ml-16 {
-    margin-left: 1cm !important;
-    border: none !important;
-    box-shadow: none !important;
   }
 }
 

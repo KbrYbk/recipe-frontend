@@ -37,7 +37,7 @@ const jsonLd = JSON.stringify(breadcrumbList);
 
 <script type="application/ld+json" set:html={jsonLd} is:inline />
 
-<nav aria-label="Хлебные крошки" class="no-print text-text-muted flex items-center gap-2 text-sm">
+<nav aria-label="Хлебные крошки" class="print:hidden text-text-muted flex items-center gap-2 text-sm">
   <a href="/" class="hover:text-brand transition-colors">Главная</a>
 
   {
