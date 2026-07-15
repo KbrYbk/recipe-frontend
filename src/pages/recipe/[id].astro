@@ -2,15 +2,15 @@
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
-import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
 import localRecipes from "../../data/recipes.json";
 import { Icon } from "astro-icon/components";
-import IngredientsList from "../../components/IngredientsList.astro";
+import IngredientsList from "../../components/recipe/IngredientsList.astro";
 import { Image } from "astro:assets";
-import VideoPlayer from "../../components/VideoPlayer.astro";
-import HttpNotFound from "../../components/HttpNotFound.astro";
-import AdSlot from "../../components/AdSlot.astro";
-import BackendErrorAlert from "../../components/BackendErrorAlert.astro";
+import VideoPlayer from "../../components/ui/VideoPlayer.astro";
+import HttpNotFound from "../../components/errors/HttpNotFound.astro";
+import AdSlot from "../../components/shared/AdSlot.astro";
+import BackendErrorAlert from "../../components/errors/BackendErrorAlert.astro";
 import { fetchRecipeById, mapBackendRecipe } from "../../lib/api/recipes";
 import { normalizeIngredients } from "../../lib/normalizeIngredients";
 

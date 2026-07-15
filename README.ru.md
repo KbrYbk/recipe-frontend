@@ -83,8 +83,13 @@
 
 ```text
 src/
-├── components/     # Атомарные UI-компоненты (RecipeCard, SearchBar и т.д.)
-├── layouts/        # Базовые шаблоны с логикой Meta/SEO/Theme
+├── components/     # Переиспользуемые компоненты
+│   ├── layout/     # Связанные с макетом (Header, Footer и т.д.)
+│   ├── recipe/     # Доменные компоненты рецептов
+│   ├── shared/     # Сквозные компоненты (Реклама, Куки)
+│   ├── ui/         # Базовые UI-примитивы (Pagination, SearchBar)
+│   └── errors/     # Состояния ошибок и 404
+├── layouts/        # Базовый макет с логикой Meta/SEO/Theme logic
 ├── lib/            # Общие утилиты и API-клиент
 ├── pages/          # Файловый роутинг (Static & SSR)
 ├── styles/         # Глобальная конфигурация Tailwind v4

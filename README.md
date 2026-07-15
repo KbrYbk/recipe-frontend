@@ -83,7 +83,12 @@ Interactions like ingredient checkboxes and theme toggles are built with vanilla
 
 ```text
 src/
-├── components/     # Atomic UI components (RecipeCard, SearchBar, etc.)
+├── components/     # Reusable components
+│   ├── layout/     # Layout-related (Header, Footer, etc.)
+│   ├── recipe/     # Recipe domain components
+│   ├── shared/     # Cross-cutting concerns (Ads, Cookie)
+│   ├── ui/         # Base UI primitives (Pagination, SearchBar)
+│   └── errors/     # Error states and 404
 ├── layouts/        # Base layout with Meta/SEO/Theme logic
 ├── lib/            # Shared utilities and API client
 ├── pages/          # File-based routing (Static & SSR)

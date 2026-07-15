@@ -1,11 +1,11 @@
 ---
 export const prerender = false;
 import Layout from "../layouts/Layout.astro";
-import Breadcrumbs from "../components/Breadcrumbs.astro";
+import Breadcrumbs from "../components/layout/Breadcrumbs.astro";
 import RecipeCard from "../components/RecipeCard.astro";
-import SearchBar from "../components/SearchBar.astro";
-import Pagination from "../components/Pagination.astro";
-import AdSlot from "../components/AdSlot.astro";
+import SearchBar from "../components/ui/SearchBar.astro";
+import Pagination from "../components/ui/Pagination.astro";
+import AdSlot from "../components/shared/AdSlot.astro";
 import { Icon } from "astro-icon/components";
 import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from "../lib/api/recipes";
