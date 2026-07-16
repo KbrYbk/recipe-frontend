@@ -1,12 +1,11 @@
 ---
-import { Icon } from "astro-icon/components";
-
 interface Props {
   recipeId: string;
   averageRating: number;
 }
 const { recipeId, averageRating } = Astro.props;
 ---
+
 <rating-stars data-id={recipeId} data-avg={averageRating}>
   <div
     class="rating-container bg-card-bg border-line flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold text-amber-500 transition-colors"
@@ -14,67 +13,156 @@ const { recipeId, averageRating } = Astro.props;
     aria-label={`Рейтинг: ${averageRating ? Number(averageRating).toFixed(1) : "0"} из 5`}
   >
     <div class="stars-container flex gap-0.5" role="radiogroup" aria-label="Ваша оценка">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          type="button"
-          data-star={star}
-          class="star-btn rounded-md p-1 transition-transform hover:scale-110 active:scale-90 disabled:opacity-50 disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-          aria-label={`Оценить на ${star}`}
-          aria-pressed="false"
-        >
-          <Icon name="lucide:star" class="h-5 w-5 shrink-0" aria-hidden="true" />
-        </button>
-      ))}
+      {
+        [1, 2, 3, 4, 5].map((star) => (
+          <button
+            type="button"
+            data-star={star}
+            class="star-btn focus: focus-visible:ring-brand rounded-md p-1 transition-transform outline-none hover:scale-110 focus-visible:ring-2 active:scale-90 disabled:hover:scale-100"
+            aria-label={`Оценить на ${star}`}
+            aria-pressed="false"
+          >
+            <svg class="star-svg h-5 w-5 shrink-0 fill-none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            </svg>
+          </button>
+        ))
+      }
     </div>
-    <div class="ml-1 text-text-main">
+    <div class="text-text-main ml-1">
       <span class="avg-val font-bold">{averageRating ? Number(averageRating).toFixed(1) : "0"}</span>
       <span class="sr-only"> из 5</span>
-      <span class="user-val text-xs text-text-muted hidden"> (Ваша: <span class="val"></span>)</span>
+      <span class="user-val text-text-muted hidden text-xs">Ваша оценка: <span class="val text-text-main font-semibold"></span></span>
     </div>
   </div>
 </rating-stars>
+<style>
+  /* Залитая звезда: fill берёт currentColor (янтарный), stroke остаётся */
+  .star-btn.filled .star-svg {
+    fill: currentColor;
+  }
+
+  /* Toast-уведомление сверху по центру */
+  #rating-toast {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    z-index: 60;
+    max-width: calc(100vw - 2rem);
+    padding: 0.625rem 1.1rem;
+    border-radius: 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--text-main);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+  }
+
+  #rating-toast.rating-toast--visible {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+
+  #rating-toast[data-type="success"] {
+    border-color: color-mix(in srgb, #22c55e 55%, var(--border-subtle));
+    color: #16a34a;
+  }
+
+  #rating-toast[data-type="error"] {
+    border-color: color-mix(in srgb, #ef4444 50%, var(--border-subtle));
+    color: #dc2626;
+  }
+
+  #rating-toast[data-type="info"] {
+    border-color: color-mix(in srgb, var(--brand-primary) 45%, var(--border-subtle));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #rating-toast {
+      transition: opacity 0.2s ease;
+      transform: translate(-50%, 0);
+    }
+    #rating-toast:not(.rating-toast--visible) {
+      opacity: 0;
+      transform: translate(-50%, -150%);
+    }
+  }
+</style>
 
 <script>
-  const API_BASE = (() => {
-    const raw = (import.meta.env.PUBLIC_BACKEND_URLS || import.meta.env.API_BASE_URL || "") as string;
-    return String(raw).split(",")[0].replace(/\/$/, "");
-  })();
-
   class RatingStars extends HTMLElement {
     connectedCallback() {
-      const container = this.querySelector('.rating-container');
-      const stars = this.querySelectorAll<HTMLButtonElement>('.star-btn');
-      const avgValSpan = this.querySelector('.avg-val');
-      const userValContainer = this.querySelector('.user-val');
-      const userValSpan = this.querySelector('.val');
-      
+      const container = this.querySelector(".rating-container");
+      const stars = this.querySelectorAll<HTMLButtonElement>(".star-btn");
+      const avgValSpan = this.querySelector(".avg-val");
+      const userValContainer = this.querySelector(".user-val");
+      const userValSpan = this.querySelector(".val");
+
       const recipeId = this.dataset.id;
       const avgNum = parseFloat(this.dataset.avg || "0");
-      
+      // Ровно по средней оценке (без округления вверх): 5 -> 5 звёзд, 3 -> 3 звёзд
+      const baseVal = Math.floor(avgNum);
+
       if (!recipeId || !container) return;
+
+      // Лёгкий toast сверху по центру. Один контейнер переиспользуется,
+      // старый таймер сбрасывается при повторном вызове.
+      let toastTimer: number | undefined;
+      const showToast = (message: string, type: "success" | "info" | "error") => {
+        let toast = document.getElementById("rating-toast") as HTMLDivElement | null;
+        if (!toast) {
+          toast = document.createElement("div");
+          toast.id = "rating-toast";
+          toast.setAttribute("role", "status");
+          toast.setAttribute("aria-live", "polite");
+          document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.dataset.type = type;
+        toast.classList.add("rating-toast--visible");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => {
+          toast?.classList.remove("rating-toast--visible");
+        }, 3200);
+      };
 
       const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
       const userRating = myRatings[recipeId];
       let isProcessing = false;
+      let locked = false;
 
-      const renderStars = (val: number, isHover = false) => {
+      const renderStars = (val: number) => {
         stars.forEach((s) => {
           const starNum = parseInt(s.dataset.star || "0");
           const filled = starNum <= val;
           const svg = s.querySelector("svg");
-          if (svg) svg.classList.toggle("fill-current", filled);
-          s.setAttribute("aria-pressed", String(filled && !isHover));
-          if (isHover) s.classList.toggle("scale-110", filled);
+          // lucide-иконка рендерит <path fill="none"> внутри <symbol>;
+          // inline-атрибут бьёт Tailwind fill-current, поэтому ставим fill напрямую
+          svg?.querySelectorAll("path").forEach((p) => p.setAttribute("fill", filled ? "currentColor" : "none"));
+          s.setAttribute("aria-pressed", String(filled));
+          s.classList.toggle("scale-110", filled && !locked);
         });
       };
 
-      const lockRating = (val: number) => {
-        renderStars(val);
+      const showUserValue = (val: number) => {
         if (userValContainer && userValSpan) {
           userValContainer.classList.remove("hidden");
           userValSpan.textContent = String(val);
         }
-        stars.forEach(s => {
+      };
+
+      const lockRating = (val: number) => {
+        locked = true;
+        renderStars(val);
+        showUserValue(val);
+        stars.forEach((s) => {
           s.disabled = true;
           s.classList.add("cursor-default");
           s.classList.remove("hover:scale-110", "active:scale-90");
@@ -82,69 +170,124 @@ const { recipeId, averageRating } = Astro.props;
         container.classList.add("opacity-90");
       };
 
+      // Уже голосовал — сразу фиксируем сохранённую оценку
       if (userRating) {
         lockRating(userRating);
-        return; // Уже голосовал
+        return;
       }
 
-      // Интерактив для новых оценок
-      renderStars(Math.round(avgNum));
+      // Стартовый вид: звёзды заполнены по средней оценке, активны
+      renderStars(baseVal);
+
+      const cleanId = String(recipeId).replace(/^(db-|local-)/, "");
 
       stars.forEach((btn) => {
+        // При наведении — неактивные звёзды, заполненные по наведённой оценке,
+        // и сразу «Ваша оценка: N»
         btn.addEventListener("mouseenter", () => {
-          if (!isProcessing) renderStars(parseInt(btn.dataset.star || "0"), true);
+          if (isProcessing || locked) return;
+          const val = parseInt(btn.dataset.star || "0");
+          renderStars(val);
+          showUserValue(val);
         });
 
         btn.addEventListener("click", async () => {
-          if (isProcessing) return;
+          if (isProcessing || locked) return;
           isProcessing = true;
-          stars.forEach(s => s.disabled = true);
-          
           const rating = parseInt(btn.dataset.star || "0");
-          
+
+          const logGroup = `⭐ Рейтинг [recipeId=${recipeId}, cleanId=${cleanId}]`;
+          console.log(
+            `%c${logGroup}%c\n→ Клик по звезде: ${rating}\n→ Средняя ДО голосования: ${baseVal} (avgNum=${avgNum})\n→ URL: POST /api-proxy/setRating/${cleanId}`,
+            "color:#ff6900;font-weight:bold",
+            "color:inherit"
+          );
+
           try {
-            const ipRes = await fetch("https://api64.ipify.org?format=json").catch(() => null);
-            const ip = ipRes ? (await ipRes.json()).ip : "0.0.0.0";
-            
-            const cleanId = String(recipeId).replace(/^(db-|local-)/, "");
-            const res = await fetch(`${API_BASE}/setRating/${encodeURIComponent(cleanId)}`, {
+            const res = await fetch(`/api-proxy/setRating/${encodeURIComponent(cleanId)}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ rating, ip }),
+              body: JSON.stringify({ rating }),
             });
 
+            const responseText = await res.text();
+            let responseJson: any = null;
+            try {
+              responseJson = responseText ? JSON.parse(responseText) : null;
+            } catch {
+              /* тело не JSON — оставляем как текст */
+            }
+
+            console.log(
+              `%c${logGroup} — ответ сервера%c\n→ HTTP ${res.status} ${res.statusText}\n→ ok: ${res.ok}\n→ тело: ${responseText.slice(0, 300)}${responseText.length > 300 ? "…" : ""}`,
+              res.ok ? "color:#16a34a;font-weight:bold" : "color:#dc2626;font-weight:bold",
+              "color:inherit"
+            );
+
             if (res.ok) {
-              const result = await res.json();
-              const newAvg = result?.data?.average_rating || result?.average_rating;
-              
+              // Успех — сохраняем локально, блокируем звёзды, благодарим
+              const newAvg = responseJson?.data?.average_rating || responseJson?.average_rating;
+              if (avgValSpan && newAvg) avgValSpan.textContent = Number(newAvg).toFixed(1);
+
               myRatings[recipeId] = rating;
               localStorage.setItem("my_ratings", JSON.stringify(myRatings));
-              
-              if (avgValSpan && newAvg) avgValSpan.textContent = Number(newAvg).toFixed(1);
               lockRating(rating);
               container.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
               setTimeout(() => container.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
+              showToast("Спасибо за оценку! 🔥", "success");
+
+              console.log(
+                `%c${logGroup} — ОТПРАВЛЕНО ✅%c\n→ Оценка ${rating} успешно отправлена на сервер\n→ Средняя ПОСЛЕ голосования: ${newAvg ?? "нет в ответе"} (было ${baseVal})\n→ Сохранено в localStorage[${recipeId}] = ${rating}`,
+                "color:#16a34a;font-weight:bold",
+                "color:inherit"
+              );
+            } else if (res.status === 403) {
+              // Реально уже голосовали — блокируем на выбранной, сообщаем
+              myRatings[recipeId] = rating;
+              localStorage.setItem("my_ratings", JSON.stringify(myRatings));
+              lockRating(rating);
+              showToast("Вы уже оценивали этот рецепт", "info");
+              console.warn(
+                `%c${logGroup} — уже голосовали (403)%c\n→ Звёзды заблокированы на ${rating}, локально сохранено`,
+                "color:#d97706;font-weight:bold",
+                "color:inherit"
+              );
             } else {
-              alert(res.status === 403 ? "Вы уже оценивали этот рецепт" : "Произошла ошибка при сохранении.");
-              if (res.status === 403) lockRating(rating);
-              else {
-                stars.forEach(s => s.disabled = false);
-                isProcessing = false;
-              }
+              // Сервер ответил ошибкой — оценку НЕ сохраняем, звёзды активны
+              isProcessing = false;
+              userValContainer?.classList.add("hidden");
+              renderStars(baseVal);
+              showToast("Ой, не получилось 🥲 Попробуйте позже", "error");
+              console.error(
+                `%c${logGroup} — НЕ ОТПРАВЛЕНО ❌%c\n→ Сервер вернул ${res.status}, оценка НЕ сохранена (ни на сервере, ни локально)`,
+                "color:#dc2626;font-weight:bold",
+                "color:inherit"
+              );
             }
           } catch (err) {
             console.error(err);
-            stars.forEach(s => s.disabled = false);
+            // Бэкенд недоступен — оценку НЕ сохраняем, звёзды остаются активными
             isProcessing = false;
+            userValContainer?.classList.add("hidden");
+            renderStars(baseVal);
+            showToast("Ой, не получилось 🥲 Попробуйте позже", "error");
+            console.error(
+              `%c${logGroup} — СЕРВЕР НЕДОСТУПЕН ❌%c\n→ Запрос к /api-proxy/setRating/${cleanId} упал (сеть/CORS/502)\n→ Оценка ${rating} НЕ отправлена и НЕ сохранена локально\n→ Звёзды остаются активными — можно попробовать позже`,
+              "color:#dc2626;font-weight:bold",
+              "color:inherit"
+            );
           }
         });
       });
 
+      // Уход курсора — возврат к средней оценке и активному состоянию
       container.addEventListener("mouseleave", () => {
-        if (!isProcessing) renderStars(Math.round(avgNum));
+        if (isProcessing || locked) return;
+        userValContainer?.classList.add("hidden");
+        renderStars(baseVal);
       });
     }
   }
 
-  customElements.define('rating-stars', RatingStars);
+  customElements.define("rating-stars", RatingStars);
 </script>
