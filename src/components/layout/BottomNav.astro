@@ -8,7 +8,7 @@ const isActive = (path: string) => {
 };
 ---
 
-<nav class="fixed bottom-4 left-4 right-4 z-50 flex h-16 items-center justify-around rounded-3xl border-line border-white/20 bg-card-bg/70 px-2 shadow-lg backdrop-blur-md md:hidden print:hidden">
+<nav class="fixed bottom-4 left-4 right-4 z-50 flex h-16 items-center justify-around rounded-3xl glass-border-3d bg-card-bg/70 px-2 shadow-xl shadow-black/15 backdrop-blur-md md:hidden print:hidden">
   <a 
     href="/" 
     class={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive("/") ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
@@ -28,8 +28,8 @@ const isActive = (path: string) => {
   </a>
 
   <a 
-    href="/recipes" 
-    class={`flex flex-col items-center justify-center gap-1 transition-colors ${pathname.includes("search") ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
+    href="/recipes?action=search" 
+    class={`flex flex-col items-center justify-center gap-1 transition-colors ${Astro.url.searchParams.get("action") === "search" ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
     aria-label="Поиск"
   >
     <Icon name="lucide:search" class="h-6 w-6" />
@@ -57,7 +57,7 @@ const isActive = (path: string) => {
 
 <style>
   nav {
-    padding-bottom: env(safe-area-inset-bottom);
-    height: calc(4rem + env(safe-area-inset-bottom));
+    /* Добавляем safe-area не внутрь (padding), а снаружи (bottom), чтобы не ломать выравнивание (items-center) */
+    bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 </style>

@@ -1,6 +1,6 @@
 ---
 export const prerender = false;
-
+import Button from "../../components/ui/Button.astro";
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
 import localRecipes from "../../data/recipes.json";
@@ -11,14 +11,19 @@ import VideoPlayer from "../../components/ui/VideoPlayer.astro";
 import HttpNotFound from "../../components/errors/HttpNotFound.astro";
 import AdSlot from "../../components/shared/AdSlot.astro";
 import BackendErrorAlert from "../../components/errors/BackendErrorAlert.astro";
+import Surface from "../../components/ui/Surface.astro";
+import Divider from "../../components/ui/Divider.astro";
 import { fetchRecipeById, mapBackendRecipe } from "../../lib/api/recipes";
 import { normalizeIngredients } from "../../lib/normalizeIngredients";
 
 import ReadingProgress from "../../components/recipe/ReadingProgress.astro";
 import FavoriteButton from "../../components/recipe/FavoriteButton.astro";
+import LikeButton from "../../components/recipe/LikeButton.astro";
 import ShareButton from "../../components/recipe/ShareButton.astro";
 import RatingStars from "../../components/recipe/RatingStars.astro";
 import RecipeLightbox from "../../components/recipe/RecipeLightbox.astro";
+import FormattedText from "../../components/recipe/FormattedText.astro";
+import RecipeSteps from "../../components/recipe/RecipeSteps.astro";
 
 const { id } = Astro.params;
 const cleanId = id?.replace(/^(local-|db-)/, "");
@@ -55,17 +60,29 @@ if (id?.startsWith("local-")) {
 
 if (!recipe) {
   Astro.response.status = 404;
+} else {
+  Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=3600');
 }
 
 const title = String(recipe?.title ?? "");
 const description = String(recipe?.description ?? (isBackendError ? "Произошла техническая ошибка при загрузке рецепта SwagEda." : "Рецепт не найден на SwagEda."));
+let metaDescription = description.length > 150 ? description.slice(0, 150).trim() + "..." : description;
+
+if (recipe && metaDescription.length > 0 && metaDescription.length < 70) {
+  metaDescription = `${metaDescription} Пошаговый рецепт с фото и списком ингредиентов.`;
+}
+
 const main_image = recipe?.main_image != null ? String(recipe.main_image) : "";
 const cooking_time = Number(recipe?.cooking_time ?? 0);
 const ingredients = normalizeIngredients(recipe?.ingredients);
 const steps = (recipe?.steps as { order?: number; text?: string; image?: string }[] | undefined) ?? [];
 const difficulty = recipe?.difficulty != null ? String(recipe.difficulty) : "";
 const video_url = recipe?.video_url != null ? String(recipe.video_url) : "";
-const pageTitle = recipe ? `${title} — SwagEda` : isBackendError ? "Технические неполадки — SwagEda" : "Рецепт не найден — SwagEda";
+
+let pageTitle = recipe ? `${title} — SwagEda` : isBackendError ? "Технические неполадки — SwagEda" : "Рецепт не найден — SwagEda";
+if (recipe && pageTitle.length > 60) {
+  pageTitle = title.length > 60 ? title.slice(0, 57).trim() + "..." : title;
+}
 const canonical = recipe ? `/recipe/${id}` : "/404";
 
 // Персонализированные keywords для страницы рецепта
@@ -75,23 +92,21 @@ const recipeKeywords = recipe
       `${title} рецепт`,
       `как приготовить ${title.toLowerCase()}`,
       recipe.cuisine ? `рецепт ${recipe.cuisine} ${title.toLowerCase()}` : null,
-      recipe.category
-        ? typeof recipe.category === "object"
-          ? `${recipe.category.title} рецепты`
-          : `${recipe.category} рецепты`
+      recipe.category ? (typeof recipe.category === "object" ? `${recipe.category.title} рецепты` : `${recipe.category} рецепты`) : null,
+      recipe.difficulty ? (recipe.difficulty === "easy" ? "простой рецепт" : recipe.difficulty === "medium" ? "рецепт средней сложности" : "сложный рецепт") : null,
+      ingredients.length > 0
+        ? `рецепт с ${ingredients
+            .slice(0, 3)
+            .map((i) => i.name)
+            .join(", ")
+            .toLowerCase()}`
         : null,
-      recipe.difficulty
-        ? recipe.difficulty === "easy"
-          ? "простой рецепт"
-          : recipe.difficulty === "medium"
-            ? "рецепт средней сложности"
-            : "сложный рецепт"
-        : null,
-      ingredients.length > 0 ? `рецепт с ${ingredients.slice(0, 3).map((i) => i.name).join(", ").toLowerCase()}` : null,
       `${cooking_time} минут`,
       "пошаговый рецепт",
       "рецепт с фото",
-    ].filter(Boolean).join(", ")
+    ]
+      .filter(Boolean)
+      .join(", ")
   : undefined;
 
 const toAbsUrl = (url: string) => {
@@ -158,6 +173,8 @@ const jsonLdRecipe =
       : undefined,
   });
 
+const jsonLdRecipeStr = jsonLdRecipe ? jsonLdRecipe.replace(/</g, '\\u003c').replace(/>/g, '\\u003e') : null;
+
 const recipeMeta = recipe
   ? {
       publishDate: recipe.created_at || recipe.updated_at,
@@ -166,15 +183,11 @@ const recipeMeta = recipe
     }
   : undefined;
 
-  const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
-const difficultyClass = difficulty === "hard"
-  ? "bg-red-500/15 text-red-500"
-  : difficulty === "medium"
-    ? "bg-amber-500/15 text-amber-500"
-    : "bg-emerald-500/15 text-emerald-500";
+const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
+const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : difficulty === "medium" ? "bg-amber-500/15 text-amber-500" : "bg-emerald-500/15 text-emerald-500";
 ---
 
-<Layout title={pageTitle} description={description} image={main_image} canonical={canonical} noindex={!recipe} keywords={recipeKeywords} ogType="article" recipeData={recipeMeta}>
+<Layout title={pageTitle} description={metaDescription} image={main_image} canonical={canonical} noindex={!recipe} keywords={recipeKeywords} ogType="article" recipeData={recipeMeta}>
   {
     !recipe ? (
       <>
@@ -192,71 +205,88 @@ const difficultyClass = difficulty === "hard"
         <ReadingProgress />
 
         <article class="mx-auto max-w-4xl px-4 py-8 md:py-12" data-recipe-id={id}>
-          {jsonLdRecipe && <script type="application/ld+json" set:html={jsonLdRecipe} />}
+          {jsonLdRecipeStr && <script type="application/ld+json" is:inline set:html={jsonLdRecipeStr} />}
 
-        <div class="print:hidden mb-8">
-          <Breadcrumbs
-            items={[
-              { name: "Рецепты", href: "/recipes" },
-              ...(recipe.category
-                ? [
-                    {
-                      name: typeof recipe.category === "object" ? recipe.category.title : recipe.category,
-                      href: `/recipes?categoryId=${recipe.category_id || recipe.category?.id}`,
-                    },
-                  ]
-                : []),
-              { name: title, href: canonical },
-            ]}
-          />
+          <div class="mb-8 print:hidden">
+            <Breadcrumbs
+              items={[
+                { name: "Рецепты", href: "/recipes" },
+                ...(recipe.category
+                  ? [
+                      {
+                        name: typeof recipe.category === "object" ? recipe.category.title : recipe.category,
+                        href: `/recipes?categoryId=${recipe.category_id || recipe.category?.id}`,
+                      },
+                    ]
+                  : []),
+                { name: title, href: canonical },
+              ]}
+            />
 
-          <a href="/recipes" class="group text-brand mt-4 inline-flex items-center text-sm font-bold print:hidden">
-            <Icon name="lucide:arrow-left" class="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
-            Назад к списку
-          </a>
-        </div>
+            <a href="/recipes" class="group text-brand mt-4 inline-flex items-center text-sm font-bold print:hidden">
+              <Icon name="lucide:arrow-left" class="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
+              Назад к списку
+            </a>
+          </div>
 
           <header class="mb-12">
             <h1 class="text-text-main mb-4 text-4xl font-bold md:text-5xl lg:text-7xl print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-extrabold">{title}</h1>
 
-          <!-- Метки рецепта: время, сложность -->
-            <div class="mb-4 flex flex-wrap items-center gap-2 print:mb-2">
-              <span class="bg-card-bg border-line text-text-main inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium sm:h-11 sm:rounded-xl sm:px-4" aria-label={`Время приготовления: ${cooking_time} минут`}>
-              <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
-              <span class="tabular-nums">{cooking_time} мин</span>
-            </span>
-
-            {difficulty && (
-              <span class={`${difficultyClass} inline-flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold tracking-wide uppercase sm:h-11 sm:rounded-xl sm:px-4 sm:text-xs`} aria-label={`Сложность: ${difficultyLabel}`}>
-                <Icon name="lucide:flame" class="h-4 w-4 shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
-                <span>{difficultyLabel}</span>
-              </span>
-            )}
-            </div>
-
-            <div class="flex flex-wrap items-center gap-3">
-              <RatingStars recipeId={id} averageRating={recipe.average_rating || 0} />
-              <FavoriteButton recipeId={id}>
-                <Icon name="lucide:bookmark" class="bookmark-icon h-4 w-4 shrink-0" aria-hidden="true" />
-              </FavoriteButton>
-
-              <button
-                type="button"
-                id="printRecipeBtn"
-                class="bg-card-bg border-line text-text-main hover:border-brand print:hidden flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all active:scale-95"
-                aria-label="Печать рецепта"
+            <div class="mb-12 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center print:mb-4">
+              {/* Время */}
+              <span
+                class="glass-border-3d bg-card-bg/20 backdrop-blur-md text-text-main flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-sm font-medium sm:inline-flex sm:w-auto sm:px-4 shadow-sm shadow-black/15 print:border-none print:px-0"
+                aria-label={`Время приготовления: ${cooking_time} минут`}
               >
-                <Icon name="lucide:printer" class="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span class="button-label">Печать</span>
-              </button>
+                <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
+                <span class="tabular-nums">{cooking_time} мин</span>
+              </span>
 
-              <ShareButton>
-                <Icon name="lucide:share-2" class="h-4 w-4 shrink-0" aria-hidden="true" />
-              </ShareButton>
+              {/* Сложность */}
+              {difficulty && (
+                <span
+                  class={`${difficultyClass} glass-border-3d flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-xs font-bold tracking-wide uppercase sm:inline-flex sm:w-auto sm:px-4 shadow-sm shadow-black/15 print:border-none print:bg-transparent print:text-black print:px-0`}
+                  aria-label={`Сложность: ${difficultyLabel}`}
+                >
+                  <Icon name="lucide:flame" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>{difficultyLabel}</span>
+                </span>
+              )}
+
+              {/* Разделитель (десктоп) */}
+              <div class="hidden h-6 w-px bg-line sm:block mx-1 print:hidden" aria-hidden="true"></div>
+
+              {/* Рейтинг */}
+              <div class="col-span-2 sm:col-span-1">
+                <RatingStars recipeId={id ?? ""} averageRating={recipe.average_rating || 0} />
+              </div>
+              
+              {/* Избранное */}
+              <div class="col-span-1 sm:col-span-1">
+                <FavoriteButton recipeId={id ?? ""} />
+              </div>
+
+              {/* Лайк */}
+              <div class="col-span-1 sm:col-span-1">
+                <LikeButton recipeId={id ?? ""} />
+              </div>
+
+              {/* Печать */}
+              <div class="col-span-1 sm:col-span-1">
+                <Button variant="outline" id="printRecipeBtn" class="h-11 w-full text-sm px-2 sm:w-auto sm:px-4 print:hidden" aria-label="Печать рецепта">
+                  <Icon name="lucide:printer" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span class="button-label">Печать</span>
+                </Button>
+              </div>
+
+              {/* Поделиться */}
+              <div class="col-span-1 sm:col-span-1">
+                <ShareButton />
+              </div>
             </div>
           </header>
 
-          <div class="bg-card-bg border-line relative mb-12 aspect-video overflow-hidden rounded-[2.5rem] border shadow-2xl print:mb-4 print:aspect-auto print:border-0 print:shadow-none print:bg-transparent print:rounded-none print:overflow-visible">
+          <Surface padding="none" class="relative mb-12 aspect-video overflow-hidden !shadow-2xl print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none">
             {main_image ? (
               <Image
                 src={main_image}
@@ -266,206 +296,162 @@ const difficultyClass = difficulty === "hard"
                 width={1200}
                 height={675}
                 data-zoomable
-                class="image-zoom h-full w-full object-cover print:float-right print:h-auto print:w-[130px] print:max-w-[130px] print:rounded print:grayscale print:ml-3 print:mb-3"
+                class="image-zoom h-full w-full object-cover print:float-right print:mb-3 print:ml-3 print:h-auto print:w-32.5 print:max-w-32.5 print:rounded print:grayscale"
                 loading="eager"
                 fetchpriority="high"
                 decoding="async"
                 style={`view-transition-name: recipe-image-${id}`}
               />
-          ) : (
-            <div class="flex h-full w-full items-center justify-center">
-              <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
-            </div>
-          )}
-          </div>
-
-            <IngredientsList ingredients={ingredients} recipeSlug={id ?? "recipe"} />
-          </aside>
-
-          <div class="lg:col-span-2">
-            {description && (
-              <section aria-labelledby="about-heading" class="mb-12">
-                <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
-                  О рецепте
-                </h2>
-
-                <div class="relative">
-                  <div class="bg-brand/20 absolute top-0 bottom-0 -left-4 hidden w-1 rounded-full md:block" />
-
-                  <p class="text-text-muted mb-6 text-xl leading-relaxed italic print:mb-3 print:text-[10pt] print:not-italic">«{description}»</p>
-                </div>
-              </section>
+            ) : (
+              <div class="flex h-full w-full items-center justify-center">
+                <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
+              </div>
             )}
+          </Surface>
 
-            <VideoPlayer videoUrl={video_url} />
 
-            <AdSlot id="R-A-19056160-19" refreshInterval={30} />
-
-            <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
-              <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
-                Приготовление
-              </h2>
-              <ol class="space-y-12">
-                {steps.map((step, index) => (
-                  <>
-                    <li key={index} class="group relative scroll-mt-24 print:mb-3 print:break-inside-avoid print:border-b print:border-gray-200">
-                        <div class="mb-4 flex gap-6 print:mb-2 print:gap-2">
-                          <div class="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white print:h-[18pt] print:w-[18pt] print:min-w-[18pt] print:text-[9pt] print:border print:border-black print:bg-transparent print:text-black" aria-hidden="true">
-                            {step.order ?? index + 1}
-                          </div>
-                          <p class="text-text-main pt-1 text-lg leading-relaxed print:pt-0 print:text-[10pt] print:leading-snug">{step.text}</p>
-                        </div>
-
-                        {step.image ? (
-                          <div class="ml-0 max-w-xl overflow-hidden rounded-2xl border shadow-md sm:ml-16 dark:border-slate-800 print:ml-4 print:max-w-[300px] print:border-0 print:shadow-none print:rounded">
-                            <img
-                              data-zoomable
-                              tabindex="0"
-                              role="button"
-                              aria-label={`Увеличить изображение: Шаг ${step.order ?? index + 1}`}
-                              src={step.image}
-                              alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
-                              width={800}
-                              height={450}
-                              loading="lazy"
-                              decoding="async"
-                              class="image-zoom h-auto w-full print:float-none print:my-2 print:max-w-[300px]"
-                            />
-                          </div>
-                        ) : null}
-                    </li>
-                    
-                
-                    {(index + 1) % 4 === 0 && index < steps.length - 1 && (
-                      <li key={`ad-after-${index}`} class="mb-4">
-                        <AdSlot id="R-A-19056160-13" className="block" refreshInterval={60} />
-                      </li>
-                    )}
-                  </>
-                ))}
-              </ol>
+            <div class="lg:col-span-2">
+              {description && (
+                <section aria-labelledby="about-heading" class="mb-12">
+                  <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
+                    О рецепте
+                  </h2>
+                  <div class="relative">
+                    <div class="bg-brand/20 absolute top-0 bottom-0 -left-4 hidden w-1 rounded-full md:block" />
+                    <blockquote class="text-text-muted mb-6 text-xl leading-relaxed italic print:mb-3 print:text-[10pt] print:not-italic">
+                      <FormattedText text={`«${description}»`} />
+                    </blockquote>
+                  </div>
+                </section>
+              )}
+              <VideoPlayer videoUrl={video_url} />
+              <AdSlot id="R-A-19056160-19" refreshInterval={30} />
+              <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
+                <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
+                  Приготовление
+                </h2>
+                <RecipeSteps steps={recipe.steps} recipeSlug={recipe.slug} />
+              </div>
             </div>
           </div>
-        </div>
-        <!-- ЛЕНТА РЕКОМЕНДАЦИЙ (РСЯ Виджет) в самом низу рецепта -->
-        <div class="border-t border-line mt-12 pt-8 print:hidden">
-          <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>
-          <AdSlot id="R-A-19056160-14" isFeed={true} refreshInterval={60} />
-        </div>
-      </article>
-        
-        <!-- В самом низу страницы кидаем глобальные модалки/оверлеи -->
+          <Divider>
+            <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>
+            <AdSlot id="R-A-19056160-14" isFeed={true} refreshInterval={60} />
+          </Divider>
+        </article>
         <RecipeLightbox />
-
-        <script>
-          // Находим контейнер или просто получаем ID из data-атрибута
-          const article = document.querySelector('article[data-recipe-id]');
-          const rid = article?.dataset.recipeId;
-
-          if (rid) {
-            const STORAGE_PREFIX = "recipe:scroll:";
-            const key = STORAGE_PREFIX + rid;
-
-            // Восстановление
-            if (!window.location.hash && sessionStorage.getItem(key)) {
-              setTimeout(() => {
-                const saved = sessionStorage.getItem(key);
-                if (saved) {
-                  const sp = parseFloat(saved);
-                  const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                  if (dh > 0) window.scrollTo(0, Math.round(sp * dh));
-                }
-              }, 300);
-            }
-
-            // Троттлинг
-            let ticking = false;
-            const saveScroll = () => {
-              if (ticking) return;
-              ticking = true;
-              requestAnimationFrame(() => {
-                const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                if (dh > 0) {
-                  sessionStorage.setItem(key, String(Math.min(window.scrollY / dh, 1)));
-                }
-                ticking = false;
-              });
-            };
-
-            // Очистка старых данных (оставляем только последние 10)
-            try {
-              const keys = Object.keys(sessionStorage).filter(k => k.startsWith(STORAGE_PREFIX));
-              if (keys.length > 10) {
-                keys.sort().slice(0, keys.length - 10).forEach(k => sessionStorage.removeItem(k));
-              }
-            } catch (e) {}
-
-            // Сохранение
-            window.addEventListener("scroll", saveScroll, { passive: true });
-            window.addEventListener("pagehide", saveScroll);
-            document.addEventListener("visibilitychange", () => {
-              if (document.visibilityState === "hidden") saveScroll();
-            });
-          }
-
-          // --- Печать рецепта: будим lazy-картинки, чтобы попали в вывод ---
-          // При печати браузер НЕ подгружает lazy-картинки, до которых не доскроллили.
-          // loading="lazy" при обычном просмотре оставляем — ради скорости.
-          function wakeLazyImages() {
-            document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
-              img.loading = "eager";
-              if (!img.complete) {
-                const src = img.currentSrc || img.src;
-                if (src) img.src = src;
-              }
-            });
-          }
-
-          // Ловим Ctrl+P
-          window.addEventListener("beforeprint", wakeLazyImages);
-          if (window.matchMedia) {
-            window.matchMedia("print").addEventListener("change", (e) => {
-              if (e.matches) wakeLazyImages();
-            });
-          }
-
-          const printRecipe = () => {
-            wakeLazyImages();
-            const pending = Array.from(document.querySelectorAll("img")).filter((img) => !img.complete);
-            if (pending.length === 0) {
-              window.print();
-              return;
-            }
-            let remaining = pending.length;
-            let printed = false;
-            const finish = () => {
-              if (printed) return;
-              printed = true;
-              window.print();
-            };
-            pending.forEach((img) => {
-              const done = () => {
-                remaining -= 1;
-                if (remaining <= 0) finish();
-              };
-              if (img.complete) done();
-              else {
-                img.addEventListener("load", done, { once: true });
-                img.addEventListener("error", done, { once: true });
-              }
-            });
-            setTimeout(finish, 2000); // страховка, если картинка зависла
-          };
-
-          const printBtn = document.getElementById("printRecipeBtn");
-          if (printBtn) {
-            printBtn.addEventListener("click", (e) => {
-              e.preventDefault();
-              printRecipe();
-            });
-          }
-        </script>
       </>
     )
   }
+  <script is:inline>
+    // Находим контейнер или просто получаем ID из data-атрибута
+    const article = document.querySelector("article[data-recipe-id]");
+    const rid = article?.dataset.recipeId;
+
+    if (rid) {
+      const STORAGE_PREFIX = "recipe:scroll:";
+      const key = STORAGE_PREFIX + rid;
+
+      // Восстановление
+      if (!window.location.hash && sessionStorage.getItem(key)) {
+        setTimeout(() => {
+          const saved = sessionStorage.getItem(key);
+          if (saved) {
+            const sp = parseFloat(saved);
+            const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            if (dh > 0) window.scrollTo(0, Math.round(sp * dh));
+          }
+        }, 300);
+      }
+
+      // Троттлинг
+      let ticking = false;
+      const saveScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          if (dh > 0) {
+            sessionStorage.setItem(key, String(Math.min(window.scrollY / dh, 1)));
+          }
+          ticking = false;
+        });
+      };
+
+      // Очистка старых данных (оставляем только последние 10)
+      try {
+        const keys = Object.keys(sessionStorage).filter((k) => k.startsWith(STORAGE_PREFIX));
+        if (keys.length > 10) {
+          keys
+            .sort()
+            .slice(0, keys.length - 10)
+            .forEach((k) => sessionStorage.removeItem(k));
+        }
+      } catch (e) {}
+
+      // Сохранение
+      window.addEventListener("scroll", saveScroll, { passive: true });
+      window.addEventListener("pagehide", saveScroll);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") saveScroll();
+      });
+    }
+
+    // --- Печать рецепта: будим lazy-картинки, чтобы попали в вывод ---
+    // При печати браузер НЕ подгружает lazy-картинки, до которых не доскроллили.
+    // loading="lazy" при обычном просмотре оставляем — ради скорости.
+    function wakeLazyImages() {
+      document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+        img.loading = "eager";
+        if (!img.complete) {
+          const src = img.currentSrc || img.src;
+          if (src) img.src = src;
+        }
+      });
+    }
+
+    // Ловим Ctrl+P
+    window.addEventListener("beforeprint", wakeLazyImages);
+    if (window.matchMedia) {
+      window.matchMedia("print").addEventListener("change", (e) => {
+        if (e.matches) wakeLazyImages();
+      });
+    }
+
+    const printRecipe = () => {
+      wakeLazyImages();
+      const pending = Array.from(document.querySelectorAll("img")).filter((img) => !img.complete);
+      if (pending.length === 0) {
+        window.print();
+        return;
+      }
+      let remaining = pending.length;
+      let printed = false;
+      const finish = () => {
+        if (printed) return;
+        printed = true;
+        window.print();
+      };
+      pending.forEach((img) => {
+        const done = () => {
+          remaining -= 1;
+          if (remaining <= 0) finish();
+        };
+        if (img.complete) done();
+        else {
+          img.addEventListener("load", done, { once: true });
+          img.addEventListener("error", done, { once: true });
+        }
+      });
+      setTimeout(finish, 2000); // страховка, если картинка зависла
+    };
+
+    const printBtn = document.getElementById("printRecipeBtn");
+    if (printBtn) {
+      printBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        printRecipe();
+      });
+    }
+  </script>
 </Layout>

@@ -1,4 +1,7 @@
 ---
+import Button from "./Button.astro";
+import { Icon } from "astro-icon/components";
+
 interface Props {
   /** Сохранять фильтры при отправке поиска (например category, difficulty). */
   preserveParams?: Record<string, string>;
@@ -13,19 +16,22 @@ const { preserveParams = {}, initialQuery = "" } = Astro.props;
     <input type="hidden" name="page" value="1" />
     {Object.entries(preserveParams).map(([name, value]) => (value ? <input type="hidden" name={name} value={value} /> : null))}
     <div class="relative flex-1">
+      <Icon name="lucide:search" class="absolute z-10 left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-text-muted opacity-70 pointer-events-none md:left-6 md:h-7 md:w-7" aria-hidden="true" />
       <input
         type="search"
         name="q"
         value={initialQuery}
         placeholder="Курица, картошка, суп..."
-        class="bg-card-bg border-line text-text-main placeholder:text-text-muted focus:border-brand focus:ring-brand/20 w-full rounded-2xl border-2 px-6 py-4 text-lg transition-all focus:ring-4 focus:outline-none md:py-5 md:text-xl"
+        class="glass-border-3d bg-card-bg/60 backdrop-blur-md text-text-main placeholder:text-text-muted focus:ring-brand/20 w-full rounded-2xl pl-14 pr-6 py-4 text-lg transition-all focus:ring-4 focus:outline-none md:pl-16 md:py-5 md:text-xl shadow-md shadow-black/15"
         aria-label="Поиск рецепта"
         autocomplete="off"
+        autofocus={Astro.url.searchParams.get("action") === "search"}
       />
     </div>
 
-    <button type="submit" class="bg-brand hover:bg-brand-hover shadow-brand/20 min-w-40 rounded-2xl px-8 py-4 text-lg font-bold text-white shadow-lg transition-all active:scale-95 md:py-5 md:text-xl">
+    <Button type="submit" size="lg" class="min-w-40">
       Найти
-    </button>
+    </Button>
   </form>
 </div>
+

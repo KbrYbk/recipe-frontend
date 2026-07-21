@@ -9,9 +9,16 @@ import { Icon } from "astro-icon/components";
       <div
         role="tablist"
         aria-label="Текст рецепта или видео"
-        class="bg-page-bg border-line mb-6 flex max-w-70 rounded-xl border p-1"
+        class="glass-border-3d bg-accent-soft/40 relative mb-6 flex w-full max-w-[320px] rounded-[1.25rem] p-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] backdrop-blur-sm"
         id="recipeMediaTablist"
       >
+        <!-- Ползунок-плашка -->
+        <div
+          id="tabIndicator"
+          class="bg-card-bg absolute bottom-1 left-1 top-1 w-[calc(50%-4px)] rounded-xl shadow-sm transition-transform duration-300 cubic-bezier(0.4, 0.0, 0.2, 1)"
+          style="transform: translateX(0%);"
+        ></div>
+
         <button
           type="button"
           role="tab"
@@ -20,9 +27,9 @@ import { Icon } from "astro-icon/components";
           aria-controls="textSteps"
           tabindex="0"
           data-tab="text"
-          class="tab-btn active-tab flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-all"
+          class="relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors duration-300 text-text-main"
         >
-          <Icon name="lucide:file-text" class="h-4 w-4 shrink-0" aria-hidden="true" /> Текст
+          <Icon name="lucide:file-text" class="h-4.5 w-4.5 shrink-0" aria-hidden="true" /> Текст
         </button>
         <button
           type="button"
@@ -32,9 +39,9 @@ import { Icon } from "astro-icon/components";
           aria-controls="videoContainer"
           tabindex="-1"
           data-tab="video"
-          class="tab-btn text-text-muted hover:text-text-main flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-all"
+          class="relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors duration-300 text-text-muted hover:text-text-main"
         >
-          <Icon name="lucide:play-circle" class="h-4 w-4 shrink-0" aria-hidden="true" /> Видео
+          <Icon name="lucide:play-circle" class="h-4.5 w-4.5 shrink-0" aria-hidden="true" /> Видео
         </button>
       </div>
 
@@ -42,7 +49,7 @@ import { Icon } from "astro-icon/components";
         id="videoContainer"
         role="tabpanel"
         aria-labelledby="tab-recipe-video"
-        class="border-line hidden aspect-video overflow-hidden rounded-4xl border bg-black shadow-2xl"
+        class="glass-border-3d hidden aspect-video overflow-hidden rounded-3xl bg-black shadow-xl shadow-black/15"
         hidden
       >
         <iframe title="Видео приготовления блюда" width="100%" height="100%" src={videoUrl} allowfullscreen class="border-0" loading="lazy" />
@@ -61,31 +68,42 @@ import { Icon } from "astro-icon/components";
     const showVideoBtn = document.getElementById("tab-recipe-video");
     const videoContainer = document.getElementById("videoContainer");
     const textSteps = document.getElementById("textSteps");
+    const tabIndicator = document.getElementById("tabIndicator");
 
-    if (!showTextBtn || !showVideoBtn || !videoContainer || !textSteps) return;
+    if (!showTextBtn || !showVideoBtn || !videoContainer || !textSteps || !tabIndicator) return;
+
+    // Стили только для текста
+    const activeTextClasses = ["text-text-main"];
+    const inactiveTextClasses = ["text-text-muted"];
 
     const setActive = (isVideo: boolean) => {
+      // Переключаем контент
       videoContainer.classList.toggle("hidden", !isVideo);
       videoContainer.hidden = !isVideo;
       textSteps.classList.toggle("hidden", isVideo);
       if (isVideo) textSteps.setAttribute("hidden", "");
       else textSteps.removeAttribute("hidden");
 
+      // Обновляем ARIA-атрибуты
       showVideoBtn.setAttribute("aria-selected", isVideo ? "true" : "false");
       showTextBtn.setAttribute("aria-selected", !isVideo ? "true" : "false");
       showTextBtn.tabIndex = !isVideo ? 0 : -1;
       showVideoBtn.tabIndex = isVideo ? 0 : -1;
 
+      // Анимация ползунка
+      tabIndicator.style.transform = isVideo ? "translateX(100%)" : "translateX(0%)";
+
+      // Цвета текста
       if (isVideo) {
-        showVideoBtn.classList.add("active-tab");
-        showVideoBtn.classList.remove("text-text-muted");
-        showTextBtn.classList.remove("active-tab");
-        showTextBtn.classList.add("text-text-muted");
+        showVideoBtn.classList.add(...activeTextClasses);
+        showVideoBtn.classList.remove(...inactiveTextClasses);
+        showTextBtn.classList.add(...inactiveTextClasses);
+        showTextBtn.classList.remove(...activeTextClasses);
       } else {
-        showTextBtn.classList.add("active-tab");
-        showTextBtn.classList.remove("text-text-muted");
-        showVideoBtn.classList.remove("active-tab");
-        showVideoBtn.classList.add("text-text-muted");
+        showTextBtn.classList.add(...activeTextClasses);
+        showTextBtn.classList.remove(...inactiveTextClasses);
+        showVideoBtn.classList.add(...inactiveTextClasses);
+        showVideoBtn.classList.remove(...activeTextClasses);
       }
     };
 

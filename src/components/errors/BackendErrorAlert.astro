@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import Surface from "../ui/Surface.astro";
 
 interface Props {
   /** Текст ошибки, отображается в details для отладки */
@@ -11,7 +12,7 @@ interface Props {
 const { message = "", showDetails = true } = Astro.props;
 ---
 
-<section class="my-8 rounded-3xl border border-brand/15 bg-accent-soft p-6 shadow-sm md:p-8" role="alert" aria-live="polite">
+<Surface as="section" class="my-8 bg-accent-soft" role="alert" aria-live="polite">
   <div class="flex flex-col gap-6 md:flex-row md:items-center">
     <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
       <Icon name="lucide:chef-hat" class="h-10 w-10 animate-pulse" aria-hidden="true" />
@@ -29,11 +30,11 @@ const { message = "", showDetails = true } = Astro.props;
           <summary class="cursor-pointer font-medium transition-colors hover:text-brand focus:outline-none">
             Технические детали (для отладки)
           </summary>
-          <div class="mt-2 rounded-xl bg-card-bg p-3 font-mono text-[11px] leading-relaxed break-all text-text-main border border-line">
+          <div class="glass-border-3d mt-2 rounded-xl bg-card-bg p-3 font-mono text-[11px] leading-relaxed break-all text-text-main shadow-inner shadow-black/5">
             Код ошибки: {message}
           </div>
         </details>
       )}
     </div>
   </div>
-</section>
+</Surface>

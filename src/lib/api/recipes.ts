@@ -1,62 +1,77 @@
 import https from 'node:https';
-const PROJECT_HEADER = "X-Project-Key-ass";
+import { PROJECT_HEADER, getBackendBaseUrl } from "./config";
+
+// Игнорируем ошибки SSL-сертификатов при разработке (на локалке)
 const httpsAgent = new https.Agent({
-  rejectUnauthorized: false
+  rejectUnauthorized: false,
 });
-function getApiConfig() {
-  const rawUrls = import.meta.env.PUBLIC_BACKEND_URLS;
-  const baseUrls = rawUrls ? String(rawUrls).split(',').map(url => url.replace(/\/$/, "").trim()) : [
-    String(import.meta.env.API_BASE_URL || "").replace(/\/$/, "")
-  ];
-  return {
-    bases: baseUrls,
-    key: import.meta.env.PROJECT_KEY ? String(import.meta.env.PROJECT_KEY) : "",
-  };
-}
-async function fetchWithFallback(path: string, options: RequestInit = {}): Promise<Response> {
+
+// Получаем настройки один раз
+const BACKEND_BASE = getBackendBaseUrl();
+const PROJECT_KEY = import.meta.env.PROJECT_KEY ? String(import.meta.env.PROJECT_KEY) : "";
+
+/**
+ * Универсальная функция запроса к API.
+ * Умеет сама понимать, откуда идет запрос: с сервера (SSR) или из браузера (Client).
+ */
+async function fetchApi(path: string, options: RequestInit = {}): Promise<Response> {
   const isServer = import.meta.env.SSR || typeof window === "undefined";
-  
+
+  // СЦЕНАРИЙ 1: Запрос из БРАУЗЕРА (клиентский JS)
   if (!isServer) {
+    // Мы отправляем запрос на наш Astro-прокси, а он уже сам пойдет на бэкенд
     const url = `/api-proxy${path}`;
     const headers = {
       "Content-Type": "application/json",
-      ...(options.headers || {})
+      ...(options.headers || {}),
     };
     return fetch(url, { ...options, headers });
   }
 
-  const { bases, key } = getApiConfig();
+  // СЦЕНАРИЙ 2: Запрос с СЕРВЕРА Astro (SSR)
+  // Мы стучимся в Laravel напрямую, минуя прокси
+  const apiPath = BACKEND_BASE.endsWith("/api") ? "" : "/api";
+  const url = `${BACKEND_BASE}${apiPath}${path}`;
+
   const headers = {
-    [PROJECT_HEADER]: key,
+    [PROJECT_HEADER]: PROJECT_KEY,
     "Content-Type": "application/json",
-    ...(options.headers || {})
+    ...(options.headers || {}),
   };
 
-  // --- ДОБАВЛЯЕМ ВЫБОР АГЕНТА ---
-  const fetchOptions: RequestInit = { 
-    ...options, 
+  const fetchOptions: RequestInit = {
+    ...options,
     headers,
-    // Используем агент только в DEV, чтобы игнорировать TLS ошибки
-    agent: import.meta.env.DEV ? httpsAgent : undefined 
+    // В DEV-режиме пропускаем ошибки SSL (самоподписанные сертификаты)
+    // @ts-ignore
+    agent: import.meta.env.DEV ? httpsAgent : undefined,
   };
 
-  for (const base of bases) {
-    const apiPath = base.endsWith("/api") ? "" : "/api";
-    const url = `${base}${apiPath}${path}`;
-    try {
-      // Используем fetchOptions вместо старого options
-      const response = await fetch(url, fetchOptions);
-      if (response.status < 500) {
-        return response;
-      } else {
-        if (import.meta.env.DEV) console.warn(`Attempt failed for ${url} with status ${response.status}.`);
-      }
-    } catch (e) {
-      if (import.meta.env.DEV) console.error(`Network error for ${url}:`, e);
+  try {
+    const response = await fetch(url, fetchOptions);
+    if (!response.ok && import.meta.env.DEV) {
+      console.error(
+        `\n [ОШИБКА БЭКЕНДА: HTTP ${response.status} ${response.statusText}]\n` +
+        `Узел: Бэкенд (${url})\n` +
+        `Сценарий: ${isServer ? "Серверный рендеринг (SSR)" : "Браузерный запрос (Client)"}\n` +
+        `Что сказать бэкендеру: "Твой сервер вернул статус ${response.status} при обращении к ${url}. Ищи ошибку в своих контроллерах!"\n`
+      );
     }
+    return response;
+  } catch (e) {
+    if (import.meta.env.DEV) {
+      console.error(
+        `\n [СЕТЕВАЯ ОШИБКА БЭКЕНДА]\n` +
+        `Узел: Бэкенд (${url})\n` +
+        `Ошибка: Бэкенд вообще не ответил или упал.\n` +
+        `Что сказать бэкендеру: "Твой API недоступен или падает соединение на ${url}. Подними сервер!"\n`,
+        e
+      );
+    }
+    throw new Error("Backend is unreachable.");
   }
-  throw new Error("All backend URLs failed to respond successfully.");
 }
+
 /** Прячет внешний origin картинок за /api-images/* (наш домен). */
 export function toImageProxyUrl(path: string | undefined | null): string | undefined {
   if (!path) return undefined;
@@ -69,16 +84,25 @@ export function toImageProxyUrl(path: string | undefined | null): string | undef
 /** Получение коллекции рецептов (breakfast, lunch, dinner, bakery) */
 export async function fetchCollectionFromApi(type: string, page: number = 1) {
   try {
-    const response = await fetchWithFallback(`/getRecipes/collection/${type}/${page}`);
+    const response = await fetchApi(`/getRecipes/collection/${type}/${page}`);
     if (!response.ok) return { list: [], ok: false };
+
     const result = await response.json();
     const list = Array.isArray(result.data?.data) ? result.data.data : Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
     const total = result.data?.total || list.length || 0;
     const perPage = result.data?.per_page || 20;
     const totalPages = result.data?.last_page || Math.ceil(total / perPage) || 1;
+
     return { list, total, totalPages, ok: true };
   } catch (e) {
-    if (import.meta.env.DEV) console.error(`❌ Collection API Error (${type}):`, e);
+    if (import.meta.env.DEV) {
+      console.error(
+        `\n❌ [КРИТИЧЕСКАЯ ОШИБКА ДАННЫХ: КОЛЛЕКЦИИ (${type})]\n` +
+        `Причина: Невалидный JSON от бэкенда или сбой сети.\n` +
+        `Что сказать бэкендеру: "Твой эндпоинт /getRecipes/collection/${type} возвращает невалидный JSON или вообще не отвечает!"\n`,
+        e
+      );
+    }
     return { list: [], ok: false };
   }
 }
@@ -108,7 +132,7 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
   const fullPath = queryString ? `${apiBaseUrl}?${queryString}` : apiBaseUrl;
 
   try {
-    const response = await fetchWithFallback(fullPath, { headers: { [PROJECT_HEADER]: getApiConfig().key } });
+    const response = await fetchApi(fullPath);
     if (!response.ok) return { list: [], total: 0, totalPages: 1, ok: false, status: response.status };
 
     const result = await response.json();
@@ -120,7 +144,15 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
 
     return { list, total, totalPages, ok: true, status: response.status };
   } catch (e) {
-    if (import.meta.env.DEV) console.error("❌ API Error:", e);
+    if (import.meta.env.DEV) {
+      console.error(
+        `\n❌ [КРИТИЧЕСКАЯ ОШИБКА ДАННЫХ: ПОЛУЧЕНИЕ РЕЦЕПТОВ]\n` +
+        `Запрос: ${fullPath}\n` +
+        `Причина: Бэкенд вернул невалидный JSON, который невозможно распарсить, либо сеть упала.\n` +
+        `Что сказать бэкендеру: "Твой эндпоинт ${apiBaseUrl} возвращает мусор вместо нормального JSON, либо вообще недоступен."\n`,
+        e
+      );
+    }
     return { list: [], total: 0, totalPages: 1, ok: false, status: 0 };
   }
 }
@@ -128,10 +160,17 @@ export async function fetchRecipesFromApi(opts: { search?: string; categoryId?: 
 /** Динамические категории */
 export async function fetchCategoriesFromApi() {
   try {
-    const response = await fetchWithFallback(`/getCategories`);
+    const response = await fetchApi(`/getCategories`);
     const result = await response.json();
     return Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
-  } catch {
+  } catch (e) {
+    if (import.meta.env.DEV) {
+      console.error(
+        `\n❌ [КРИТИЧЕСКАЯ ОШИБКА ДАННЫХ: КАТЕГОРИИ]\n` +
+        `Что сказать бэкендеру: "Твой эндпоинт /getCategories возвращает невалидный JSON!"\n`,
+        e
+      );
+    }
     return [];
   }
 }
@@ -149,17 +188,33 @@ export function mapBackendRecipe(r: any) {
 export async function fetchRecipeById(id: string | number) {
   const cleanId = String(id).replace(/^db-/, "");
   try {
-    const response = await fetchWithFallback(`/getRecipes/${encodeURIComponent(cleanId)}`);
+    const response = await fetchApi(`/getRecipes/${encodeURIComponent(cleanId)}`);
     if (!response.ok) return { item: null, ok: false, status: response.status };
     const result = await response.json();
     const item = result.data || result;
+
     // Бэкенд может вернуть 200 с пустым телом — считаем это как "не найдено"
     if (!item || (typeof item === "object" && !Object.keys(item).length) || (typeof item === "object" && item.id == null)) {
+      if (import.meta.env.DEV) {
+        console.error(
+          `\n❌ [ЛОГИЧЕСКАЯ ОШИБКА БЭКЕНДА: GET_RECIPE_BY_ID]\n` +
+          `Запрос: /getRecipes/${cleanId}\n` +
+          `Бэкенд вернул статус 200, но тело ответа пустое или не содержит данных рецепта.\n` +
+          `Что сказать бэкендеру: "Если рецепт не найден, ты ДОЛЖЕН возвращать статус 404, а не 200 с пустым массивом или null. Исправь!"\n`
+        );
+      }
       return { item: null, ok: false, status: 404 };
     }
     return { item, ok: true, status: response.status };
   } catch (e) {
-    if (import.meta.env.DEV) console.error(`❌ Ошибка загрузки рецепта ${id}:`, e);
+    if (import.meta.env.DEV) {
+      console.error(
+        `\n❌ [КРИТИЧЕСКАЯ ОШИБКА ДАННЫХ: GET_RECIPE_BY_ID]\n` +
+        `Запрос: /getRecipes/${cleanId}\n` +
+        `Что сказать бэкендеру: "Твой эндпоинт для одиночного рецепта возвращает невалидный JSON!"\n`,
+        e
+      );
+    }
     return { item: null, ok: false, status: 0 };
   }
 }
@@ -167,38 +222,44 @@ export async function fetchRecipeById(id: string | number) {
 /** Лайк рецепта */
 export async function incrementLike(id: string | number) {
   const cleanId = String(id).replace(/^(db-|local-)/, "");
-  return fetchWithFallback(`/incrementLike/${encodeURIComponent(cleanId)}`, { method: "PATCH" });
+  return fetchApi(`/incrementLike/${encodeURIComponent(cleanId)}`, { method: "PATCH" });
 }
 
 /** Установка рейтинга */
 export async function setRating(id: string | number, rating: number, ip: string) {
   const cleanId = String(id).replace(/^(db-|local-)/, "");
-  return fetchWithFallback(`/setRating/${encodeURIComponent(cleanId)}`, {
+  return fetchApi(`/setRating/${encodeURIComponent(cleanId)}`, {
     method: "POST",
     body: JSON.stringify({ rating, ip }),
   });
 }
+
 /** Получение списка ID для sitemap через роут /value/{val} */
 export async function fetchSitemapIds(limit: number = 15000) {
   const path = `/getRecipes/value/${limit}`;
 
   try {
-    if (import.meta.env.DEV) console.log(`🔗 Requesting API: ${path}`);
-    const response = await fetchWithFallback(path);
-    
+    if (import.meta.env.DEV) console.log(`[API] Requesting API: ${path}`);
+    const response = await fetchApi(path);
+
     if (!response.ok) return { list: [], total: 0 };
-    
+
     const result = await response.json();
-    
-    // Твой роут /value/{val} возвращает массив рецептов напрямую
-    const list = Array.isArray(result) ? result : (result.data || []);
-    
-    return { 
-      list: list.map((r: any) => ({ id: r.id, updated_at: r.updated_at })), 
-      total: list.length 
+    const list = Array.isArray(result) ? result : result.data || [];
+
+    return {
+      list: list.map((r: any) => ({ id: r.id, updated_at: r.updated_at })),
+      total: list.length,
     };
   } catch (e) {
-    if (import.meta.env.DEV) console.error("Sitemap API Error:", e);
+    if (import.meta.env.DEV) {
+      console.error(
+        `\n❌ [КРИТИЧЕСКАЯ ОШИБКА БЭКЕНДА: SITEMAP]\n` +
+        `Запрос: ${path}\n` +
+        `Что сказать бэкендеру: "Эндпоинт для генерации sitemap сломался. Он либо падает, либо возвращает плохой JSON."\n`,
+        e
+      );
+    }
     return { list: [], total: 0 };
   }
 }

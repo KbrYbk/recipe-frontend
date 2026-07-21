@@ -5,8 +5,10 @@ import Breadcrumbs from "../components/layout/Breadcrumbs.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import SearchBar from "../components/ui/SearchBar.astro";
 import Pagination from "../components/ui/Pagination.astro";
+import Button from "../components/ui/Button.astro";
 import AdSlot from "../components/shared/AdSlot.astro";
 import { Icon } from "astro-icon/components";
+import Divider from "../components/ui/Divider.astro";
 import localRecipes from "../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from "../lib/api/recipes";
 
@@ -143,7 +145,7 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
             Показано {filteredRecipes.length} из {finalTotal} рецептов
           </p>
         </div>
-        <div class="w-full md:w-96">
+        <div class="w-full md:w-[30rem] lg:w-[36rem]">
           <SearchBar initialQuery={qRaw} preserveParams={{ difficulty: difficultyFilter }} />
         </div>
       </div>
@@ -154,24 +156,21 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
       <span class="text-text-muted text-sm font-semibold">Сортировка:</span>
       <div class="flex flex-wrap gap-2" id="sort-filters">
         {sortOptions.map((s) => (
-          <a
+          <Button
             href={recipesHref({ sort: s.value })}
-            class:list={[
-              "rounded-full border px-4 py-1.5 text-sm transition-all",
-              sortParam === s.value
-                ? "border-brand text-brand bg-brand/5 font-semibold"
-                : "border-line text-text-muted hover:border-brand/50 hover:text-brand"
-            ]}
+            variant={sortParam === s.value ? "secondary" : "outline"}
+            size="xs"
+            class={sortParam === s.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
           >
             {s.label}
-          </a>
+          </Button>
         ))}
       </div>
     </div>
 
     <div class="flex flex-col gap-8 lg:flex-row">
       <aside class="w-full shrink-0 lg:w-72">
-        <div class="bg-card-bg border-line lg:sticky lg:top-24 lg:max-h-[calc(100vh-10rem)] lg:flex lg:flex-col rounded-3xl border p-6 shadow-sm">
+        <div class="glass-border-3d bg-card-bg/60 backdrop-blur-md lg:sticky lg:top-24 lg:max-h-[calc(100vh-10rem)] lg:flex lg:flex-col rounded-3xl p-6 shadow-xl shadow-black/15 transition-shadow hover:shadow-2xl hover:shadow-black/20">
           <h2 class="text-text-main mb-6 flex items-center gap-2 text-xl font-bold">
             <Icon name="lucide:filter" class="text-brand h-5 w-5" />
             Фильтры
@@ -184,19 +183,24 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
               <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
               <ul class="space-y-1" id="category-filters" role="list">
                 <li>
-                  <a href={recipesHref({ categoryId: undefined })} class:list={["block rounded-lg px-3 py-2 transition-colors", !categoryId && !categoryLegacy && "bg-brand/10 text-brand font-bold"]}>
+                  <Button
+                    href={recipesHref({ categoryId: undefined })}
+                    variant="ghost"
+                    class={`w-full justify-start text-left ${!categoryId && !categoryLegacy ? "!bg-brand/10 text-brand font-bold" : "text-text-muted"}`}
+                  >
                     Все
-                  </a>
+                  </Button>
                 </li>
                 {
                   categories.slice(0, VISIBLE_CATEGORIES).map((c: any) => (
                     <li>
-                      <a
+                      <Button
                         href={recipesHref({ categoryId: c.id })}
-                        class:list={["hover:bg-brand/5 block rounded-lg px-3 py-2 transition-colors", String(categoryId) === String(c.id) && "bg-brand/10 text-brand font-bold"]}
+                        variant="ghost"
+                        class={`w-full justify-start text-left ${String(categoryId) === String(c.id) ? "!bg-brand/10 text-brand font-bold" : "text-text-muted"}`}
                       >
                         {c.title}
-                      </a>
+                      </Button>
                     </li>
                   ))
                 }
@@ -204,25 +208,26 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
 
               {categories.length > VISIBLE_CATEGORIES && (
                 <div class="mt-2">
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
                     class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors"
                     data-category-toggle
                     aria-expanded="false"
                   >
-                    <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron />
+                    <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron slot="icon-left" />
                     Ещё {categories.length - VISIBLE_CATEGORIES} категорий
-                  </button>
+                  </Button>
                   <ul class="mt-2 hidden space-y-1" data-category-hidden>
                     {
                       categories.slice(VISIBLE_CATEGORIES).map((c: any) => (
                         <li>
-                          <a
+                          <Button
                             href={recipesHref({ categoryId: c.id })}
-                            class:list={["hover:bg-brand/5 block rounded-lg px-3 py-2 transition-colors", String(categoryId) === String(c.id) && "bg-brand/10 text-brand font-bold"]}
+                            variant="ghost"
+                            class={`w-full justify-start text-left ${String(categoryId) === String(c.id) ? "!bg-brand/10 text-brand font-bold" : "text-text-muted"}`}
                           >
                             {c.title}
-                          </a>
+                          </Button>
                         </li>
                       ))
                     }
@@ -237,12 +242,14 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
               <div class="flex flex-wrap gap-2" id="difficulty-filters">
                 {
                   difficultyMap.map((d) => (
-                    <a
+                    <Button
                       href={recipesHref({ difficulty: d.value })}
-                      class:list={["rounded-full border px-4 py-1.5 text-xs transition-all", difficultyFilter === d.value ? "border-brand text-brand bg-brand/5 font-semibold" : "border-line text-text-muted hover:border-brand/50 hover:text-brand"]}
+                      variant={difficultyFilter === d.value ? "secondary" : "outline"}
+                      size="xs"
+                      class={difficultyFilter === d.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
                     >
                       {d.label}
-                    </a>
+                    </Button>
                   ))
                 }
               </div>
@@ -253,17 +260,14 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
               <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Время</h3>
               <div class="flex flex-wrap gap-2" id="time-filters">
                 {timeOptions.map((t) => (
-                  <a
+                  <Button
                     href={recipesHref({ maxTime: t.value })}
-                    class:list={[
-                      "rounded-full border px-4 py-1.5 text-xs transition-all",
-                      maxTimeParam === t.value
-                        ? "border-brand text-brand bg-brand/5 font-semibold"
-                        : "border-line text-text-muted hover:border-brand/50 hover:text-brand"
-                    ]}
+                    variant={maxTimeParam === t.value ? "secondary" : "outline"}
+                    size="xs"
+                    class={maxTimeParam === t.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
                   >
                     {t.label}
-                  </a>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -273,29 +277,30 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
               <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Рейтинг</h3>
               <div class="flex flex-wrap gap-2" id="rating-filters">
                 {ratingOptions.map((r) => (
-                  <a
+                  <Button
                     href={recipesHref({ minRating: r.value })}
-                    class:list={[
-                      "rounded-full border px-4 py-1.5 text-xs transition-all",
-                      minRatingParam === r.value
-                        ? "border-brand text-brand bg-brand/5 font-semibold"
-                        : "border-line text-text-muted hover:border-brand/50 hover:text-brand"
-                    ]}
+                    variant={minRatingParam === r.value ? "secondary" : "outline"}
+                    size="xs"
+                    class={minRatingParam === r.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
                   >
                     {r.label}
-                  </a>
+                  </Button>
                 ))}
               </div>
             </div>
 
             <!-- Сброс фильтров -->
             {(difficultyFilter !== "all" || maxTimeParam || minRatingParam || categoryId) && (
-              <a
+              <Button
+                variant="ghost"
+                size="sm"
+                fullWidth
                 href={recipesHref({ difficulty: "all", maxTime: "", minRating: "", categoryId: undefined })}
-                class="border-line text-text-muted hover:text-brand mt-2 block rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors hover:border-brand/50"
+                class="mt-4 !bg-rose-500/10 !text-rose-500 hover:!bg-rose-500/20 transition-colors"
               >
+                <Icon name="lucide:x" class="h-4 w-4" slot="icon-left" />
                 Сбросить фильтры
-              </a>
+              </Button>
             )}
 
             <AdSlot id="R-A-19056160-18" className="hidden lg:block" />
@@ -345,10 +350,10 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
       </div>
     </div>
 
-    <div class="border-t border-line mt-12 pt-8 print:hidden">
+    <Divider>
       <h3 class="text-text-main mb-6 text-2xl font-bold">Популярные рецепты:</h3>
       <AdSlot id="R-A-19056160-14" isFeed={true} />
-    </div>
+    </Divider>
   </div>
 </Layout>
 

@@ -1,19 +1,18 @@
 ---
-interface Props {
-  recipeId: string;
-}
+import { Icon } from "astro-icon/components";
+import Button from "../ui/Button.astro";
 const { recipeId } = Astro.props;
 ---
-<favorite-button data-id={recipeId}>
-  <button
-    type="button"
+<favorite-button data-id={recipeId} class="block w-full sm:w-auto">
+  <Button
+    variant="outline"
     aria-label="Добавить в избранное"
     aria-pressed="false"
-    class="favorite-btn bg-card-bg border-line text-text-main flex h-11 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all hover:text-brand hover:border-brand active:scale-95"
+    class="favorite-btn w-full sm:w-auto h-11 text-sm px-2 sm:px-4"
   >
-    <slot />
+    <Icon name="lucide:bookmark" slot="icon-left" class="bookmark-icon h-4 w-4 shrink-0" aria-hidden="true" />
     <span class="button-label">Избранное</span>
-  </button>
+  </Button>
 </favorite-button>
 
 <script>

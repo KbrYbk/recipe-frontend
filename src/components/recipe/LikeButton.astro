@@ -1,0 +1,104 @@
+---
+import { Icon } from "astro-icon/components";
+import Button from "../ui/Button.astro";
+const { recipeId } = Astro.props;
+---
+<like-button data-id={recipeId} class="block w-full sm:w-auto">
+  <Button
+    variant="outline"
+    aria-label="Лайкнуть рецепт"
+    aria-pressed="false"
+    class="like-btn w-full sm:w-auto h-11 text-sm px-2 sm:px-4"
+  >
+    <Icon name="lucide:heart" slot="icon-left" class="heart-icon h-4 w-4 shrink-0" aria-hidden="true" />
+    <span class="button-label">Лайк</span>
+  </Button>
+</like-button>
+
+<script>
+  class LikeButton extends HTMLElement {
+    connectedCallback() {
+      const btn = this.querySelector('.like-btn') as HTMLButtonElement;
+      const icon = this.querySelector('.heart-icon');
+      const label = this.querySelector('.button-label');
+      const recipeId = this.dataset.id;
+      const key = "liked_recipes";
+
+      if (!btn || !recipeId) return;
+
+      const getLikes = () => {
+        try { return JSON.parse(localStorage.getItem(key) || "[]"); } 
+        catch { return []; }
+      };
+
+      const applyLikeState = (active: boolean) => {
+        btn.classList.toggle("text-rose-500", active);
+        btn.classList.toggle("border-rose-500", active);
+        btn.setAttribute("aria-pressed", String(active));
+        if (icon) icon.classList.toggle("fill-current", active);
+        if (label) label.textContent = active ? "Лайк" : "Лайк";
+        if (active) {
+          btn.disabled = true;
+          btn.classList.add("cursor-default");
+          btn.classList.remove("hover:text-brand", "hover:border-brand");
+        }
+      };
+
+      // Проверяем, лайкали ли уже
+      const hasLiked = getLikes().includes(recipeId);
+      applyLikeState(hasLiked);
+
+      btn.addEventListener("click", async () => {
+        if (btn.disabled || getLikes().includes(recipeId)) return;
+
+        // Отключаем на время запроса
+        btn.disabled = true;
+
+        const cleanId = recipeId.replace(/^(db-|local-)/, "");
+        const logGroup = `Лайк [recipeId=${recipeId}, cleanId=${cleanId}]`;
+
+        console.log(
+          `%c${logGroup}%c\n→ Отправка PATCH-запроса на /api-proxy/incrementLike/${cleanId}`,
+          "color:#ec4899;font-weight:bold",
+          "color:inherit"
+        );
+
+        try {
+          const res = await fetch(`/api-proxy/incrementLike/${encodeURIComponent(cleanId)}`, {
+            method: "PATCH",
+          });
+
+          const responseText = await res.text();
+          console.log(
+            `%c${logGroup} — ответ сервера%c\n→ HTTP ${res.status} ${res.statusText}\n→ ok: ${res.ok}\n→ тело: ${responseText}`,
+            res.ok ? "color:#16a34a;font-weight:bold" : "color:#dc2626;font-weight:bold",
+            "color:inherit"
+          );
+
+          if (res.ok) {
+            // Сохраняем в localStorage
+            const list = getLikes();
+            if (!list.includes(recipeId)) {
+              list.push(recipeId);
+              localStorage.setItem(key, JSON.stringify(list));
+            }
+            // Визуально фиксируем
+            applyLikeState(true);
+            console.log(`%c${logGroup} — [УСПЕХ]%c\nЛайк сохранен локально и на сервере!`, "color:#16a34a;font-weight:bold", "color:inherit");
+          } else {
+            // Если ошибка (например 404), разблокируем
+            btn.disabled = false;
+            console.error(`%c${logGroup} — [ОШИБКА БЭКЕНДА]%c\nСервер вернул статус ${res.status}. Жалуйтесь бэкендеру!`, "color:#dc2626;font-weight:bold", "color:inherit");
+            alert("Не удалось поставить лайк. Сервер ответил ошибкой.");
+          }
+        } catch (err) {
+          btn.disabled = false;
+          console.error(`%c${logGroup} — [СЕТЕВАЯ ОШИБКА]%c\nБэкенд недоступен или CORS блокирует запрос.`, "color:#dc2626;font-weight:bold", "color:inherit", err);
+          alert("Не удалось поставить лайк из-за сетевой ошибки. Проверьте подключение к интернету или работу сервера.");
+        }
+      });
+    }
+  }
+
+  customElements.define('like-button', LikeButton);
+</script>

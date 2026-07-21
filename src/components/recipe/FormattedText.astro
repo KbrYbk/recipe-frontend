@@ -1,0 +1,32 @@
+---
+interface Props {
+  text: string | null | undefined;
+  class?: string;
+}
+
+const { text, class: className = "" } = Astro.props;
+
+const normalizedText = text
+  ? String(text)
+      .replace(/<br\s*[\/]?>/gi, "\n") // Перевариваем HTML-переносы из админки
+      .replace(/\\r\\n|\\n/g, "\n") // Защита от двойного экранирования
+  : "";
+
+// 2. Разбиваем на абзацы
+const paragraphs = normalizedText
+  ? normalizedText
+      .split(/\r?\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+  : [];
+---
+
+{
+  paragraphs.length > 0 && (
+    <div class:list={["text-base md:text-lg", "leading-relaxed md:leading-8", "max-w-[65ch]", "space-y-4 md:space-y-6", "hyphens-auto", "text-pretty", "text-justify sm:text-left", className]}>
+      {paragraphs.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+    </div>
+  )
+}

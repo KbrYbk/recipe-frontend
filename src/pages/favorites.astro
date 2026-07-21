@@ -77,7 +77,7 @@ import Layout from "../layouts/Layout.astro";
 
     recipes.forEach((recipe) => {
       const card = document.createElement("article");
-      card.className = "group relative overflow-hidden rounded-2xl border border-line bg-card-bg transition-all hover:shadow-lg";
+      card.className = "group glass-border-3d relative overflow-hidden rounded-2xl bg-card-bg transition-all shadow-md shadow-black/15 hover:shadow-xl hover:shadow-black/20";
       card.setAttribute("role", "listitem");
 
       const timeDisplay = recipe.cooking_time ? `${recipe.cooking_time} мин` : "";

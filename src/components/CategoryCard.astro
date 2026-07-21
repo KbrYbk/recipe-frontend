@@ -10,7 +10,7 @@ interface Props {
 const { iconName, title, href } = Astro.props;
 ---
 
-<a href={href} class="group flex flex-col items-center justify-center rounded-4xl border border-line bg-card-bg p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
+<a href={href} class="group flex flex-col items-center justify-center rounded-4xl glass-border-3d bg-card-bg/60 backdrop-blur-md p-6 shadow-md shadow-black/15 transition-all hover:shadow-lg hover:shadow-black/20 hover:bg-card-bg/80">
   
   <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-brand transition-all group-hover:bg-brand group-hover:text-white">
     <Icon name={iconName} class="h-8 w-8" aria-hidden="true" />

@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
+import Surface from '../components/ui/Surface.astro';
 ---
 
 <Layout title="Контакты — SwagEda" description="Свяжитесь с командой SwagEda: техподдержка support@swageda.ru, сотрудничество и реклама ads@swageda.ru. Мы реальные, отвечаем по-человечески и не кусаемся.">
@@ -15,9 +16,12 @@ import { Icon } from 'astro-icon/components';
     </p>
 
     <div class="mt-10 space-y-4 text-left">
-      <a
+      <Surface
+        as="a"
         href="mailto:support@swageda.ru"
-        class="group flex items-center gap-4 rounded-3xl border-2 border-line p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-accent-soft"
+        padding="sm"
+        hoverable
+        class="group flex items-center gap-4 hover:text-brand"
       >
         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand text-white">
           <Icon name="lucide:life-buoy" class="h-6 w-6" aria-hidden="true" />
@@ -26,24 +30,50 @@ import { Icon } from 'astro-icon/components';
           <p class="text-sm text-text-muted">Техподдержка и всё-всё-всё</p>
           <p class="text-lg font-bold text-text-main transition-colors group-hover:text-brand">support@swageda.ru</p>
         </div>
-      </a>
+      </Surface>
 
-      <a
+      <Surface
+        as="a"
         href="mailto:ads@swageda.ru"
-        class="group flex items-center gap-4 rounded-3xl border border-line p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-accent-soft"
+        padding="sm"
+        hoverable
+        class="group flex items-center gap-4 hover:text-brand"
       >
         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-brand">
           <Icon name="lucide:megaphone" class="h-6 w-6" aria-hidden="true" />
-        </div>
+        </div >
         <div>
           <p class="text-sm text-text-muted">Сотрудничество и реклама</p>
           <p class="text-lg font-bold text-text-main transition-colors group-hover:text-brand">ads@swageda.ru</p>
         </div>
-      </a>
+      </Surface>
     </div>
 
-    <p class="mx-auto mt-10 max-w-md text-sm text-text-muted">
-      Обычно отвечаем в течение 24 часов. А если сервер опять «положил слабоумный бэкендер» — чуть дольше, но точно ответим 🤝
-    </p>
+    <div class="mt-16 text-left">
+      <h2 class="text-text-main text-2xl font-bold">Частые вопросы</h2>
+      <div class="mt-6 space-y-6">
+        <div>
+          <h3 class="text-text-main text-lg font-bold">Можно ли добавить свой рецепт?</h3>
+          <p class="text-text-muted mt-2">
+            Пока что добавление рецептов пользователями находится в разработке, но скоро мы откроем эту возможность для всех желающих делиться своими кулинарными шедеврами.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-text-main text-lg font-bold">Собираете ли вы личные данные?</h3>
+          <p class="text-text-muted mt-2">Нет, мы за полную анонимность. Для просмотра рецептов не нужна регистрация, и мы не требуем ваш email. Мы используем только базовую обезличенную аналитику, чтобы делать сайт удобнее.</p>
+        </div>
+        <div>
+          <h3 class="text-text-main text-lg font-bold">Сотрудничество с брендами</h3>
+          <p class="text-text-muted mt-2">
+            Мы всегда открыты для интересных предложений, партнерских проектов и рекламы качественных продуктов. Используйте почту <a
+              href="mailto:ads@swageda.ru"
+              class="text-brand hover:underline">ads@swageda.ru</a
+            > для связи с нашим отделом маркетинга.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-text-muted mx-auto mt-16 max-w-md text-sm">Обычно отвечаем в течение 24 часов. А если сервер опять «положил слабоумный бэкендер» — чуть дольше, но точно ответим.</p>
   </main>
 </Layout>

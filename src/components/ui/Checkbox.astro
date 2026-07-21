@@ -1,0 +1,54 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'input'> {
+  class?: string;
+}
+
+const { class: className = "", ...rest } = Astro.props;
+---
+
+<input
+  type="checkbox"
+  class:list={[
+    // 1. БАЗОВАЯ ИНТЕРАКТИВНОСТЬ И ФОРМА
+    "glass-checkbox relative flex items-center justify-center cursor-pointer transition-all duration-300",
+    "h-6 w-6 shrink-0 rounded-md",
+    
+    // 2. СТЕКЛЯННЫЙ ЭФФЕКТ
+    "glass-border-3d bg-card-bg/40 backdrop-blur-md shadow-sm shadow-black/15",
+    "hover:bg-card-bg/70 hover:shadow-md hover:shadow-black/20",
+    
+    // 3. СОСТОЯНИЕ CHECKED
+    "checked:bg-brand/10 checked:shadow-inner checked:shadow-brand/20 text-brand",
+    
+    // 4. ФОКУС
+    "focus:outline-none focus:ring-2 focus:ring-brand/30 focus:ring-offset-1 focus:ring-offset-page-bg",
+    
+    // 5. СТИЛИ ДЛЯ ПЕЧАТИ
+    "print:h-4 print:w-4 print:appearance-auto print:rounded-none print:border print:border-black print:bg-transparent",
+    
+    // 6. ПОЛЬЗОВАТЕЛЬСКИЕ КЛАССЫ
+    className
+  ]}
+  {...rest}
+/>
+
+<style>
+  .glass-checkbox {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  .glass-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 60%;
+    height: 60%;
+    background-color: currentColor;
+    -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12"/></svg>') center/contain no-repeat;
+    mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12"/></svg>') center/contain no-repeat;
+  }
+</style>

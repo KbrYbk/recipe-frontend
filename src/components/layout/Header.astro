@@ -1,8 +1,9 @@
 ---
 import { Icon } from "astro-icon/components";
+import Button from "../ui/Button.astro";
 ---
 
-<header class="site-header border-line bg-card-bg/60 sticky top-0 z-50 border-b backdrop-blur-md transition-transform duration-300 print:hidden">
+<header class="site-header glass-border-3d bg-card-bg/60 sticky top-0 z-50 backdrop-blur-md shadow-sm shadow-black/15 transition-transform duration-300 will-change-transform print:hidden">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
     <a href="/" class="text-brand flex items-center gap-2 text-2xl font-bold transition-transform active:scale-95 md:text-3xl" aria-label="SwagEda — на главную">
       <img src="/favicon.svg" alt="" class="h-7 w-7 md:h-8 md:w-8" aria-hidden="true" />
@@ -16,23 +17,18 @@ import { Icon } from "astro-icon/components";
       <a href="/random" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Показать случайный рецепт">Удиви меня</a>
       <div class="bg-line h-6 w-px"></div>
 
-      <button
-        type="button"
-        id="themeToggle"
-        class="bg-page-bg border-line text-text-main hover:border-brand hover:text-brand flex h-10 w-10 items-center justify-center rounded-xl border transition-all active:scale-95"
-        aria-label="Переключить тему"
-      >
+      <Button variant="outline" size="icon" id="themeToggle" class="bg-page-bg flex-shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-5 w-5" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-5 w-5" aria-hidden="true" />
-      </button>
+      </Button>
     </nav>
 
     <!-- Mobile Controls -->
     <div class="flex items-center gap-3 md:hidden">
-      <button type="button" id="themeToggleMobile" class="text-text-main flex h-10 w-10 items-center justify-center rounded-xl transition-all active:scale-95" aria-label="Переключить тему">
+      <Button variant="ghost" size="icon" id="themeToggleMobile" class="flex-shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-6 w-6" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-6 w-6" aria-hidden="true" />
-      </button>
+      </Button>
     </div>
   </div>
 </header>
@@ -81,7 +77,7 @@ import { Icon } from "astro-icon/components";
             ticking = true;
           }
         },
-        { passive: true }
+        { passive: true },
       );
     }
   }

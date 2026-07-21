@@ -1,13 +1,17 @@
-<share-button>
-    <button
-      type="button"
-      class="bg-brand hover:bg-brand-hover flex h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold text-white transition-all active:scale-95"
-      aria-label="Поделиться рецептом"
-    >
-      <slot /> <!-- Позволяет передать иконку снаружи -->
-      <span class="button-label">Поделиться</span>
-    </button>
-  </share-button>
+---
+import { Icon } from "astro-icon/components";
+import Button from "../ui/Button.astro";
+---
+<share-button class="block w-full sm:w-auto">
+  <Button
+    variant="primary"
+    class="share-btn h-11 w-full text-sm px-2 sm:w-auto sm:px-4 print:hidden"
+    aria-label="Поделиться рецептом"
+  >
+    <Icon name="lucide:share-2" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
+    <span class="button-label">Поделиться</span>
+  </Button>
+</share-button>
   
   <script>
     class ShareButton extends HTMLElement {

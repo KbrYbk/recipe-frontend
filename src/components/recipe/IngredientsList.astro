@@ -1,5 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
+import Checkbox from "../ui/Checkbox.astro";
+import Button from "../ui/Button.astro";
 
 interface Ingredient {
   name: string;
@@ -16,7 +18,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 ---
 
 <div class="group" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
-  <div class="border-line bg-card-bg rounded-3xl border p-6 shadow-sm transition-all hover:shadow-lg print:border-0 print:bg-transparent print:p-0 print:shadow-none">
+  <div class="glass-border-3d bg-card-bg/60 backdrop-blur-md rounded-3xl p-6 shadow-xl shadow-black/15 transition-all hover:shadow-2xl hover:shadow-black/20 print:border-0 print:bg-transparent print:p-0 print:shadow-none">
     <div class="mb-6 flex w-full flex-wrap items-baseline justify-between gap-y-2">
       <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
         <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" />
@@ -26,21 +28,21 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
     </div>
 
     <div class="relative">
-      <div class="ingredients-scroll-area lg:overflow-y-auto lg:overscroll-contain print:max-h-none print:overflow-visible" data-ingredients-scroll tabindex="0" role="region" aria-label="Список ингредиентов, прокрутите чтобы увидеть все">
-        <ul class="space-y-3 pr-1 print:columns-2 print:gap-x-4 print:space-y-1">
+      <div
+        class="ingredients-scroll-area lg:overflow-y-auto lg:overscroll-contain print:max-h-none print:overflow-visible"
+        data-ingredients-scroll
+        tabindex="0"
+        role="region"
+        aria-label="Список ингредиентов, прокрутите чтобы увидеть все"
+      >
+        <ul class="space-y-3 pr-1 print:columns-2 print:space-y-1 print:gap-x-4">
           {
             ingredients.map((item, i) => {
               const cbId = `ing-${recipeSlug}-${i}`;
               return (
-                <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors print:rounded-none print:border-b print:border-gray-200 print:py-1 print:gap-2">
+                <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors print:gap-2 print:rounded-none print:border-b print:border-gray-200 print:py-1">
                   <div class="flex h-6 shrink-0 items-center">
-                    <input
-                      id={cbId}
-                      type="checkbox"
-                      data-ingredient-checkbox
-                      data-recipe-slug={recipeSlug}
-                      class="border-line bg-page-bg text-brand focus:ring-brand/20 h-5 w-5 cursor-pointer rounded-md transition-all checked:scale-110 print:h-3 print:w-3 print:appearance-none print:rounded-none print:border print:border-black"
-                    />
+                    <Checkbox id={cbId} data-ingredient-checkbox data-recipe-slug={recipeSlug} />
                   </div>
                   <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all select-none">
                     <span class="ingredient-name text-text-main leading-tight font-medium print:text-[10pt]">{item.name}</span>
@@ -61,7 +63,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       <div class="ingredients-scroll-hint absolute inset-x-0 bottom-0 z-10 flex items-end justify-center pb-2 print:hidden" data-scroll-hint aria-hidden="true">
         <button
           type="button"
-          class="ingredients-scroll-hint__btn bg-card-bg/95 border-line text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-sm transition-all hover:shadow-xl active:scale-95"
+          class="ingredients-scroll-hint__btn glass-border-3d bg-card-bg/95 text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-md shadow-black/15 backdrop-blur-sm transition-all hover:shadow-lg hover:shadow-black/20"
           data-scroll-down-btn
           tabindex="-1"
         >
@@ -71,13 +73,10 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       </div>
     </div>
 
-    <button
-      data-copy-ingredients
-      class="border-line text-text-main hover:bg-page-bg mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border py-3 text-sm font-semibold transition-all active:scale-95"
-    >
-      <Icon name="lucide:copy" class="h-4 w-4" />
+    <Button data-copy-ingredients variant="outline" fullWidth class="mt-6 flex w-full h-11 text-sm font-semibold !px-2">
+      <Icon name="lucide:copy" slot="icon-left" class="h-4 w-4 shrink-0" />
       Копировать список
-    </button>
+    </Button>
   </div>
 </div>
 
@@ -125,7 +124,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 
       navigator.clipboard.writeText(`Ингредиенты:\n${text}`).then(() => {
         const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = "✅ Скопировано!";
+        copyBtn.innerHTML = "Скопировано!";
         setTimeout(() => (copyBtn.innerHTML = originalText), 2000);
       });
     });

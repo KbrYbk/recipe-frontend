@@ -6,9 +6,9 @@ interface Props {
 const { recipeId, averageRating } = Astro.props;
 ---
 
-<rating-stars data-id={recipeId} data-avg={averageRating}>
+<rating-stars data-id={recipeId} data-avg={averageRating} class="block w-full sm:w-auto">
   <div
-    class="rating-container bg-card-bg border-line flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold text-amber-500 transition-colors"
+    class="rating-container glass-border-3d bg-card-bg/20 hover:bg-card-bg/40 flex h-11 w-full items-center justify-center gap-2 rounded-2xl px-3 text-sm font-bold text-amber-500 shadow-sm shadow-black/15 backdrop-blur-md transition-all hover:shadow-md hover:shadow-black/20 sm:w-auto"
     role="group"
     aria-label={`Рейтинг: ${averageRating ? Number(averageRating).toFixed(1) : "0"} из 5`}
   >
@@ -18,7 +18,7 @@ const { recipeId, averageRating } = Astro.props;
           <button
             type="button"
             data-star={star}
-            class="star-btn focus: focus-visible:ring-brand rounded-md p-1 transition-transform outline-none hover:scale-110 focus-visible:ring-2 active:scale-90 disabled:hover:scale-100"
+            class="star-btn focus: focus-visible:ring-brand rounded-md p-1 transition-transform outline-none hover:scale-110 focus-visible:ring-2 disabled:hover:scale-100"
             aria-label={`Оценить на ${star}`}
             aria-pressed="false"
           >
@@ -62,7 +62,9 @@ const { recipeId, averageRating } = Astro.props;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     opacity: 0;
     pointer-events: none;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s ease;
   }
 
   #rating-toast.rating-toast--visible {
@@ -165,7 +167,7 @@ const { recipeId, averageRating } = Astro.props;
         stars.forEach((s) => {
           s.disabled = true;
           s.classList.add("cursor-default");
-          s.classList.remove("hover:scale-110", "active:scale-90");
+          s.classList.remove("hover:scale-110");
         });
         container.classList.add("opacity-90");
       };
@@ -200,10 +202,16 @@ const { recipeId, averageRating } = Astro.props;
           console.log(
             `%c${logGroup}%c\n→ Клик по звезде: ${rating}\n→ Средняя ДО голосования: ${baseVal} (avgNum=${avgNum})\n→ URL: POST /api-proxy/setRating/${cleanId}`,
             "color:#ff6900;font-weight:bold",
-            "color:inherit"
+            "color:inherit",
           );
 
           try {
+            console.log(
+              `%c${logGroup} — Отправка данных%c\n→ Payload: ${JSON.stringify({ rating })}\n→ Ожидаем, что бэкенд сам определит IP из заголовка X-Forwarded-For (как и должно быть в нормальной архитектуре).`,
+              "color:#3b82f6;font-weight:bold",
+              "color:inherit"
+            );
+
             const res = await fetch(`/api-proxy/setRating/${encodeURIComponent(cleanId)}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -221,7 +229,7 @@ const { recipeId, averageRating } = Astro.props;
             console.log(
               `%c${logGroup} — ответ сервера%c\n→ HTTP ${res.status} ${res.statusText}\n→ ok: ${res.ok}\n→ тело: ${responseText.slice(0, 300)}${responseText.length > 300 ? "…" : ""}`,
               res.ok ? "color:#16a34a;font-weight:bold" : "color:#dc2626;font-weight:bold",
-              "color:inherit"
+              "color:inherit",
             );
 
             if (res.ok) {
@@ -234,22 +242,32 @@ const { recipeId, averageRating } = Astro.props;
               lockRating(rating);
               container.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
               setTimeout(() => container.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
-              showToast("Спасибо за оценку! 🔥", "success");
+              showToast("Спасибо за оценку!", "success");
 
               console.log(
-                `%c${logGroup} — ОТПРАВЛЕНО ✅%c\n→ Оценка ${rating} успешно отправлена на сервер\n→ Средняя ПОСЛЕ голосования: ${newAvg ?? "нет в ответе"} (было ${baseVal})\n→ Сохранено в localStorage[${recipeId}] = ${rating}`,
+                `%c${logGroup} — [ОТПРАВЛЕНО]%c\n→ Оценка ${rating} успешно отправлена на сервер\n→ Средняя ПОСЛЕ голосования: ${newAvg ?? "нет в ответе"} (было ${baseVal})\n→ Сохранено в localStorage[${recipeId}] = ${rating}`,
                 "color:#16a34a;font-weight:bold",
-                "color:inherit"
+                "color:inherit",
               );
             } else if (res.status === 403) {
-              // Реально уже голосовали — блокируем на выбранной, сообщаем
-              myRatings[recipeId] = rating;
-              localStorage.setItem("my_ratings", JSON.stringify(myRatings));
-              lockRating(rating);
-              showToast("Вы уже оценивали этот рецепт", "info");
-              console.warn(
-                `%c${logGroup} — уже голосовали (403)%c\n→ Звёзды заблокированы на ${rating}, локально сохранено`,
-                "color:#d97706;font-weight:bold",
+              // Сервер вернул 403 "already voted". Если у нас в localStorage нет оценки, значит это баг бэкенда с IP = null
+              isProcessing = false;
+              userValContainer?.classList.add("hidden");
+              renderStars(baseVal);
+              showToast("Ошибка на стороне сервера (подробности в консоли)", "error");
+              
+              console.error(
+                `%c${logGroup} — [ОШИБКА 403: ВЫ УЖЕ ГОЛОСОВАЛИ]%c\n` +
+                `❗ ПРИЧИНА (для бэкендера):\n` +
+                `Бэкенд берет IP из JSON-тела ($request->input('ip')), а не из заголовков HTTP.\n` +
+                `Т.к. фронтенд не передает IP (это небезопасно и глупо делать на клиенте), бэкенд подставляет ip=null.\n` +
+                `Следовательно, БД считает, что ВСЕ пользователи без IP — это один и тот же человек, и блокирует все голоса, кроме самого первого!\n\n` +
+                `🛠 РЕШЕНИЕ ДЛЯ БЭКЕНДЕРА:\n` +
+                `В LikesController.php замените: \n` +
+                `$ip = $request->input('ip'); \n` +
+                `НА: \n` +
+                `$ip = $request->input('ip') ?? $request->ip();`, 
+                "color:#dc2626;font-size:14px;font-weight:bold;background:#fee2e2;padding:4px;border-radius:4px;", 
                 "color:inherit"
               );
             } else {
@@ -257,12 +275,8 @@ const { recipeId, averageRating } = Astro.props;
               isProcessing = false;
               userValContainer?.classList.add("hidden");
               renderStars(baseVal);
-              showToast("Ой, не получилось 🥲 Попробуйте позже", "error");
-              console.error(
-                `%c${logGroup} — НЕ ОТПРАВЛЕНО ❌%c\n→ Сервер вернул ${res.status}, оценка НЕ сохранена (ни на сервере, ни локально)`,
-                "color:#dc2626;font-weight:bold",
-                "color:inherit"
-              );
+              showToast("Ой, не получилось. Попробуйте позже", "error");
+              console.error(`%c${logGroup} — [ОШИБКА ОТПРАВКИ]%c\n→ Сервер вернул ${res.status}, оценка НЕ сохранена (ни на сервере, ни локально)`, "color:#dc2626;font-weight:bold", "color:inherit");
             }
           } catch (err) {
             console.error(err);
@@ -270,11 +284,11 @@ const { recipeId, averageRating } = Astro.props;
             isProcessing = false;
             userValContainer?.classList.add("hidden");
             renderStars(baseVal);
-            showToast("Ой, не получилось 🥲 Попробуйте позже", "error");
+            showToast("Ой, не получилось. Попробуйте позже", "error");
             console.error(
-              `%c${logGroup} — СЕРВЕР НЕДОСТУПЕН ❌%c\n→ Запрос к /api-proxy/setRating/${cleanId} упал (сеть/CORS/502)\n→ Оценка ${rating} НЕ отправлена и НЕ сохранена локально\n→ Звёзды остаются активными — можно попробовать позже`,
+              `%c${logGroup} — [СЕРВЕР НЕДОСТУПЕН]%c\n→ Запрос к /api-proxy/setRating/${cleanId} упал (сеть/CORS/502)\n→ Оценка ${rating} НЕ отправлена и НЕ сохранена локально\n→ Звёзды остаются активными — можно попробовать позже`,
               "color:#dc2626;font-weight:bold",
-              "color:inherit"
+              "color:inherit",
             );
           }
         });
@@ -289,5 +303,7 @@ const { recipeId, averageRating } = Astro.props;
     }
   }
 
-  customElements.define("rating-stars", RatingStars);
+  if (!customElements.get("rating-stars")) {
+    customElements.define("rating-stars", RatingStars);
+  }
 </script>

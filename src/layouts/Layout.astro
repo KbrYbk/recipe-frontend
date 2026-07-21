@@ -80,11 +80,6 @@ const jsonLdGraph = {
     },
   ],
 };
-const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
-  ? String(import.meta.env.PUBLIC_BACKEND_URLS)
-      .split(",")[0]
-      .replace(/\/$/, "")
-  : import.meta.env.API_BASE_URL?.replace(/\/$/, "") || "";
 ---
 
 <!doctype html>
@@ -113,7 +108,7 @@ const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImage} />
 
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')} />
 
     {
       ogType === "article" && recipeData && (
@@ -135,16 +130,11 @@ const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#ff6900" />
     <meta name="yandex-verification" content="e0698217d6d9209f" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Preconnect to Yandex ad domains for faster loading -->
     <link rel="preconnect" href="https://yandex.ru" crossorigin />
     <link rel="preconnect" href="https://mc.yandex.ru" crossorigin />
     <link rel="dns-prefetch" href="https://yandex.ru" />
     <link rel="dns-prefetch" href="https://mc.yandex.ru" />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
-    {apiBase && <link rel="preconnect" href={apiBase} crossorigin />}
     <script is:inline>
       const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       document.documentElement.classList.toggle("dark", theme === "dark");
@@ -157,14 +147,13 @@ const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
     <!-- Боковые липкие баннеры для больших мониторов (экраны шире 1560px) -->
     <!-- Они зафиксированы по бокам экрана и не перекрывают основной контент -->
     <div class="hidden min-[1480px]:block">
-      <div class="print:hidden fixed top-28 left-4 z-40 h-150 w-40 overflow-hidden">
+      <div class="fixed top-28 left-4 z-40 h-150 w-40 overflow-hidden print:hidden">
         <AdSlot id="R-A-19056160-22" className="sticky top-28" />
       </div>
-      <div class="print:hidden fixed top-28 right-4 z-40 h-150 w-40 overflow-hidden">
+      <div class="fixed top-28 right-4 z-40 h-150 w-40 overflow-hidden print:hidden">
         <AdSlot id="R-A-19056160-23" className="sticky top-28" />
       </div>
     </div>
-    <a href="#main-content" class="skip-to-main">Перейти к основному контенту</a>
     <PageProgress />
     <Header />
     <!-- Баннер 15 — над контентом, виден на всех страницах -->
@@ -178,6 +167,8 @@ const apiBase = import.meta.env.PUBLIC_BACKEND_URLS
     <BottomNav />
     <BackToTop />
     <CookieConsent />
+    <!-- Скрытый контейнер для ID глобальной рекламы (Fullscreen и FloorAd) -->
+    <div id="ya-global-ads" data-fullscreen="R-A-19056160-20" data-floor="R-A-19056160-21" class="hidden" aria-hidden="true"></div>
     <script>
       import "../scripts/metrics.js";
       import "../scripts/ads.js";

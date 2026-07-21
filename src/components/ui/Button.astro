@@ -1,0 +1,63 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"button"> {
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  size?: "sm" | "md" | "lg" | "icon";
+  href?: string;
+  isExternal?: boolean;
+  fullWidth?: boolean;
+  as?: any;
+  class?: string;
+}
+
+const {
+  variant = "primary",
+  size = "md",
+  href,
+  isExternal = false,
+  fullWidth = false,
+  as: Tag,
+  class: className = "",
+  type = "button",
+  ...rest
+} = Astro.props;
+
+const Component = Tag || (href ? "a" : "button");
+
+const baseStyles =
+  "inline-flex items-center justify-center font-bold transition-all duration-300 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer whitespace-nowrap";
+
+const variants = {
+  primary: "bg-brand text-white hover:bg-brand-hover shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_10px_rgba(255,105,0,0.5)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_6px_14px_rgba(255,105,0,0.6)] border-none",
+  secondary: "bg-card-bg/40 backdrop-blur-xl glass-border-3d text-text-main shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20 hover:bg-card-bg/60",
+  outline: "glass-border-3d bg-card-bg/20 backdrop-blur-lg text-text-main shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20 hover:text-brand hover:bg-card-bg/40 focus-visible:ring-brand",
+  ghost: "text-text-main hover:bg-card-bg/40 backdrop-blur-md",
+  danger: "bg-rose-500/80 backdrop-blur-xl glass-border-3d text-white shadow-sm shadow-black/20 hover:shadow-md hover:bg-rose-600",
+};
+
+const sizes = {
+  xs: "px-3 py-1.5 text-xs gap-1 font-semibold",
+  sm: "px-4 py-2 text-sm gap-1.5",
+  md: "px-6 py-3 text-base gap-2",
+  lg: "px-8 py-4 text-lg md:text-xl gap-2.5",
+  icon: "h-10 w-10 p-0 justify-center",
+};
+
+const widthStyle = fullWidth ? "w-full" : "";
+
+const classes = [baseStyles, variants[variant], sizes[size], widthStyle, className].filter(Boolean).join(" ");
+---
+
+<Component
+  href={href}
+  class={classes}
+  target={isExternal ? "_blank" : undefined}
+  rel={isExternal ? "noopener noreferrer" : undefined}
+  type={Component === "button" ? type : undefined}
+  {...rest}
+>
+  <slot name="icon-left" />
+  <slot />
+  <slot name="icon-right" />
+</Component>

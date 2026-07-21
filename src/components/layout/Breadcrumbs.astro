@@ -32,22 +32,24 @@ const breadcrumbList = {
   })),
 };
 
-const jsonLd = JSON.stringify(breadcrumbList);
+const jsonLd = JSON.stringify(breadcrumbList).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 ---
 
 <script type="application/ld+json" set:html={jsonLd} is:inline />
 
-<nav aria-label="Хлебные крошки" class="print:hidden text-text-muted flex items-center gap-2 text-sm">
-  <a href="/" class="hover:text-brand transition-colors">Главная</a>
+<nav aria-label="Хлебные крошки" class="print:hidden glass-border-3d bg-card-bg/60 backdrop-blur-md shadow-sm shadow-black/15 flex w-fit flex-wrap items-center gap-2 rounded-2xl px-4 py-2 text-sm text-text-muted mb-6">
+  <a href="/" class="hover:text-brand flex items-center transition-colors" aria-label="Главная">
+    <Icon name="lucide:home" class="h-4 w-4" />
+  </a>
 
   {
     items.map((item, index) => {
       const isLast = index === items.length - 1;
       return (
         <>
-          <Icon name="lucide:chevron-right" class="h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />
+          <Icon name="lucide:chevron-right" class="h-3.5 w-3.5 shrink-0 opacity-50" aria-hidden="true" />
           {isLast ? (
-            <span class="text-text-main font-medium" aria-current="page">
+            <span class="text-text-main font-bold" aria-current="page">
               {item.name}
             </span>
           ) : (

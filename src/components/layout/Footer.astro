@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import Divider from "../ui/Divider.astro";
 const currentYear = new Date().getFullYear();
 ---
 
@@ -19,7 +20,7 @@ const currentYear = new Date().getFullYear();
 
       <!-- Колонка 3: Навигация -->
       <nav aria-labelledby="footer-nav-heading">
-        <h3 id="footer-nav-heading" class="text-text-main mb-4 text-sm font-bold tracking-wider uppercase">Карта сайта</h3>
+        <h2 id="footer-nav-heading" class="text-text-main mb-4 text-sm font-bold tracking-wider uppercase">Карта сайта</h2>
         <ul class="space-y-2">
           <li><a href="/" class="text-text-muted hover:text-brand font-medium transition-colors">Главная</a></li>
           <li><a href="/recipes" class="text-text-muted hover:text-brand font-medium transition-colors">Все рецепты</a></li>
@@ -31,14 +32,14 @@ const currentYear = new Date().getFullYear();
 
       <!-- Колонка 4: Социальные сети -->
       <!-- <div>
-        <h3 class="text-text-main mb-4 text-sm font-bold tracking-wider uppercase">Мы в сети</h3>
+        <h2 class="text-text-main mb-4 text-sm font-bold tracking-wider uppercase">Мы в сети</h2>
         <p class="text-text-muted mb-4 text-xs leading-relaxed">Следите за новыми рецептами и кулинарными лайфхаками в наших соцсетях:</p>
         <div class="flex gap-3">
           <a
             href="https://vk.com/"
             target="_blank"
             rel="noopener noreferrer"
-            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl border transition-all hover:-translate-y-1"
+            class="bg-page-bg glass-border-3d text-text-muted hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all"
           >
             <Icon name="vk" class="h-6 w-6" aria-hidden="true" />
             <span class="sr-only">ВКонтакте</span>
@@ -48,7 +49,7 @@ const currentYear = new Date().getFullYear();
             href="https://t.me/"
             target="_blank"
             rel="noopener noreferrer"
-            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl border transition-all hover:-translate-y-1"
+            class="bg-page-bg glass-border-3d text-text-muted hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all"
           >
             <Icon name="tg" class="h-6 w-6" aria-hidden="true" />
             <span class="sr-only">Telegram</span>
@@ -58,7 +59,7 @@ const currentYear = new Date().getFullYear();
             href="https://youtube.com/"
             target="_blank"
             rel="noopener noreferrer"
-            class="bg-page-bg border-line text-text-muted hover:border-brand hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl border transition-all hover:-translate-y-1"
+            class="bg-page-bg glass-border-3d text-text-muted hover:text-brand hover:bg-brand/5 flex h-11 w-11 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all"
           >
             <Icon name="lucide:youtube" class="h-6 w-6" aria-hidden="true" />
             <span class="sr-only">YouTube</span>
@@ -68,11 +69,11 @@ const currentYear = new Date().getFullYear();
     </div>
 
     <!-- Нижняя полоса футера -->
-    <div class="border-line mt-12 border-t pt-8 text-center md:flex md:items-center md:justify-between md:text-left">
+    <Divider class="text-center md:flex md:items-center md:justify-between md:text-left">
       <p class="text-text-muted text-sm">
         &copy; {currentYear} SwagEda. Сделано с душой для любителей вкусно поесть.
       </p>
       <p class="text-text-muted/60 mt-4 text-xs md:mt-0">Использование материалов сайта разрешено только с указанием активной ссылки на источник.</p>
-    </div>
+    </Divider>
   </div>
 </footer>

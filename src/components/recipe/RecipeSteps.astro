@@ -1,0 +1,175 @@
+---
+import { Icon } from "astro-icon/components";
+import AdSlot from "../shared/AdSlot.astro";
+import FormattedText from "./FormattedText.astro";
+import Checkbox from "../ui/Checkbox.astro";
+import Button from "../ui/Button.astro";
+
+interface Step {
+  order?: number;
+  text?: string;
+  image?: string;
+}
+
+interface Props {
+  steps: Step[];
+  recipeSlug?: string;
+}
+
+const { steps, recipeSlug = "recipe" } = Astro.props;
+---
+
+<ol class="space-y-12">
+  {
+    steps.map((step, index) => {
+      const stepId = `step-${recipeSlug}-${index}`;
+
+      return (
+        <>
+          <li class="group relative scroll-mt-24 transition-all duration-500 ease-in-out has-checked:opacity-50 has-checked:grayscale print:mb-3 print:break-inside-avoid print:border-b print:border-gray-200">
+            {index !== steps.length - 1 && (
+              <div 
+                class="absolute left-3.5 top-8 -bottom-6 hidden w-3 bg-brand/40 sm:block dark:bg-brand/30 print:hidden" 
+                style="mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24'%3E%3Cpath d='M6,0 Q0,6 6,12 T6,24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E&quot;); mask-size: 100% 24px; mask-repeat: repeat-y; -webkit-mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24'%3E%3Cpath d='M6,0 Q0,6 6,12 T6,24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E&quot;); -webkit-mask-size: 100% 24px; -webkit-mask-repeat: repeat-y;"
+                aria-hidden="true"
+              ></div>
+            )}
+            <div class="mb-4 flex flex-col sm:flex-row sm:gap-6 print:mb-2 print:flex-row print:gap-2">
+              {/* ЛЕВАЯ КОЛОНКА */}
+              <div class="mb-3 flex items-center justify-between sm:mb-0 sm:w-10 sm:shrink-0 sm:flex-col sm:items-start sm:gap-0">
+                <div class="flex items-center gap-3 sm:block">
+                  <div
+                    class="bg-brand relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white shadow-md shadow-brand/30 print:h-6 print:w-6 print:min-w-6 print:border print:border-black print:bg-transparent print:text-[9pt] print:text-black"
+                    aria-hidden="true"
+                  >
+                    {step.order ?? index + 1}
+                  </div>
+                  <span class="text-sm font-medium text-gray-400 sm:hidden">из {steps.length}</span>
+                </div>
+
+                {/* МОБИЛЬНАЯ КНОПКА */}
+                <Button
+                  as="label"
+                  variant="outline"
+                  class="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold shadow-sm shadow-black/15 transition-all sm:hidden print:hidden"
+                  title="Отметить как выполненное"
+                >
+                  {/* Используем data-step-index для связи с десктопной кнопкой */}
+                  <Checkbox
+                    data-step-checkbox
+                    data-recipe-slug={recipeSlug}
+                    data-step-index={index}
+                    class="pointer-events-none h-6 w-6 transition-transform group-active/btn:scale-95"
+                    aria-label={`Отметить шаг ${step.order ?? index + 1} как выполненный`}
+                  />
+                  <span class="text-base select-none">Завершить шаг</span>
+                </Button>
+              </div>
+
+              {/* ПРАВАЯ КОЛОНКА (Текст + Десктопная кнопка + Картинка) */}
+              <div class="flex w-full flex-col sm:max-w-xl">
+                <FormattedText text={step.text} class="text-text-main w-full pt-1 text-lg leading-relaxed sm:pt-1 print:pt-0 print:text-[10pt] print:leading-snug" />
+
+                {/* КАРТИНКА */}
+                {step.image && (
+                  <div class="glass-border-3d mt-6 overflow-hidden rounded-2xl shadow-md shadow-black/15 print:mt-2 print:max-w-75 print:rounded print:border-0 print:shadow-none">
+                    <img
+                      data-zoomable
+                      tabindex="0"
+                      role="button"
+                      aria-label={`Увеличить изображение: Шаг ${step.order ?? index + 1}`}
+                      src={step.image}
+                      alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
+                      width={800}
+                      height={450}
+                      loading="lazy"
+                      decoding="async"
+                      class="image-zoom h-auto w-full print:float-none"
+                    />
+                  </div>
+                )}
+
+                {/* ДЕСКТОПНАЯ КНОПКА */}
+                <div class="mt-5 hidden sm:block print:hidden">
+                  <Button
+                    as="label"
+                    variant="outline"
+                    class="group/btn relative flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl p-4 font-semibold shadow-sm shadow-black/15 transition-all"
+                    title="Отметить как выполненное"
+                  >
+                    <Checkbox
+                      data-step-checkbox
+                      data-recipe-slug={recipeSlug}
+                      data-step-index={index}
+                      class="pointer-events-none h-6 w-6 transition-transform group-active/btn:scale-95"
+                      aria-label={`Отметить шаг ${step.order ?? index + 1} как выполненный`}
+                    />
+                    <span class="text-base select-none">Завершить шаг</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          {/* Рекламный слот */}
+          {(index + 1) % 4 === 0 && index < steps.length - 1 && (
+            <li class="mb-4 sm:ml-16">
+              <AdSlot id="R-A-19056160-13" className="block" refreshInterval={60} />
+            </li>
+          )}
+        </>
+      );
+    })
+  }
+</ol>
+
+<script>
+  function initSteps() {
+    const checkboxes = document.querySelectorAll<HTMLInputElement>("[data-step-checkbox]");
+
+    checkboxes.forEach((input) => {
+      const slug = input.getAttribute("data-recipe-slug") || "recipe";
+      const stepIndex = input.getAttribute("data-step-index");
+      const key = `recipe:step:${slug}:${stepIndex}`;
+
+      // 1. При загрузке страницы проверяем состояние
+      const isInitiallyChecked = localStorage.getItem(key) === "1";
+      input.checked = isInitiallyChecked;
+      updateStepStyle(input, isInitiallyChecked);
+
+      // 2. Слушаем клики
+      input.addEventListener("change", () => {
+        const isChecked = input.checked;
+
+        // Если кликнули на мобильную кнопку, десктопная тоже отмечается (и наоборот)
+        const siblings = document.querySelectorAll<HTMLInputElement>(`[data-step-checkbox][data-step-index="${stepIndex}"]`);
+        siblings.forEach((cb) => {
+          cb.checked = isChecked;
+          updateStepStyle(cb, isChecked);
+        });
+
+        // Сохраняем стейт
+        if (isChecked) {
+          localStorage.setItem(key, "1");
+        } else {
+          localStorage.removeItem(key);
+        }
+      });
+    });
+
+    function updateStepStyle(checkbox: HTMLInputElement, isChecked: boolean) {
+      const label = checkbox.closest("label");
+      if (!label) return;
+      
+      if (isChecked) {
+        label.classList.remove("text-text-main", "bg-card-bg/60", "backdrop-blur-md", "glass-border-3d", "hover:text-brand");
+        label.classList.add("bg-brand", "text-white", "shadow-brand/20", "hover:bg-brand-hover", "border-brand");
+      } else {
+        label.classList.add("text-text-main", "bg-card-bg/60", "backdrop-blur-md", "glass-border-3d", "hover:text-brand");
+        label.classList.remove("bg-brand", "text-white", "shadow-brand/20", "hover:bg-brand-hover", "border-brand");
+      }
+    }
+  }
+
+  initSteps();
+</script>
