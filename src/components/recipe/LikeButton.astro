@@ -34,13 +34,13 @@ const { recipeId } = Astro.props;
       const applyLikeState = (active: boolean) => {
         btn.classList.toggle("text-rose-500", active);
         btn.classList.toggle("border-rose-500", active);
+        btn.classList.toggle("bg-rose-500/10", active);
         btn.setAttribute("aria-pressed", String(active));
-        if (icon) icon.classList.toggle("fill-current", active);
+        if (icon) icon.classList.toggle("fill-rose-500", active);
+        if (icon) icon.classList.toggle("text-rose-500", active);
         if (label) label.textContent = active ? "Лайк" : "Лайк";
         if (active) {
-          btn.disabled = true;
-          btn.classList.add("cursor-default");
-          btn.classList.remove("hover:text-brand", "hover:border-brand");
+          btn.classList.remove("hover:text-brand", "hover:border-brand", "hover:bg-card-bg/40");
         }
       };
 
@@ -48,11 +48,13 @@ const { recipeId } = Astro.props;
       const hasLiked = getLikes().includes(recipeId);
       applyLikeState(hasLiked);
 
-      btn.addEventListener("click", async () => {
-        if (btn.disabled || getLikes().includes(recipeId)) return;
+      let isProcessing = false;
 
-        // Отключаем на время запроса
-        btn.disabled = true;
+      btn.addEventListener("click", async () => {
+        if (isProcessing || getLikes().includes(recipeId)) return;
+
+        isProcessing = true;
+        btn.classList.add("opacity-70");
 
         const cleanId = recipeId.replace(/^(db-|local-)/, "");
         const logGroup = `Лайк [recipeId=${recipeId}, cleanId=${cleanId}]`;
@@ -66,6 +68,9 @@ const { recipeId } = Astro.props;
         try {
           const res = await fetch(`/api-proxy/incrementLike/${encodeURIComponent(cleanId)}`, {
             method: "PATCH",
+            headers: {
+              "Content-Type": "application/json"
+            }
           });
 
           const responseText = await res.text();
@@ -84,15 +89,19 @@ const { recipeId } = Astro.props;
             }
             // Визуально фиксируем
             applyLikeState(true);
+            btn.classList.remove("opacity-70");
+            isProcessing = false;
             console.log(`%c${logGroup} — [УСПЕХ]%c\nЛайк сохранен локально и на сервере!`, "color:#16a34a;font-weight:bold", "color:inherit");
           } else {
-            // Если ошибка (например 404), разблокируем
-            btn.disabled = false;
+            // Если ошибка
+            btn.classList.remove("opacity-70");
+            isProcessing = false;
             console.error(`%c${logGroup} — [ОШИБКА БЭКЕНДА]%c\nСервер вернул статус ${res.status}. Жалуйтесь бэкендеру!`, "color:#dc2626;font-weight:bold", "color:inherit");
             alert("Не удалось поставить лайк. Сервер ответил ошибкой.");
           }
         } catch (err) {
-          btn.disabled = false;
+          btn.classList.remove("opacity-70");
+          isProcessing = false;
           console.error(`%c${logGroup} — [СЕТЕВАЯ ОШИБКА]%c\nБэкенд недоступен или CORS блокирует запрос.`, "color:#dc2626;font-weight:bold", "color:inherit", err);
           alert("Не удалось поставить лайк из-за сетевой ошибки. Проверьте подключение к интернету или работу сервера.");
         }
