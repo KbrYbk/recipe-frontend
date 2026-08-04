@@ -18,7 +18,9 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
 ---
 
 <div class="group" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
-  <div class="glass-border-3d bg-card-bg/60 backdrop-blur-md rounded-3xl p-6 shadow-xl shadow-black/15 transition-all hover:shadow-2xl hover:shadow-black/20 print:border-0 print:bg-transparent print:p-0 print:shadow-none">
+  <div
+    class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-all hover:shadow-2xl hover:shadow-black/20 print:border-0 print:bg-transparent print:p-0 print:shadow-none"
+  >
     <div class="mb-6 flex w-full flex-wrap items-baseline justify-between gap-y-2">
       <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
         <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" />
@@ -73,7 +75,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       </div>
     </div>
 
-    <Button data-copy-ingredients variant="outline" fullWidth class="mt-6 flex w-full h-11 text-sm font-semibold !px-2">
+    <Button data-copy-ingredients variant="outline" fullWidth class="mt-6 flex h-11 w-full px-2! text-sm font-semibold">
       <Icon name="lucide:copy" slot="icon-left" class="h-4 w-4 shrink-0" />
       Копировать список
     </Button>

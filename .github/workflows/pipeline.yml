@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+on:
+  # Запускаем pipeline при пуше в ветку main
+  push:
+    branches: [main]
+  # А также при создании Pull Request в ветку main
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Джоба 1: Проверка кода (Continuous Integration)
+  ci:
+    name: Check and Build
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Скачиваем код на виртуальный сервер GitHub
+      - name: Checkout code
+        uses: actions/checkout@v6.0.3
+
+      # 2. Устанавливаем Node.js той версии, которая указана в .nvmrc
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      # 3. Устанавливаем зависимости чисто и быстро
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Проверяем TypeScript типы Astro. Если тут ошибка - процесс остановится.
+      - name: Check types
+        run: npm run astro check
+
+      # 5. Пробуем собрать проект. Если сборка падает, мы узнаем об этом здесь, а не на боевом сервере.
+      - name: Test Build
+        run: npm run build
+
+  # Джоба 2: Деплой на боевой сервер (Continuous Deployment)
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    # ВАЖНО: деплой ждет успешного завершения джобы "ci". Если ci упал, деплой отменяется!
+    needs: ci
+    # Деплоим только если это пуш в ветку main (не при Pull Request)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # Загружаем окружение Node/NVM
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            # Переходим в папку проекта
+            cd /var/www/recipe-frontend || exit
+            # Синхронизируем код
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Используем ci для более быстрой и чистой установки
+            npm ci 
+            export SITE=https://swageda.ru
+            export HOST=127.0.0.1
+            export PORT=4321 
+            export NODE_TLS_REJECT_UNAUTHORIZED=0
+
+            npm run build
+
+            pm2 delete recipe-frontend || true
+            HOST=127.0.0.1 PORT=4321 NODE_ENV=production NODE_TLS_REJECT_UNAUTHORIZED=0 pm2 start dist/server/entry.mjs --name recipe-frontend
+            pm2 save
+
+            sleep 5
+            pm2 status recipe-frontend

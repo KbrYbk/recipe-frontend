@@ -3,7 +3,7 @@ import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
 ---
 
-<header class="site-header glass-border-3d bg-card-bg/60 sticky top-0 z-50 backdrop-blur-md shadow-sm shadow-black/15 transition-transform duration-300 will-change-transform print:hidden">
+<header class="site-header glass-border-3d bg-card-bg/60 sticky top-0 z-50 shadow-sm shadow-black/15 backdrop-blur-md transition-transform duration-300 will-change-transform print:hidden">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
     <a href="/" class="text-brand flex items-center gap-2 text-2xl font-bold transition-transform active:scale-95 md:text-3xl" aria-label="SwagEda — на главную">
       <img src="/favicon.svg" alt="" class="h-7 w-7 md:h-8 md:w-8" aria-hidden="true" />
@@ -17,7 +17,7 @@ import Button from "../ui/Button.astro";
       <a href="/random" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Показать случайный рецепт">Удиви меня</a>
       <div class="bg-line h-6 w-px"></div>
 
-      <Button variant="outline" size="icon" id="themeToggle" class="bg-page-bg flex-shrink-0" aria-label="Переключить тему">
+      <Button variant="outline" size="icon" id="themeToggle" class="bg-page-bg shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-5 w-5" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-5 w-5" aria-hidden="true" />
       </Button>
@@ -25,7 +25,7 @@ import Button from "../ui/Button.astro";
 
     <!-- Mobile Controls -->
     <div class="flex items-center gap-3 md:hidden">
-      <Button variant="ghost" size="icon" id="themeToggleMobile" class="flex-shrink-0" aria-label="Переключить тему">
+      <Button variant="ghost" size="icon" id="themeToggleMobile" class="shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-6 w-6" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-6 w-6" aria-hidden="true" />
       </Button>

@@ -9,6 +9,10 @@ interface Props {
     description: string;
     main_image?: string;
     cooking_time: number;
+    user?: { name: string };
+    difficulty?: string;
+    average_rating?: number;
+    likes_count?: number;
   };
 }
 
@@ -20,8 +24,10 @@ const hasImage = !!main_image && main_image !== "";
 const imageAlt = `Фото блюда: ${title}`;
 ---
 
-<article class="group bg-card-bg/60 glass-border-3d relative flex h-full flex-col overflow-hidden rounded-[2rem] shadow-lg shadow-black/15 backdrop-blur-md transition-all hover:shadow-xl hover:shadow-black/20 focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2">
-  <div class="relative flex h-48 w-full items-center justify-center overflow-hidden bg-page-bg">
+<article
+  class="group bg-card-bg/60 glass-border-3d focus-within:ring-brand relative flex h-full flex-col overflow-hidden rounded-4xl shadow-lg shadow-black/15 backdrop-blur-md transition-all focus-within:ring-2 focus-within:ring-offset-2 hover:shadow-xl hover:shadow-black/20"
+>
+  <div class="bg-page-bg relative flex h-48 w-full items-center justify-center overflow-hidden">
     {
       hasImage ? (
         <Image
@@ -38,13 +44,12 @@ const imageAlt = `Фото блюда: ${title}`;
     }
 
     <div class={`fallback ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">
-      <Icon name="lucide:utensils-crossed" class="h-16 w-16 text-text-muted opacity-20" />
+      <Icon name="lucide:utensils-crossed" class="text-text-muted h-16 w-16 opacity-20" />
     </div>
-
   </div>
 
   <div class="flex grow flex-col p-6">
-    <h2 class="text-text-main mb-3 line-clamp-2 text-xl font-bold transition-colors group-hover:text-brand md:text-2xl">
+    <h2 class="text-text-main group-hover:text-brand mb-3 line-clamp-2 text-xl font-bold transition-colors md:text-2xl">
       <a href={`/recipe/${id}`} class="after:absolute after:inset-0 focus:outline-none">
         {title}
       </a>
@@ -54,53 +59,58 @@ const imageAlt = `Фото блюда: ${title}`;
       {description}
     </p>
 
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-text-muted">
+    <div class="text-text-muted mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
       {
         recipe.user?.name ? (
-          <div class="flex items-center gap-1.5 font-medium shrink-0">
-            <div class="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-brand">
+          <div class="flex shrink-0 items-center gap-1.5 font-medium">
+            <div class="bg-brand/10 text-brand flex h-6 w-6 items-center justify-center rounded-full">
               <Icon name="lucide:user" class="h-3.5 w-3.5" aria-hidden="true" />
             </div>
             <span class="line-clamp-1">{recipe.user.name}</span>
           </div>
-        ) : <div class="shrink-0"></div>
+        ) : (
+          <div class="shrink-0" />
+        )
       }
-      
+
       <div class="flex items-center gap-2">
         {
           recipe.difficulty && (
-            <div class={`glass-border-3d flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-[10px] sm:text-xs font-bold tracking-wide uppercase shadow-sm shadow-black/15 ${
-              recipe.difficulty === "hard" ? "bg-red-500/10 text-red-500" : 
-              recipe.difficulty === "medium" ? "bg-amber-500/10 text-amber-500" : 
-              "bg-emerald-500/10 text-emerald-500"
-            }`}>
+            <div
+              class={`glass-border-3d flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-[10px] font-bold tracking-wide uppercase shadow-sm shadow-black/15 sm:text-xs ${
+                recipe.difficulty === "hard" ? "bg-red-500/10 text-red-500" : recipe.difficulty === "medium" ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"
+              }`}
+            >
               <Icon name="lucide:flame" class="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
               {recipe.difficulty === "hard" ? "Сложно" : recipe.difficulty === "medium" ? "Средне" : "Легко"}
             </div>
           )
         }
-        
-        <div class="glass-border-3d flex items-center gap-1.5 rounded-2xl bg-page-bg/60 px-2.5 py-1 text-[10px] sm:text-xs font-bold text-text-main shadow-sm shadow-black/15" aria-label={`Время приготовления: ${cooking_time} минут`}>
-          <Icon name="lucide:clock" class="h-3 w-3 sm:h-3.5 sm:w-3.5 text-brand" aria-hidden="true" />
+
+        <div
+          class="glass-border-3d bg-page-bg/60 text-text-main flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-[10px] font-bold shadow-sm shadow-black/15 sm:text-xs"
+          aria-label={`Время приготовления: ${cooking_time} минут`}
+        >
+          <Icon name="lucide:clock" class="text-brand h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           <span class="tabular-nums">{cooking_time} мин</span>
         </div>
       </div>
     </div>
 
-    <div class="mt-auto flex items-center justify-between border-t border-line pt-4 text-sm">
+    <div class="border-line mt-auto flex items-center justify-between border-t pt-4 text-sm">
       <div class="flex items-center gap-3">
         {
-          recipe.average_rating > 0 && (
-            <div class="flex items-center gap-1.5 font-bold text-amber-500" aria-label={`Рейтинг: ${recipe.average_rating}`}>
-              <Icon name="lucide:star" class="h-5 w-5 fill-current" aria-hidden="true" />
-              <span class="text-base tabular-nums">{recipe.average_rating}</span>
+          (recipe.average_rating ?? 0) > 0 && (
+            <div class="glass-border-3d flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 backdrop-blur-md">
+              <Icon name="lucide:star" class="text-brand h-4 w-4" />
+              <span class="text-sm font-bold text-white">{recipe.average_rating}</span>
             </div>
           )
         }
 
         {
-          recipe.likes_count > 0 && (
-            <div class="flex items-center gap-1.5 font-bold text-rose-500" aria-label={`Лайков: ${recipe.likes_count}`}>
+          (recipe.likes_count ?? 0) > 0 && (
+            <div class="glass-border-3d flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 backdrop-blur-md" aria-label={`Лайков: ${recipe.likes_count}`}>
               <Icon name="lucide:heart" class="h-5 w-5 fill-current" aria-hidden="true" />
               <span class="text-base tabular-nums">{recipe.likes_count}</span>
             </div>
@@ -108,7 +118,7 @@ const imageAlt = `Фото блюда: ${title}`;
         }
       </div>
 
-      <div class="text-brand flex shrink-0 items-center gap-1 font-bold rounded-xl bg-brand/10 px-3 py-1.5 transition-colors group-hover:bg-brand group-hover:text-white">
+      <div class="text-brand bg-brand/10 group-hover:bg-brand flex shrink-0 items-center gap-1 rounded-xl px-3 py-1.5 font-bold transition-colors group-hover:text-white">
         <span class="leading-none">Рецепт</span>
         <Icon name="lucide:arrow-right" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
       </div>

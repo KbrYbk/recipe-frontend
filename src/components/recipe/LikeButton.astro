@@ -3,13 +3,9 @@ import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
 const { recipeId } = Astro.props;
 ---
+
 <like-button data-id={recipeId} class="block w-full sm:w-auto">
-  <Button
-    variant="outline"
-    aria-label="Лайкнуть рецепт"
-    aria-pressed="false"
-    class="like-btn w-full sm:w-auto h-11 text-sm px-2 sm:px-4"
-  >
+  <Button variant="outline" aria-label="Лайкнуть рецепт" aria-pressed="false" class="like-btn h-11 w-full px-2 text-sm sm:w-auto sm:px-4">
     <Icon name="lucide:heart" slot="icon-left" class="heart-icon h-4 w-4 shrink-0" aria-hidden="true" />
     <span class="button-label">Лайк</span>
   </Button>
@@ -18,17 +14,33 @@ const { recipeId } = Astro.props;
 <script>
   class LikeButton extends HTMLElement {
     connectedCallback() {
-      const btn = this.querySelector('.like-btn') as HTMLButtonElement;
-      const icon = this.querySelector('.heart-icon');
-      const label = this.querySelector('.button-label');
+      const btn = this.querySelector(".like-btn") as HTMLButtonElement;
+      const icon = this.querySelector(".heart-icon");
+      const label = this.querySelector(".button-label");
       const recipeId = this.dataset.id;
       const key = "liked_recipes";
 
       if (!btn || !recipeId) return;
 
       const getLikes = () => {
-        try { return JSON.parse(localStorage.getItem(key) || "[]"); } 
-        catch { return []; }
+        try {
+          return JSON.parse(localStorage.getItem(key) || "[]");
+        } catch {
+          return [];
+        }
+      };
+
+      const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
+        const toast = document.createElement("div");
+        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-xl shadow-black/20 text-white z-[100] transition-opacity duration-300 font-medium ${
+          type === "success" ? "bg-green-500" : type === "error" ? "bg-rose-500" : "bg-blue-500"
+        }`;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
       };
 
       const applyLikeState = (active: boolean) => {
@@ -59,25 +71,21 @@ const { recipeId } = Astro.props;
         const cleanId = recipeId.replace(/^(db-|local-)/, "");
         const logGroup = `Лайк [recipeId=${recipeId}, cleanId=${cleanId}]`;
 
-        console.log(
-          `%c${logGroup}%c\n→ Отправка PATCH-запроса на /api-proxy/incrementLike/${cleanId}`,
-          "color:#ec4899;font-weight:bold",
-          "color:inherit"
-        );
+        console.log(`%c${logGroup}%c\n→ Отправка PATCH-запроса на /api-proxy/incrementLike/${cleanId}`, "color:#ec4899;font-weight:bold", "color:inherit");
 
         try {
           const res = await fetch(`/api-proxy/incrementLike/${encodeURIComponent(cleanId)}`, {
             method: "PATCH",
             headers: {
-              "Content-Type": "application/json"
-            }
+              "Content-Type": "application/json",
+            },
           });
 
           const responseText = await res.text();
           console.log(
             `%c${logGroup} — ответ сервера%c\n→ HTTP ${res.status} ${res.statusText}\n→ ok: ${res.ok}\n→ тело: ${responseText}`,
             res.ok ? "color:#16a34a;font-weight:bold" : "color:#dc2626;font-weight:bold",
-            "color:inherit"
+            "color:inherit",
           );
 
           if (res.ok) {
@@ -91,23 +99,24 @@ const { recipeId } = Astro.props;
             applyLikeState(true);
             btn.classList.remove("opacity-70");
             isProcessing = false;
+            showToast("Рецепт добавлен в понравившиеся ❤️", "success");
             console.log(`%c${logGroup} — [УСПЕХ]%c\nЛайк сохранен локально и на сервере!`, "color:#16a34a;font-weight:bold", "color:inherit");
           } else {
             // Если ошибка
             btn.classList.remove("opacity-70");
             isProcessing = false;
             console.error(`%c${logGroup} — [ОШИБКА БЭКЕНДА]%c\nСервер вернул статус ${res.status}. Жалуйтесь бэкендеру!`, "color:#dc2626;font-weight:bold", "color:inherit");
-            alert("Не удалось поставить лайк. Сервер ответил ошибкой.");
+            showToast("Не удалось поставить лайк. Ошибка сервера.", "error");
           }
         } catch (err) {
           btn.classList.remove("opacity-70");
           isProcessing = false;
           console.error(`%c${logGroup} — [СЕТЕВАЯ ОШИБКА]%c\nБэкенд недоступен или CORS блокирует запрос.`, "color:#dc2626;font-weight:bold", "color:inherit", err);
-          alert("Не удалось поставить лайк из-за сетевой ошибки. Проверьте подключение к интернету или работу сервера.");
+          showToast("Сетевая ошибка. Проверьте подключение.", "error");
         }
       });
     }
   }
 
-  customElements.define('like-button', LikeButton);
+  customElements.define("like-button", LikeButton);
 </script>

@@ -133,7 +133,7 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
         <div>
           {
             categoryId ? (
-              <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: categories.find((c) => String(c.id) === String(categoryId))?.title || "Категория" }]} />
+              <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: categories.find((c: any) => String(c.id) === String(categoryId))?.title || "Категория" }]} />
             ) : (
               <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }]} />
             )
@@ -145,7 +145,7 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
             Показано {filteredRecipes.length} из {finalTotal} рецептов
           </p>
         </div>
-        <div class="w-full md:w-[30rem] lg:w-[36rem]">
+        <div class="w-full md:w-120 lg:w-xl">
           <SearchBar initialQuery={qRaw} preserveParams={{ difficulty: difficultyFilter }} />
         </div>
       </div>
@@ -155,167 +155,177 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
     <div class="mb-6 flex flex-wrap items-center gap-3">
       <span class="text-text-muted text-sm font-semibold">Сортировка:</span>
       <div class="flex flex-wrap gap-2" id="sort-filters">
-        {sortOptions.map((s) => (
-          <Button
-            href={recipesHref({ sort: s.value })}
-            variant={sortParam === s.value ? "secondary" : "outline"}
-            size="xs"
-            class={sortParam === s.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
-          >
-            {s.label}
-          </Button>
-        ))}
+        {
+          sortOptions.map((s) => (
+            <Button
+              href={recipesHref({ sort: s.value })}
+              variant={sortParam === s.value ? "secondary" : "outline"}
+              size="sm"
+              class={sortParam === s.value ? "bg-brand/10! text-brand! ring-brand/30 shadow-md ring-1 shadow-black/15" : "text-text-main font-medium"}
+            >
+              {s.label}
+            </Button>
+          ))
+        }
       </div>
     </div>
 
     <div class="flex flex-col gap-8 lg:flex-row">
       <aside class="w-full shrink-0 lg:w-72">
-        <div class="glass-border-3d bg-card-bg/60 backdrop-blur-md lg:sticky lg:top-24 lg:max-h-[calc(100vh-10rem)] lg:flex lg:flex-col rounded-3xl p-6 shadow-xl shadow-black/15 transition-shadow hover:shadow-2xl hover:shadow-black/20">
+        <div
+          class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-shadow hover:shadow-2xl hover:shadow-black/20 lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col"
+        >
           <h2 class="text-text-main mb-6 flex items-center gap-2 text-xl font-bold">
             <Icon name="lucide:filter" class="text-brand h-5 w-5" />
             Фильтры
           </h2>
 
           <div class="filter-scroll-area flex-1 lg:overflow-y-auto lg:overscroll-contain" data-filters-scroll tabindex="0" role="region" aria-label="Фильтры рецептов, прокрутите чтобы увидеть все">
-          <div class="space-y-6">
-            <!-- Категории — аккордеон -->
-            <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
-              <ul class="space-y-1" id="category-filters" role="list">
-                <li>
-                  <Button
-                    href={recipesHref({ categoryId: undefined })}
-                    variant="ghost"
-                    class={`w-full justify-start text-left ${!categoryId && !categoryLegacy ? "!bg-brand/10 text-brand font-bold" : "text-text-muted"}`}
-                  >
-                    Все
-                  </Button>
-                </li>
-                {
-                  categories.slice(0, VISIBLE_CATEGORIES).map((c: any) => (
-                    <li>
-                      <Button
-                        href={recipesHref({ categoryId: c.id })}
-                        variant="ghost"
-                        class={`w-full justify-start text-left ${String(categoryId) === String(c.id) ? "!bg-brand/10 text-brand font-bold" : "text-text-muted"}`}
-                      >
-                        {c.title}
-                      </Button>
-                    </li>
-                  ))
-                }
-              </ul>
-
-              {categories.length > VISIBLE_CATEGORIES && (
-                <div class="mt-2">
-                  <Button
-                    variant="ghost"
-                    class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors"
-                    data-category-toggle
-                    aria-expanded="false"
-                  >
-                    <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron slot="icon-left" />
-                    Ещё {categories.length - VISIBLE_CATEGORIES} категорий
-                  </Button>
-                  <ul class="mt-2 hidden space-y-1" data-category-hidden>
-                    {
-                      categories.slice(VISIBLE_CATEGORIES).map((c: any) => (
-                        <li>
-                          <Button
-                            href={recipesHref({ categoryId: c.id })}
-                            variant="ghost"
-                            class={`w-full justify-start text-left ${String(categoryId) === String(c.id) ? "!bg-brand/10 text-brand font-bold" : "text-text-muted"}`}
-                          >
-                            {c.title}
-                          </Button>
-                        </li>
-                      ))
-                    }
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            <!-- Сложность -->
-            <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
-              <div class="flex flex-wrap gap-2" id="difficulty-filters">
-                {
-                  difficultyMap.map((d) => (
+            <div class="space-y-6">
+              <!-- Категории — аккордеон -->
+              <div>
+                <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
+                <ul class="space-y-1" id="category-filters" role="list">
+                  <li>
                     <Button
-                      href={recipesHref({ difficulty: d.value })}
-                      variant={difficultyFilter === d.value ? "secondary" : "outline"}
-                      size="xs"
-                      class={difficultyFilter === d.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
+                      href={recipesHref({ categoryId: undefined })}
+                      variant="ghost"
+                      class={`w-full justify-start text-left ${!categoryId && !categoryLegacy ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}
                     >
-                      {d.label}
+                      Все
                     </Button>
-                  ))
+                  </li>
+                  {
+                    categories.slice(0, VISIBLE_CATEGORIES).map((c: any) => (
+                      <li>
+                        <Button
+                          href={recipesHref({ categoryId: c.id })}
+                          variant="ghost"
+                          class={`w-full justify-start text-left ${String(categoryId) === String(c.id) ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}
+                        >
+                          {c.title}
+                        </Button>
+                      </li>
+                    ))
+                  }
+                </ul>
+
+                {
+                  categories.length > VISIBLE_CATEGORIES && (
+                    <div class="mt-2">
+                      <Button
+                        variant="ghost"
+                        class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors"
+                        data-category-toggle
+                        aria-expanded="false"
+                      >
+                        <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron slot="icon-left" />
+                        Ещё {categories.length - VISIBLE_CATEGORIES} категорий
+                      </Button>
+                      <ul class="mt-2 hidden space-y-1" data-category-hidden>
+                        {categories.slice(VISIBLE_CATEGORIES).map((c: any) => (
+                          <li>
+                            <Button
+                              href={recipesHref({ categoryId: c.id })}
+                              variant="ghost"
+                              class={`w-full justify-start text-left ${String(categoryId) === String(c.id) ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}
+                            >
+                              {c.title}
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )
                 }
               </div>
-            </div>
 
-            <!-- Время приготовления -->
-            <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Время</h3>
-              <div class="flex flex-wrap gap-2" id="time-filters">
-                {timeOptions.map((t) => (
-                  <Button
-                    href={recipesHref({ maxTime: t.value })}
-                    variant={maxTimeParam === t.value ? "secondary" : "outline"}
-                    size="xs"
-                    class={maxTimeParam === t.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
-                  >
-                    {t.label}
-                  </Button>
-                ))}
+              <!-- Сложность -->
+              <div>
+                <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
+                <div class="flex flex-wrap gap-2" id="difficulty-filters">
+                  {
+                    difficultyMap.map((d) => (
+                      <Button
+                        href={recipesHref({ difficulty: d.value })}
+                        variant={difficultyFilter === d.value ? "secondary" : "outline"}
+                        size="sm"
+                        class={difficultyFilter === d.value ? "bg-brand/10! text-brand! ring-brand/30 shadow-md ring-1 shadow-black/15" : "text-text-main font-medium"}
+                      >
+                        {d.label}
+                      </Button>
+                    ))
+                  }
+                </div>
               </div>
-            </div>
 
-            <!-- Рейтинг -->
-            <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Рейтинг</h3>
-              <div class="flex flex-wrap gap-2" id="rating-filters">
-                {ratingOptions.map((r) => (
-                  <Button
-                    href={recipesHref({ minRating: r.value })}
-                    variant={minRatingParam === r.value ? "secondary" : "outline"}
-                    size="xs"
-                    class={minRatingParam === r.value ? "!bg-brand/10 !text-brand shadow-md shadow-black/15 ring-1 ring-brand/30" : "text-text-main font-medium"}
-                  >
-                    {r.label}
-                  </Button>
-                ))}
+              <!-- Время приготовления -->
+              <div>
+                <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Время</h3>
+                <div class="flex flex-wrap gap-2" id="time-filters">
+                  {
+                    timeOptions.map((t) => (
+                      <Button
+                        href={recipesHref({ maxTime: t.value })}
+                        variant={maxTimeParam === t.value ? "secondary" : "outline"}
+                        size="sm"
+                        class={maxTimeParam === t.value ? "bg-brand/10! text-brand! ring-brand/30 shadow-md ring-1 shadow-black/15" : "text-text-main font-medium"}
+                      >
+                        {t.label}
+                      </Button>
+                    ))
+                  }
+                </div>
               </div>
+
+              <!-- Рейтинг -->
+              <div>
+                <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Рейтинг</h3>
+                <div class="flex flex-wrap gap-2" id="rating-filters">
+                  {
+                    ratingOptions.map((r) => (
+                      <Button
+                        href={recipesHref({ minRating: r.value })}
+                        variant={minRatingParam === r.value ? "secondary" : "outline"}
+                        size="sm"
+                        class={minRatingParam === r.value ? "bg-brand/10! text-brand! ring-brand/30 shadow-md ring-1 shadow-black/15" : "text-text-main font-medium"}
+                      >
+                        {r.label}
+                      </Button>
+                    ))
+                  }
+                </div>
+              </div>
+
+              <!-- Сброс фильтров -->
+              {
+                (difficultyFilter !== "all" || maxTimeParam || minRatingParam || categoryId) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    fullWidth
+                    href={recipesHref({ difficulty: "all", maxTime: "", minRating: "", categoryId: undefined })}
+                    class="mt-4 bg-rose-500/10! text-rose-500! transition-colors hover:bg-rose-500/20!"
+                  >
+                    <Icon name="lucide:x" class="h-4 w-4" slot="icon-left" />
+                    Сбросить фильтры
+                  </Button>
+                )
+              }
+
+              <AdSlot id="R-A-19056160-18" className="hidden lg:block" />
             </div>
-
-            <!-- Сброс фильтров -->
-            {(difficultyFilter !== "all" || maxTimeParam || minRatingParam || categoryId) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                fullWidth
-                href={recipesHref({ difficulty: "all", maxTime: "", minRating: "", categoryId: undefined })}
-                class="mt-4 !bg-rose-500/10 !text-rose-500 hover:!bg-rose-500/20 transition-colors"
-              >
-                <Icon name="lucide:x" class="h-4 w-4" slot="icon-left" />
-                Сбросить фильтры
-              </Button>
-            )}
-
-            <AdSlot id="R-A-19056160-18" className="hidden lg:block" />
-          </div>
           </div>
         </div>
       </aside>
 
-      <div class="grow min-w-0">
+      <div class="min-w-0 grow">
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
           {
             filteredRecipes.map((recipe, index) => (
               <>
                 {index === 2 && (
-                  <div class="md:col-span-2 print:hidden min-w-0" data-ad-wrapper>
+                  <div class="min-w-0 md:col-span-2 print:hidden" data-ad-wrapper>
                     <AdSlot id="R-A-19056160-24" />
                   </div>
                 )}
@@ -369,7 +379,7 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
       hidden.classList.toggle("hidden", !isHidden);
       toggle.setAttribute("aria-expanded", String(isHidden));
       if (chevron) {
-        chevron.style.transform = isHidden ? "rotate(180deg)" : "rotate(0deg)";
+        (chevron as HTMLElement).style.transform = isHidden ? "rotate(180deg)" : "rotate(0deg)";
       }
     });
   }
@@ -379,7 +389,10 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
     document.querySelectorAll("[data-ad-wrapper]").forEach((wrapper) => {
       setTimeout(() => {
         const adSlot = wrapper.querySelector(".ad-slot");
-        if (!adSlot) { wrapper.remove(); return; }
+        if (!adSlot) {
+          wrapper.remove();
+          return;
+        }
         const yandexDiv = adSlot.querySelector("div[id^='yandex_rtb_']");
         if (!yandexDiv || yandexDiv.children.length === 0) {
           wrapper.remove();

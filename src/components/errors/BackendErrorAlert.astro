@@ -12,29 +12,25 @@ interface Props {
 const { message = "", showDetails = true } = Astro.props;
 ---
 
-<Surface as="section" class="my-8 bg-accent-soft" role="alert" aria-live="polite">
+<Surface as="section" class="bg-accent-soft my-8" role="alert" aria-live="polite">
   <div class="flex flex-col gap-6 md:flex-row md:items-center">
-    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+    <div class="bg-brand/10 text-brand flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl">
       <Icon name="lucide:chef-hat" class="h-10 w-10 animate-pulse" aria-hidden="true" />
     </div>
-    <div class="flex-grow">
-      <h3 class="text-xl font-bold text-text-main md:text-2xl">
-        Ой, временные трудности на кухне!
-      </h3>
-      <div class="mt-2 text-base text-text-muted leading-relaxed">
+    <div class="grow">
+      <h3 class="text-text-main text-xl font-bold md:text-2xl">Ой, временные трудности на кухне!</h3>
+      <div class="text-text-muted mt-2 text-base leading-relaxed">
         <slot>Наш сайт сейчас испытывает небольшие технические неполадки. Мы уже вовсю «колдуем» над плитой и исправляем проблему — возвращайтесь совсем скоро.</slot>
       </div>
 
-      {showDetails && message && (
-        <details class="mt-4 border-t border-brand/10 pt-4 text-xs text-text-muted">
-          <summary class="cursor-pointer font-medium transition-colors hover:text-brand focus:outline-none">
-            Технические детали (для отладки)
-          </summary>
-          <div class="glass-border-3d mt-2 rounded-xl bg-card-bg p-3 font-mono text-[11px] leading-relaxed break-all text-text-main shadow-inner shadow-black/5">
-            Код ошибки: {message}
-          </div>
-        </details>
-      )}
+      {
+        showDetails && message && (
+          <details class="border-brand/10 text-text-muted mt-4 border-t pt-4 text-xs">
+            <summary class="hover:text-brand cursor-pointer font-medium transition-colors focus:outline-none">Технические детали (для отладки)</summary>
+            <div class="glass-border-3d bg-card-bg text-text-main mt-2 rounded-xl p-3 font-mono text-[11px] leading-relaxed break-all shadow-inner shadow-black/5">Код ошибки: {message}</div>
+          </details>
+        )
+      }
     </div>
   </div>
 </Surface>

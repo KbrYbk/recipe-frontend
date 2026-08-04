@@ -7,6 +7,11 @@ const BACKEND_BASE = getBackendBaseUrl();
 /**
  * Хелпер для сборки заголовков.
  * Он берет заголовки от клиента (браузера) и готовит их для отправки на Laravel-бэкенд.
+ *
+ * @param {Request} request - Исходный HTTP-запрос от клиента
+ * @param {string} clientAddress - IP-адрес клиента (пользователя)
+ * @param {string} backendHost - Домен целевого бэкенда
+ * @returns {Headers} Сформированные заголовки для безопасного проксирования
  */
 function buildProxyHeaders(request: Request, clientAddress: string, backendHost: string): Headers {
   const headers = new Headers();
@@ -19,12 +24,12 @@ function buildProxyHeaders(request: Request, clientAddress: string, backendHost:
   }
 
   // 2. Говорим бэкенду, к какому домену мы реально обращаемся
-  headers.set('Host', backendHost);
+  headers.set("Host", backendHost);
 
   // 3. Передаем реальный IP-адрес пользователя (иначе Laravel будет думать, что все запросы идут от Astro)
-  const xForwardedFor = request.headers.get('x-forwarded-for') || request.headers.get('remote_addr') || clientAddress;
+  const xForwardedFor = request.headers.get("x-forwarded-for") || request.headers.get("remote_addr") || clientAddress;
   if (xForwardedFor) {
-    headers.set('X-Forwarded-For', xForwardedFor);
+    headers.set("X-Forwarded-For", xForwardedFor);
   }
 
   // 4. Подшиваем секретный ключ проекта из .env
@@ -38,6 +43,11 @@ function buildProxyHeaders(request: Request, clientAddress: string, backendHost:
 
 /**
  * Главная функция проксирования. Отправляет запрос на бэкенд и возвращает ответ.
+ *
+ * @param {any} context - Контекст Astro (содержит clientAddress и locals)
+ * @param {Request} request - Исходный HTTP-запрос
+ * @param {string} targetUrl - Полный URL бэкенда (Laravel) для проксирования
+ * @returns {Promise<Response>} Ответ от бэкенда для прозрачной отправки клиенту
  */
 async function proxyRequest(context: any, request: Request, targetUrl: string): Promise<Response> {
   // Вытаскиваем хост (домен + порт) из целевого URL
@@ -50,27 +60,27 @@ async function proxyRequest(context: any, request: Request, targetUrl: string): 
     headers: headersToSend,
     // Флаг duplex: 'half' обязателен в Node.js 18+ для передачи потоков (Streams)
     // @ts-ignore
-    duplex: 'half', 
+    duplex: "half",
   };
 
   // ПЕРФОРМАНС-ОПТИМИЗАЦИЯ:
   // Если это POST/PUT запрос, мы не скачиваем тело в память (как было раньше с .text()),
   // а пробрасываем request.body (Stream) напрямую на бэкенд. Это экономит RAM и ускоряет работу.
-  if (request.method !== 'GET' && request.method !== 'HEAD' && request.body) {
+  if (request.method !== "GET" && request.method !== "HEAD" && request.body) {
     fetchOptions.body = request.body;
   }
 
   try {
     // Стучимся на Laravel
     const response = await fetch(targetUrl, fetchOptions);
-    
+
     if (!response.ok && import.meta.env.DEV) {
       console.error(
         `\n [ОШИБКА БЭКЕНДА В ПРОКСИ: ${response.status} ${response.statusText}]\n` +
-        `Узел: Astro Middleware (Прокси)\n` +
-        `Запрос: ${request.method} ${targetUrl}\n` +
-        `Причина: Бэкенд (Laravel) ответил ошибкой HTTP ${response.status}.\n` +
-        `Что сказать бэкендеру: "Астро-прокси успешно достучался до твоего сервера, но твой сервер вернул статус ${response.status} на запрос ${request.method} ${targetUrl}. Проверь свои логи (storage/logs/laravel.log)!"\n`
+          `Узел: Astro Middleware (Прокси)\n` +
+          `Запрос: ${request.method} ${targetUrl}\n` +
+          `Причина: Бэкенд (Laravel) ответил ошибкой HTTP ${response.status}.\n` +
+          `Что сказать бэкендеру: "Астро-прокси успешно достучался до твоего сервера, но твой сервер вернул статус ${response.status} на запрос ${request.method} ${targetUrl}. Проверь свои логи (storage/logs/laravel.log)!"\n`,
       );
     }
 
@@ -85,11 +95,11 @@ async function proxyRequest(context: any, request: Request, targetUrl: string): 
     if (import.meta.env.DEV) {
       console.error(
         `\n [КРИТИЧЕСКАЯ ОШИБКА СЕТИ БЭКЕНДА (ПРОКСИ)]\n` +
-        `Узел: Astro Middleware (Прокси)\n` +
-        `Запрос: ${request.method} ${targetUrl}\n` +
-        `Причина: Бэкенд вообще не ответил. Вероятно, сервер выключен, упал процесс PHP/Nginx, закрыт порт или невалидный SSL.\n` +
-        `Что сказать бэкендеру: "Твой сервер полностью недоступен на адресе ${targetUrl}. Бэкенд упал или порт закрыт! Подними сервер!"\n`,
-        error
+          `Узел: Astro Middleware (Прокси)\n` +
+          `Запрос: ${request.method} ${targetUrl}\n` +
+          `Причина: Бэкенд вообще не ответил. Вероятно, сервер выключен, упал процесс PHP/Nginx, закрыт порт или невалидный SSL.\n` +
+          `Что сказать бэкендеру: "Твой сервер полностью недоступен на адресе ${targetUrl}. Бэкенд упал или порт закрыт! Подними сервер!"\n`,
+        error,
       );
     }
     return new Response("Bad Gateway: Backend is unreachable", { status: 502 });
@@ -97,7 +107,12 @@ async function proxyRequest(context: any, request: Request, targetUrl: string): 
 }
 
 /**
- * Точка входа в Middleware. Astro пропускает через нее КАЖДЫЙ запрос.
+ * Точка входа в Middleware. Astro пропускает через нее КАЖДЫЙ запрос к серверу.
+ * Выполняет роль API Gateway и Proxy.
+ *
+ * @param {any} context - Общий контекст выполнения Astro-запроса
+ * @param {Function} next - Функция для передачи управления следующему middleware или рендереру
+ * @returns {Promise<Response>} Финальный HTTP-ответ
  */
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url, request } = context;
@@ -108,7 +123,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const cleanPath = url.pathname.replace(/^\/api-proxy/, "");
     // Проверяем, есть ли уже /api в базовом URL, чтобы не было дублей (/api/api/...)
     const apiPath = BACKEND_BASE.endsWith("/api") ? "" : "/api";
-    
+
     return proxyRequest(context, request, `${BACKEND_BASE}${apiPath}${cleanPath}${url.search}`);
   }
 

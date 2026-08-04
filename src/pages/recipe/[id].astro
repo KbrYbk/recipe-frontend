@@ -61,7 +61,7 @@ if (id?.startsWith("local-")) {
 if (!recipe) {
   Astro.response.status = 404;
 } else {
-  Astro.response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=3600');
+  Astro.response.headers.set("Cache-Control", "s-maxage=60, stale-while-revalidate=3600");
 }
 
 const title = String(recipe?.title ?? "");
@@ -173,7 +173,7 @@ const jsonLdRecipe =
       : undefined,
   });
 
-const jsonLdRecipeStr = jsonLdRecipe ? jsonLdRecipe.replace(/</g, '\\u003c').replace(/>/g, '\\u003e') : null;
+const jsonLdRecipeStr = jsonLdRecipe ? jsonLdRecipe.replace(/</g, "\\u003c").replace(/>/g, "\\u003e") : null;
 
 const recipeMeta = recipe
   ? {
@@ -235,7 +235,7 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
             <div class="mb-12 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center print:mb-4">
               {/* Время */}
               <span
-                class="glass-border-3d bg-card-bg/20 backdrop-blur-md text-text-main flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-sm font-medium sm:inline-flex sm:w-auto sm:px-4 shadow-sm shadow-black/15 print:border-none print:px-0"
+                class="glass-border-3d bg-card-bg/20 text-text-main flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-sm font-medium shadow-sm shadow-black/15 backdrop-blur-md sm:inline-flex sm:w-auto sm:px-4 print:border-none print:px-0"
                 aria-label={`Время приготовления: ${cooking_time} минут`}
               >
                 <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
@@ -245,7 +245,7 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
               {/* Сложность */}
               {difficulty && (
                 <span
-                  class={`${difficultyClass} glass-border-3d flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-xs font-bold tracking-wide uppercase sm:inline-flex sm:w-auto sm:px-4 shadow-sm shadow-black/15 print:border-none print:bg-transparent print:text-black print:px-0`}
+                  class={`${difficultyClass} glass-border-3d flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-xs font-bold tracking-wide uppercase shadow-sm shadow-black/15 sm:inline-flex sm:w-auto sm:px-4 print:border-none print:bg-transparent print:px-0 print:text-black`}
                   aria-label={`Сложность: ${difficultyLabel}`}
                 >
                   <Icon name="lucide:flame" class="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -254,13 +254,13 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
               )}
 
               {/* Разделитель (десктоп) */}
-              <div class="hidden h-6 w-px bg-line sm:block mx-1 print:hidden" aria-hidden="true"></div>
+              <div class="bg-line mx-1 hidden h-6 w-px sm:block print:hidden" aria-hidden="true" />
 
               {/* Рейтинг */}
               <div class="col-span-2 sm:col-span-1">
                 <RatingStars recipeId={id ?? ""} averageRating={recipe.average_rating || 0} />
               </div>
-              
+
               {/* Избранное */}
               <div class="col-span-1 sm:col-span-1">
                 <FavoriteButton recipeId={id ?? ""} />
@@ -273,7 +273,7 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
 
               {/* Печать */}
               <div class="col-span-1 sm:col-span-1">
-                <Button variant="outline" id="printRecipeBtn" class="h-11 w-full text-sm px-2 sm:w-auto sm:px-4 print:hidden" aria-label="Печать рецепта">
+                <Button variant="outline" id="printRecipeBtn" class="h-11 w-full px-2 text-sm sm:w-auto sm:px-4 print:hidden" aria-label="Печать рецепта">
                   <Icon name="lucide:printer" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span class="button-label">Печать</span>
                 </Button>
@@ -286,7 +286,10 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
             </div>
           </header>
 
-          <Surface padding="none" class="relative mb-12 aspect-video overflow-hidden !shadow-2xl print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none">
+          <Surface
+            padding="none"
+            class="relative mb-12 aspect-video overflow-hidden shadow-2xl! print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
+          >
             {main_image ? (
               <Image
                 src={main_image}

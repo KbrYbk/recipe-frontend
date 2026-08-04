@@ -1,32 +1,28 @@
 ---
-import type { HTMLTag, Polymorphic } from 'astro/types';
+import type { HTMLTag, Polymorphic } from "astro/types";
 
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  padding?: "none" | "sm" | "md" | "lg";
   hoverable?: boolean;
 };
 
-const { 
-  as: Tag = 'div', 
-  padding = 'md', 
-  hoverable = false, 
-  class: className, 
-  ...rest 
-} = Astro.props;
+const { as: Tag = "div", padding = "md", hoverable = false, class: className, ...rest } = Astro.props;
 
-const paddingClasses = {
-  none: '',
-  sm: 'p-4 sm:p-5',
-  md: 'p-6 md:p-8',
-  lg: 'p-8 md:p-10',
+const paddingClasses: Record<"none" | "sm" | "md" | "lg", string> = {
+  none: "",
+  sm: "p-4 sm:p-5",
+  md: "p-6 md:p-8",
+  lg: "p-8 md:p-10",
 };
 
 const baseClasses = [
-  'glass-border-3d bg-card-bg shadow-md shadow-black/15 rounded-3xl',
-  paddingClasses[padding],
-  hoverable ? 'transition-all duration-300 hover:shadow-lg hover:shadow-black/20 hover:bg-card-bg/80' : '',
-  className
-].filter(Boolean).join(' ');
+  "glass-border-3d bg-card-bg shadow-md shadow-black/15 rounded-3xl",
+  paddingClasses[padding as keyof typeof paddingClasses],
+  hoverable ? "transition-all duration-300 hover:shadow-lg hover:shadow-black/20 hover:bg-card-bg/80" : "",
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
 ---
 
 <Tag class={baseClasses} {...rest}>
