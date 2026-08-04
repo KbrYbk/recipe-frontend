@@ -312,6 +312,10 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
             )}
           </Surface>
 
+          <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
+            <aside class="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:gap-8 lg:pb-4 print:static print:block print:max-h-none print:overflow-visible">
+              <IngredientsList ingredients={ingredients} recipeSlug={id ?? "recipe"} />
+            </aside>
 
             <div class="lg:col-span-2">
               {description && (

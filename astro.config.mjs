@@ -5,6 +5,7 @@ import node from "@astrojs/node";
 
 export default defineConfig({
   site: 'https://swageda.ru',
+  integrations: [icon()],
   vite: {
     plugins: [tailwindcss()],
   },

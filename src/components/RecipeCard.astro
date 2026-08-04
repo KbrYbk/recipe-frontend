@@ -101,16 +101,16 @@ const imageAlt = `Фото блюда: ${title}`;
       <div class="flex items-center gap-3">
         {
           (recipe.average_rating ?? 0) > 0 && (
-            <div class="glass-border-3d flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 backdrop-blur-md">
-              <Icon name="lucide:star" class="text-brand h-4 w-4" />
-              <span class="text-sm font-bold text-white">{recipe.average_rating}</span>
+            <div class="flex items-center gap-1.5 font-bold text-amber-500" aria-label={`Рейтинг: ${recipe.average_rating}`}>
+              <Icon name="lucide:star" class="h-5 w-5 fill-current" aria-hidden="true" />
+              <span class="text-base tabular-nums">{recipe.average_rating}</span>
             </div>
           )
         }
 
         {
           (recipe.likes_count ?? 0) > 0 && (
-            <div class="glass-border-3d flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 backdrop-blur-md" aria-label={`Лайков: ${recipe.likes_count}`}>
+            <div class="flex items-center gap-1.5 font-bold text-rose-500" aria-label={`Лайков: ${recipe.likes_count}`}>
               <Icon name="lucide:heart" class="h-5 w-5 fill-current" aria-hidden="true" />
               <span class="text-base tabular-nums">{recipe.likes_count}</span>
             </div>
