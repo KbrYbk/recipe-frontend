@@ -61,10 +61,19 @@ const { recipeId, averageRating } = Astro.props;
 
       const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
         const toast = document.createElement("div");
-        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-xl shadow-black/20 text-white z-[100] transition-opacity duration-300 font-medium ${
+        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-xl shadow-black/20 text-white z-[100] transition-opacity duration-300 font-medium flex items-center gap-2 ${
           type === "success" ? "bg-green-500" : type === "error" ? "bg-rose-500" : "bg-blue-500"
         }`;
-        toast.textContent = msg;
+
+        let iconSvg = "";
+        if (type === "success") {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+        } else if (type === "error") {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`;
+        } else {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
+        }
+        toast.innerHTML = `${iconSvg}<span>${msg}</span>`;
         document.body.appendChild(toast);
         setTimeout(() => {
           toast.style.opacity = "0";
@@ -179,7 +188,21 @@ const { recipeId, averageRating } = Astro.props;
               lockRating(rating);
               container.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
               setTimeout(() => container.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
-              showToast("Спасибо за оценку!", "success");
+
+              const successMessages = [
+                "Ваш голос учтён. Надеемся, вы реально это готовили!",
+                "Ваш отзыв важен. Даже если вы просто смотрели на картинки.",
+                "Оценка в базе! Теперь вы официально ресторанный критик.",
+                "Голос принят! Если не получилось — скажем, что так и задумано.",
+                "Отличный выбор! Мы поверим вам на слово, что было вкусно.",
+                "Спасибо за отзыв! Теперь можно со спокойной душой заказать пиццу.",
+                "Оценка сохранена! Ещё пара таких, и можно открывать доставку.",
+                "Спасибо! Главное, чтобы результат совпадал с фото (мы никому не скажем).",
+                "Голос учтён. Надеемся, вы хотя бы дочитали рецепт до конца!",
+                "Оценка принята! Вы только что повысили виртуальную калорийность сайта.",
+              ];
+              const randomMessage = successMessages[Math.floor(Math.random() * successMessages.length)];
+              showToast(randomMessage, "success");
 
               console.log(
                 `%c${logGroup} — [ОТПРАВЛЕНО]%c\n→ Оценка ${rating} успешно отправлена на сервер\n→ Средняя ПОСЛЕ голосования: ${newAvg ?? "нет в ответе"} (было ${baseVal})\n→ Сохранено в localStorage[${recipeId}] = ${rating}`,

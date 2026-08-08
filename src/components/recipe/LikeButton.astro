@@ -32,10 +32,19 @@ const { recipeId } = Astro.props;
 
       const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
         const toast = document.createElement("div");
-        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-xl shadow-black/20 text-white z-[100] transition-opacity duration-300 font-medium ${
+        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-xl shadow-black/20 text-white z-[100] transition-opacity duration-300 font-medium flex items-center gap-2 ${
           type === "success" ? "bg-green-500" : type === "error" ? "bg-rose-500" : "bg-blue-500"
         }`;
-        toast.textContent = msg;
+
+        let iconSvg = "";
+        if (type === "success") {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
+        } else if (type === "error") {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`;
+        } else {
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
+        }
+        toast.innerHTML = `${iconSvg}<span>${msg}</span>`;
         document.body.appendChild(toast);
         setTimeout(() => {
           toast.style.opacity = "0";
@@ -99,7 +108,21 @@ const { recipeId } = Astro.props;
             applyLikeState(true);
             btn.classList.remove("opacity-70");
             isProcessing = false;
-            showToast("Рецепт добавлен в понравившиеся ❤️", "success");
+
+            const successMessages = [
+              "Рады, что вам понравилось!",
+              "Спасибо, что оценили рецепт!",
+              "Ваш лайк греет нам душу!",
+              "Отличный выбор! Приятного аппетита",
+              "Вам понравилось, и нам приятно!",
+              "Вкусно и просто? Рады угодить!",
+              "Этот рецепт и правда хорош!",
+              "Спасибо! Сохранили в вашу копилку",
+              "Ммм... отличный выбор для готовки!",
+              "Готовьте с удовольствием!",
+            ];
+            const randomMessage = successMessages[Math.floor(Math.random() * successMessages.length)];
+            showToast(randomMessage, "success");
             console.log(`%c${logGroup} — [УСПЕХ]%c\nЛайк сохранен локально и на сервере!`, "color:#16a34a;font-weight:bold", "color:inherit");
           } else {
             // Если ошибка

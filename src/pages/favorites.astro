@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
 ---
 
 <Layout title="Избранные рецепты — SwagEda">
@@ -15,13 +16,7 @@ import Layout from "../layouts/Layout.astro";
 
     <div id="empty-favorites" class="hidden flex-col items-center justify-center py-20 text-center" role="status">
       <div class="bg-accent-soft mb-4 rounded-full p-6">
-        <svg xmlns="http://www.w3.org/2000/svg" class="text-brand h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4.318 6.318a4.5 4.5 0 00-1.344 4.395L3 11h4.618c1.735 0 3.182 1.447 3.182 3.182V21l3-3v-7.618c0-1.735-1.447-3.182-3.182-3.182H4.318z"></path>
-        </svg>
+        <Icon name="lucide:book-heart" class="text-brand h-12 w-12" aria-hidden="true" />
       </div>
       <h2 class="text-text-main text-xl font-semibold">Тут пока пусто</h2>
       <p class="text-text-muted mt-2">Добавьте рецепты в избранное, чтобы они появились здесь</p>
