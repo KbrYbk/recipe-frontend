@@ -16,7 +16,7 @@ const url = Astro.url;
 const qRaw = url.searchParams.get("q")?.trim() || "";
 const categoryId = url.searchParams.get("categoryId")?.trim() || "";
 const categoryLegacy = url.searchParams.get("category")?.trim() || "";
-const effectiveCategoryId = qRaw ? "" : categoryId;
+
 const difficultyFilter = url.searchParams.get("difficulty")?.trim() || "all";
 const currentPage = parseInt(url.searchParams.get("page") || "1");
 
@@ -30,7 +30,7 @@ const [categoriesData, recipesData] = await Promise.all([
   }),
 ]);
 
-const { list, total: apiTotal = 0, ok: apiOk } = recipesData;
+const { list, total: apiTotal = 0 } = recipesData;
 const perPage = 20; // Стандарт пагинации из API
 
 // 2. Обработка бэкенд-рецептов
@@ -58,7 +58,7 @@ const filteredLocalFull = localRecipes
 
 // 4. Умная пагинация объединенных данных
 // Считаем, сколько локальных рецептов нам нужно добавить на ТЕКУЩУЮ страницу
-const apiTotalLoadedSoFar = (currentPage - 1) * perPage + processedBackend.length;
+
 const totalNeededOnPage = perPage;
 const spaceForLocal = Math.max(0, totalNeededOnPage - processedBackend.length);
 

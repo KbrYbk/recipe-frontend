@@ -42,6 +42,10 @@ This project demonstrates strong attention to detail in UX/UI, semantic web stan
 
 ## 🚀 Performance & Optimization
 
+<p align="center">
+  <img src="./img/lighthousepng.png" alt="Lighthouse 100 Performance Score" width="600" />
+</p>
+
 - **Zero-JS Foundation:** The core content is delivered as pure HTML. JavaScript is only loaded and hydrated for interactive "islands" (like rating stars and theme togglers), drastically reducing the main thread load.
 - **Advanced Caching:** Leverages HTTP `Cache-Control` headers and CDN Edge Caching to minimize TTFB (Time to First Byte).
 - **Image Optimization:** Extensive use of `astro:assets` to serve images in Next-Gen formats (WebP/AVIF) with automatic lazy loading.
@@ -127,16 +131,32 @@ src/
 
 ---
 
-## 🖼 Screenshots
+## 🖼 Screenshots & Themes
 
-### Home Page
+The project features full support for Light and Dark modes, which can be toggled instantly without reloading (utilizing Tailwind v4 CSS variables).
 
-<img src="./img/swageda.ru_.png" alt="SwagEda Home Page featuring popular recipes and search bar" width="800" />
+### Desktop View
 
-### Recipe Detail Page (Desktop)
+<h4 align="center">Home Page</h4>
 
-<img src="./img/swageda.ru_recipe_local-1.png" alt="Desktop view of a detailed recipe page with ingredients and steps" width="800" />
+| Light Theme | Dark Theme |
+| :---: | :---: |
+| <img src="./img/swageda.ru_.png" alt="Home Page Light" /> | <img src="./img/swageda.ru_ (1).png" alt="Home Page Dark" /> |
 
-### Recipe Detail Page (Mobile)
+<h4 align="center">All Recipes (Catalog)</h4>
 
-<img src="./img/swageda.ru_recipe_local-1(iPhone 12 Pro).png" alt="Mobile view of a detailed recipe page on an iPhone 12 Pro" width="400" />
+| Light Theme | Dark Theme |
+| :---: | :---: |
+| <img src="./img/swageda.ru_recipes.png" alt="Catalog Light" /> | <img src="./img/swageda.ru_recipes (1).png" alt="Catalog Dark" /> |
+
+<h4 align="center">Recipe Detail</h4>
+
+| Light Theme | Dark Theme |
+| :---: | :---: |
+| <img src="./img/swageda.ru_recipe_db-40723.png" alt="Recipe Detail Light" /> | <img src="./img/swageda.ru_recipe_db-40723 (1).png" alt="Recipe Detail Dark" /> |
+
+### Mobile View (iPhone)
+
+| Light Theme | Dark Theme |
+| :---: | :---: |
+| <img src="./img/swageda.ru_collection_dinner(iPhone 14 Pro Max).png" alt="Mobile Light" width="300" /> | <img src="./img/swageda.ru_collection_dinner(iPhone 14 Pro Max) (1).png" alt="Mobile Dark" width="300" /> |

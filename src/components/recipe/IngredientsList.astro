@@ -143,7 +143,7 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
     if (!scrollArea || !hint) return;
 
     const items = scrollArea.querySelectorAll<HTMLElement>("[data-ingredient-checkbox]");
-    const totalItems = items.length;
+
 
     const updateHint = () => {
       const scrollBottom = scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight;

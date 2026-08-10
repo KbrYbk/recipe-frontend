@@ -42,6 +42,10 @@
 
 ## 🚀 Производительность и оптимизация
 
+<p align="center">
+  <img src="./img/lighthousepng.png" alt="Lighthouse 100 Performance Score" width="600" />
+</p>
+
 - **Zero-JS:** Основной контент отдаётся в виде чистого HTML. JavaScript загружается и гидратируется только для интерактивных "островов" (звёзды рейтинга, переключатель тем), что радикально снижает нагрузку на основной поток (main thread).
 - **Продвинутое кэширование:** Использование HTTP-заголовков `Cache-Control` и CDN Edge Caching для минимизации TTFB (Time to First Byte).
 - **Оптимизация изображений:** Повсеместное использование `astro:assets` для отдачи изображений в современных форматах (WebP/AVIF) с автоматической ленивой загрузкой (lazy loading).
@@ -127,16 +131,32 @@ src/
 
 ---
 
-## 🖼 Скриншоты
+## 🖼 Скриншоты и Темы
 
-### Главная страница
+Проект имеет полноценную поддержку Светлой и Тёмной темы, которая переключается мгновенно без перезагрузки (благодаря Tailwind v4 и CSS-переменным).
 
-<img src="./img/swageda.ru_.png" alt="Главная страница SwagEda с популярными рецептами и поиском" width="800" />
+### Десктопная версия
 
-### Страница рецепта (Десктоп)
+<h4 align="center">Главная страница</h4>
 
-<img src="./img/swageda.ru_recipe_local-1.png" alt="Десктопная версия детальной страницы рецепта с ингредиентами и шагами" width="800" />
+| Светлая тема | Тёмная тема |
+| :---: | :---: |
+| <img src="./img/swageda.ru_.png" alt="Главная Светлая" /> | <img src="./img/swageda.ru_ (1).png" alt="Главная Тёмная" /> |
 
-### Страница рецепта (Мобильная версия)
+<h4 align="center">Все рецепты (Каталог)</h4>
 
-<img src="./img/swageda.ru_recipe_local-1(iPhone 12 Pro).png" alt="Мобильная версия детальной страницы рецепта на iPhone 12 Pro" width="400" />
+| Светлая тема | Тёмная тема |
+| :---: | :---: |
+| <img src="./img/swageda.ru_recipes.png" alt="Каталог Светлая" /> | <img src="./img/swageda.ru_recipes (1).png" alt="Каталог Тёмная" /> |
+
+<h4 align="center">Страница рецепта</h4>
+
+| Светлая тема | Тёмная тема |
+| :---: | :---: |
+| <img src="./img/swageda.ru_recipe_db-40723.png" alt="Рецепт Светлая" /> | <img src="./img/swageda.ru_recipe_db-40723 (1).png" alt="Рецепт Тёмная" /> |
+
+### Мобильная версия (iPhone)
+
+| Светлая тема | Тёмная тема |
+| :---: | :---: |
+| <img src="./img/swageda.ru_collection_dinner(iPhone 14 Pro Max).png" alt="Мобилка Светлая" width="300" /> | <img src="./img/swageda.ru_collection_dinner(iPhone 14 Pro Max) (1).png" alt="Мобилка Тёмная" width="300" /> |

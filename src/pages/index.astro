@@ -38,7 +38,7 @@ if (!ok && status === 403) {
 const popularRecipes = ok ? (popularRes.list as any[]).map(mapBackendRecipe) : localRecipes.slice(0, 3).map((r) => ({ ...r, id: `local-${r.id}` }));
 
 // Обрабатываем коллекции
-const collections = COLLECTION_CONFIG.map((config, index) => {
+COLLECTION_CONFIG.map((config, index) => {
   const res = collectionResults[index];
   const recipes = (res.list || []).slice(0, 3).map(mapBackendRecipe);
   return { ...config, recipes };

@@ -1,5 +1,5 @@
 ---
-import { Icon } from "astro-icon/components";
+
 import AdSlot from "../shared/AdSlot.astro";
 import FormattedText from "./FormattedText.astro";
 import Checkbox from "../ui/Checkbox.astro";
@@ -22,7 +22,7 @@ const { steps, recipeSlug = "recipe" } = Astro.props;
 <ol class="space-y-12">
   {
     steps.map((step, index) => {
-      const stepId = `step-${recipeSlug}-${index}`;
+
 
       return (
         <>
