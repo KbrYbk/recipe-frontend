@@ -337,7 +337,7 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
                 <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
                   Приготовление
                 </h2>
-                <RecipeSteps steps={recipe.steps} recipeSlug={recipe.slug} />
+                <RecipeSteps steps={recipe.steps} recipeSlug={id ?? "recipe"} />
               </div>
             </div>
           </div>
