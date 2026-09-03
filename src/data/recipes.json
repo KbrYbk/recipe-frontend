@@ -1,6 +1,6 @@
 [
   {
-    "id": 1,
+    "id": 999001,
     "title": "Луковый Угар",
     "main_image": "/images/lukoviy-ugar.webp",
     "description": "Экстремально ароматное блюдо с уникальным вкусом. Запах специфичный, к подобному приучают с детства!",
@@ -44,10 +44,14 @@
     "user": {
       "id": 1,
       "name": "БыкОсеменитель"
+    },
+    "category": {
+      "id": 1,
+      "title": "Локальные"
     }
   },
   {
-    "id": 2,
+    "id": 999002,
     "title": "Жаренное мясо",
     "main_image": "/images/meat.webp",
     "video_url": "https://www.youtube.com/embed/9Dn3ZMiHD-k",
@@ -77,10 +81,14 @@
     "user": {
       "id": 1,
       "name": "БыкОсеменитель"
+    },
+    "category": {
+      "id": 1,
+      "title": "Локальные"
     }
   },
   {
-    "id": 3,
+    "id": 999003,
     "title": "Свиная Башка",
     "main_image": "/images/svinaya-bashka.webp",
     "video_url": "https://www.youtube.com/embed/wv8fx61uNmw?si=9rwGTDDen53sEE13",
@@ -142,6 +150,10 @@
     "user": {
       "id": 1,
       "name": "БыкОсеменитель"
+    },
+    "category": {
+      "id": 1,
+      "title": "Локальные"
     }
   }
 ]

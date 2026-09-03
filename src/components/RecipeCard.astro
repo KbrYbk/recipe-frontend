@@ -1,6 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import { Image } from "astro:assets";
+import { slugify, getRecipeUrl } from "../lib/slugify";
 
 interface Props {
   recipe: {
@@ -13,12 +14,16 @@ interface Props {
     difficulty?: string;
     average_rating?: number;
     likes_count?: number;
+    category?: any;
   };
+  view?: "grid" | "list";
 }
 
-const { recipe } = Astro.props;
+const { recipe, view = "grid" } = Astro.props;
 const { id, title, description, main_image, cooking_time: rawTime } = recipe;
 const cooking_time = Number(rawTime) || 0;
+
+const recipeUrl = getRecipeUrl(recipe);
 
 const hasImage = !!main_image && main_image !== "";
 const imageAlt = `Фото блюда: ${title}`;
@@ -50,7 +55,7 @@ const imageAlt = `Фото блюда: ${title}`;
 
   <div class="flex grow flex-col p-6">
     <h2 class="text-text-main group-hover:text-brand mb-3 line-clamp-2 text-xl font-bold transition-colors md:text-2xl">
-      <a href={`/recipe/${id}`} class="after:absolute after:inset-0 focus:outline-none">
+      <a href={recipeUrl} class="after:absolute after:inset-0 focus:outline-none">
         {title}
       </a>
     </h2>

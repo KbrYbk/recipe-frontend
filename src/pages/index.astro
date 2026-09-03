@@ -18,10 +18,7 @@ const COLLECTION_CONFIG = [
 ];
 
 // Загружаем популярные и все коллекции параллельно
-const [popularRes, ...collectionResults] = await Promise.all([
-  fetchRecipesFromApi({ limit: 3 }),
-  ...COLLECTION_CONFIG.map(c => fetchCollectionFromApi(c.id))
-]);
+const [popularRes, ...collectionResults] = await Promise.all([fetchRecipesFromApi({ limit: 3 }), ...COLLECTION_CONFIG.map((c) => fetchCollectionFromApi(c.id))]);
 
 const ok = popularRes.ok;
 const status = popularRes.status;
@@ -35,14 +32,14 @@ if (!ok && status === 403) {
 }
 
 // Популярные рецепты
-const popularRecipes = ok ? (popularRes.list as any[]).map(mapBackendRecipe) : localRecipes.slice(0, 3).map((r) => ({ ...r, id: `local-${r.id}` }));
+const popularRecipes = ok ? (popularRes.list as any[]).map(mapBackendRecipe) : localRecipes.slice(0, 3).map((r) => ({ ...r, id: r.id }));
 
 // Обрабатываем коллекции
 COLLECTION_CONFIG.map((config, index) => {
   const res = collectionResults[index];
   const recipes = (res.list || []).slice(0, 3).map(mapBackendRecipe);
   return { ...config, recipes };
-}).filter(c => c.recipes.length > 0);
+}).filter((c) => c.recipes.length > 0);
 ---
 
 <Layout
@@ -50,13 +47,15 @@ COLLECTION_CONFIG.map((config, index) => {
   description="SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов: от завтраков до ужинов. Готовим просто, вкусно и с любовью."
   keywords="рецепты, кулинария, свэгеда, СвэгЕда, свегеда, СвегЕда, свагеда, Свагеда, SwagEda, swageda, swag eda, сваг еда, рецепты дома, пошаговые рецепты, вкусные рецепты, быстрые рецепты, домашняя кухня, готовим дома, что приготовить"
 >
-
   <div class="mx-auto max-w-6xl px-4">
-    {errorMessage && (
-      <BackendErrorAlert message={errorMessage}>
-        Наш сайт сейчас испытывает небольшие технические неполадки. Не переживайте, мы уже вовсю «колдуем» над плитой и исправляем проблему! Возвращайтесь совсем скоро — мы вас очень ждем. А пока вы можете спокойно листать наши лучшие рецепты ниже в режиме офлайн.
-      </BackendErrorAlert>
-    )}
+    {
+      errorMessage && (
+        <BackendErrorAlert message={errorMessage}>
+          Наш сайт сейчас испытывает небольшие технические неполадки. Не переживайте, мы уже вовсю «колдуем» над плитой и исправляем проблему! Возвращайтесь совсем скоро — мы вас очень ждем. А пока вы
+          можете спокойно листать наши лучшие рецепты ниже в режиме офлайн.
+        </BackendErrorAlert>
+      )
+    }
 
     <section class="py-12 text-center md:py-16">
       <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
@@ -69,9 +68,7 @@ COLLECTION_CONFIG.map((config, index) => {
     <section aria-labelledby="categories-heading" class="mb-12">
       <h2 id="categories-heading" class="sr-only">Популярные категории</h2>
       <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-        {COLLECTION_CONFIG.map(c => (
-          <CategoryCard iconName={c.icon} title={c.title} href={`/collection/${c.id}`} />
-        ))}
+        {COLLECTION_CONFIG.map((c) => <CategoryCard iconName={c.icon} title={c.title} href={`/collection/${c.id}`} />)}
       </div>
     </section>
 
@@ -81,7 +78,7 @@ COLLECTION_CONFIG.map((config, index) => {
     <section aria-labelledby="recipes-heading" class="mb-20">
       <div class="mb-10 flex items-end justify-between">
         <div>
-          <h2 id="recipes-heading" class="text-text-main text-3xl font-bold md:text-4xl">Популярные рецепты</h2>
+          <h2 id="recipes-heading" class="text-text-main text-3xl font-bold md:text-4xl">Новые рецепты</h2>
           <div class="bg-brand mt-2 h-1.5 w-20 rounded-full"></div>
         </div>
         <a href="/recipes" class="text-brand hidden font-semibold hover:underline md:block"> Все рецепты &rarr; </a>
@@ -91,7 +88,5 @@ COLLECTION_CONFIG.map((config, index) => {
         {popularRecipes.map((recipe) => <RecipeCard recipe={recipe} />)}
       </div>
     </section>
-
-
   </div>
 </Layout>

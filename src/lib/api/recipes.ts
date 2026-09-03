@@ -194,7 +194,7 @@ export async function fetchCategoriesFromApi() {
 export function mapBackendRecipe(r: any) {
   return {
     ...r,
-    id: `db-${r.id}`,
+    id: String(r.id),
     main_image: toImageProxyUrl(r.main_image),
     steps: Array.isArray(r.steps) ? r.steps.map((s: any) => ({ ...s, image: toImageProxyUrl(s.image) })) : [],
   };
@@ -202,7 +202,7 @@ export function mapBackendRecipe(r: any) {
 
 /** Получение одного рецепта по ID */
 export async function fetchRecipeById(id: string | number) {
-  const cleanId = String(id).replace(/^db-/, "");
+  const cleanId = String(id).replace(/^(db-|local-)/, "");
   try {
     const response = await fetchApi(`/getRecipes/${encodeURIComponent(cleanId)}`);
     if (!response.ok) return { item: null, ok: false, status: response.status };
@@ -262,7 +262,13 @@ export async function fetchSitemapIds(limit: number = 15000) {
     const list = Array.isArray(result) ? result : result.data || [];
 
     return {
-      list: list.map((r: any) => ({ id: r.id, updated_at: r.updated_at })),
+      list: list.map((r: any) => ({
+        id: r.id,
+        updated_at: r.updated_at,
+        title: r.title,
+        category: r.category,
+        user: r.user,
+      })),
       total: list.length,
     };
   } catch (e) {

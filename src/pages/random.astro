@@ -1,7 +1,7 @@
 ---
+import { slugify, getRecipeUrl } from "../lib/slugify";
 import { fetchRecipesFromApi } from "../lib/api/recipes";
 
-// Кэш total в памяти процесса (TTL 5 мин) — убирает лишний API-запрос на каждый заход
 const TOTAL_TTL_MS = 5 * 60 * 1000;
 let totalCache: { value: number; expires: number } | null = null;
 
@@ -10,40 +10,34 @@ async function getDbTotal(): Promise<{ total: number; ok: boolean }> {
   if (totalCache && totalCache.expires > now) {
     return { total: totalCache.value, ok: true };
   }
-  const res = await fetchRecipesFromApi({ limit: 1 });
+  const res = await fetchRecipesFromApi({ page: 1 });
   if (res.ok && res.total > 0) {
     totalCache = { value: res.total, expires: now + TOTAL_TTL_MS };
   }
   return { total: res.total, ok: res.ok };
 }
 
-// Получаем общее количество рецептов с бэкенда
 const { total: dbTotal, ok } = await getDbTotal();
 
 if (!ok || dbTotal === 0) {
-  // Если бэкенд недоступен — редирект на главную
   return Astro.redirect("/");
 }
 
-// Выбираем случайную страницу (20 рецептов на страницу)
 const perPage = 20;
 const totalPages = Math.max(1, Math.ceil(dbTotal / perPage));
 const randomPage = Math.floor(Math.random() * totalPages) + 1;
 
-// Загружаем рецепты со случайной страницы
-const { list } = await fetchRecipesFromApi({ page: randomPage, limit: perPage });
+const { list } = await fetchRecipesFromApi({ page: randomPage });
 
-if (list.length === 0) {
-  // На случай если страница пуста — пробуем первую
-  const { list: fallbackList } = await fetchRecipesFromApi({ page: 1, limit: perPage });
-  if (fallbackList.length > 0) {
+if (!list || list.length === 0) {
+  const { list: fallbackList } = await fetchRecipesFromApi({ page: 1 });
+  if (fallbackList && fallbackList.length > 0) {
     const recipe = fallbackList[Math.floor(Math.random() * fallbackList.length)];
-    return Astro.redirect(`/recipe/db-${recipe.id}`);
+    return Astro.redirect(getRecipeUrl(recipe));
   }
   return Astro.redirect("/recipes");
 }
 
-// Выбираем случайный рецепт из списка
 const recipe = list[Math.floor(Math.random() * list.length)];
-return Astro.redirect(`/recipe/db-${recipe.id}`);
+return Astro.redirect(getRecipeUrl(recipe));
 ---

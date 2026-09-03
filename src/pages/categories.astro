@@ -1,0 +1,36 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Breadcrumbs from "../components/layout/Breadcrumbs.astro";
+import { fetchCategoriesFromApi } from "../lib/api/recipes";
+import { slugify } from "../lib/slugify";
+import { Icon } from "astro-icon/components";
+
+const categories = await fetchCategoriesFromApi();
+const sortedCategories = categories.filter((c: any) => c.title).sort((a: any, b: any) => a.title.localeCompare(b.title));
+---
+
+<Layout title="Категории рецептов - SwagEda" description="Все категории рецептов на сайте SwagEda. Найдите лучшие рецепты по вашему вкусу.">
+  <main class="container mx-auto px-4 py-8 md:py-12">
+    <div class="mb-8 print:hidden">
+      <Breadcrumbs items={[{ name: "Категории", href: "/categories" }]} />
+    </div>
+
+    <h1 class="text-text-main mb-8 text-4xl font-bold md:text-5xl">
+      Все <span class="text-brand">категории</span>
+    </h1>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {
+        sortedCategories.map((cat: any) => (
+          <a
+            href={`/${slugify(cat.title)}`}
+            class="glass-border-3d bg-card-bg/60 hover:shadow-brand/20 group flex items-center justify-between rounded-2xl p-6 shadow-sm backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-md"
+          >
+            <span class="text-text-main group-hover:text-brand text-lg font-bold transition-colors">{cat.title}</span>
+            <Icon name="lucide:chevron-right" class="text-text-muted group-hover:text-brand h-5 w-5 transition-colors" />
+          </a>
+        ))
+      }
+    </div>
+  </main>
+</Layout>

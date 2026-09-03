@@ -1,23 +1,27 @@
 ---
 export const prerender = false;
-import Layout from "../layouts/Layout.astro";
-import Breadcrumbs from "../components/layout/Breadcrumbs.astro";
-import RecipeCard from "../components/RecipeCard.astro";
-import SearchBar from "../components/ui/SearchBar.astro";
-import Pagination from "../components/ui/Pagination.astro";
-import Button from "../components/ui/Button.astro";
-import AdSlot from "../components/shared/AdSlot.astro";
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
+import RecipeCard from "../../components/RecipeCard.astro";
+import SearchBar from "../../components/ui/SearchBar.astro";
+import Pagination from "../../components/ui/Pagination.astro";
+import Button from "../../components/ui/Button.astro";
+import AdSlot from "../../components/shared/AdSlot.astro";
 import { Icon } from "astro-icon/components";
-import Divider from "../components/ui/Divider.astro";
-import localRecipes from "../data/recipes.json";
-import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from "../lib/api/recipes";
+import Divider from "../../components/ui/Divider.astro";
+import localRecipes from "../../data/recipes.json";
+import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from "../../lib/api/recipes";
 
 const url = Astro.url;
 const qRaw = url.searchParams.get("q")?.trim() || "";
-import { slugify } from "../lib/slugify";
-const categoryId = url.searchParams.get("categoryId")?.trim() || "";
+import { slugify } from "../../lib/slugify";
+const { category } = Astro.params;
 const allCatsForRoute = await fetchCategoriesFromApi();
-
+const routeCategory = Array.isArray(allCatsForRoute) ? allCatsForRoute.find((c) => slugify(c.title || "") === category) : null;
+if (!routeCategory && category !== "recipes") {
+  Astro.response.status = 404;
+}
+const categoryId = routeCategory?.id || "";
 const categoryLegacy = url.searchParams.get("category")?.trim() || "";
 
 const difficultyFilter = url.searchParams.get("difficulty")?.trim() || "all";
@@ -96,6 +100,14 @@ function recipesHref(overrides: Record<string, string | number | undefined>) {
       const query = p.toString();
       return query ? catUrl + "?" + query : catUrl;
     }
+  } else if (overrides.categoryId === undefined && categoryId) {
+    const query = p.toString();
+    return query ? "/recipes?" + query : "/recipes";
+  } else if (categoryId) {
+    const catUrl = "/" + category;
+    p.delete("categoryId");
+    const query = p.toString();
+    return query ? catUrl + "?" + query : catUrl;
   }
   return s ? "/recipes?" + s : "/recipes";
 }
@@ -145,9 +157,9 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
         <div>
           {
             categoryId ? (
-              <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: categories.find((c: any) => String(c.id) === String(categoryId))?.title || "Категория" }]} />
+              <Breadcrumbs items={[{ name: "Категории", href: "/categories" }, { name: categories.find((c: any) => String(c.id) === String(categoryId))?.title || "Категория" }]} />
             ) : (
-              <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }]} />
+              <Breadcrumbs items={[{ name: "Категории", href: "/categories" }]} />
             )
           }
           <h1 class="text-text-main text-4xl font-bold md:text-5xl">
