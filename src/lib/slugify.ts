@@ -45,10 +45,7 @@ export function slugify(str: string): string {
 export function getRecipeUrl(r: any): string {
   if (r?.seo_url) return `/${r.seo_url}`;
 
-  const catSlug = slugify(typeof r?.category === "object" ? r?.category?.title : r?.category || "category");
-  const authorSlug = slugify(r?.user?.name || "author");
-  const titleSlug = slugify(r?.title || "recipe");
-  const cleanId = String(r?.id).replace(/^(db-|local-)/, "");
-
-  return `/${catSlug}/${authorSlug}/${cleanId}/${titleSlug}`;
+  // fallback to old db- structure
+  const cleanId = String(r?.id || "").replace(/^(local-|db-)/, "");
+  return `/recipe/db-${cleanId}`;
 }

@@ -89,7 +89,7 @@ function recipesHref(overrides: Record<string, string | number | undefined>) {
   if (!overrides.page) p.set("page", "1");
   const s = p.toString();
   if (overrides.categoryId) {
-    const catInfo = allCatsForRoute.find((c) => String(c.id) === String(overrides.categoryId));
+    const catInfo = allCatsForRoute.find((c: any) => String(c.id) === String(overrides.categoryId));
     if (catInfo) {
       const catUrl = "/" + slugify(catInfo.title);
       p.delete("categoryId");

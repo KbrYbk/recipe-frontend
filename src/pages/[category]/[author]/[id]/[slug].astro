@@ -24,10 +24,10 @@ import RatingStars from "../../../../components/recipe/RatingStars.astro";
 import RecipeLightbox from "../../../../components/recipe/RecipeLightbox.astro";
 import FormattedText from "../../../../components/recipe/FormattedText.astro";
 import RecipeSteps from "../../../../components/recipe/RecipeSteps.astro";
-import { slugify, getRecipeUrl } from "../../../../lib/slugify";
+import { getRecipeUrl } from "../../../../lib/slugify";
 
 const { id, category, author, slug } = Astro.params;
-const cleanId = id?.replace(/^(local-|db-)/, "");
+const cleanId = (id || "").replace(/^(local-|db-)/, "");
 
 let recipe: any | null = null;
 let isBackendError = false;

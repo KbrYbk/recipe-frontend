@@ -1,7 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import { Image } from "astro:assets";
-import { slugify, getRecipeUrl } from "../lib/slugify";
+import { getRecipeUrl } from "../lib/slugify";
 
 interface Props {
   recipe: {
@@ -19,7 +19,7 @@ interface Props {
   view?: "grid" | "list";
 }
 
-const { recipe, view = "grid" } = Astro.props;
+const { recipe } = Astro.props;
 const { id, title, description, main_image, cooking_time: rawTime } = recipe;
 const cooking_time = Number(rawTime) || 0;
 

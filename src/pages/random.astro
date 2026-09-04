@@ -1,5 +1,5 @@
 ---
-import { slugify, getRecipeUrl } from "../lib/slugify";
+import { getRecipeUrl } from "../lib/slugify";
 import { fetchRecipesFromApi } from "../lib/api/recipes";
 
 const TOTAL_TTL_MS = 5 * 60 * 1000;
@@ -32,12 +32,10 @@ const { list } = await fetchRecipesFromApi({ page: randomPage });
 if (!list || list.length === 0) {
   const { list: fallbackList } = await fetchRecipesFromApi({ page: 1 });
   if (fallbackList && fallbackList.length > 0) {
-    const recipe = fallbackList[Math.floor(Math.random() * fallbackList.length)];
-    return Astro.redirect(getRecipeUrl(recipe));
+    return Astro.redirect(getRecipeUrl(fallbackList[Math.floor(Math.random() * fallbackList.length)]));
   }
   return Astro.redirect("/recipes");
 }
 
-const recipe = list[Math.floor(Math.random() * list.length)];
-return Astro.redirect(getRecipeUrl(recipe));
+return Astro.redirect(getRecipeUrl(list[Math.floor(Math.random() * list.length)]));
 ---

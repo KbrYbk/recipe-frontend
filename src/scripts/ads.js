@@ -9,7 +9,6 @@
 window.initAdSlot = function (containerId, id, isFeed, refreshInterval) {
   // Защита от повторного рендера этого же экземпляра
   var _rendered = false;
-  var _refreshIntervalId = null;
   var _adRefreshTriggered = false;
 
   function renderAd() {
@@ -45,7 +44,7 @@ window.initAdSlot = function (containerId, id, isFeed, refreshInterval) {
 
   function startAdRefresh() {
     if (refreshInterval && refreshInterval > 0) {
-      _refreshIntervalId = setInterval(function () {
+      setInterval(function () {
         var container = document.getElementById(containerId);
         if (_rendered && container && container.children.length > 0) {
           _adRefreshTriggered = true;
