@@ -108,7 +108,7 @@ const jsonLdGraph = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={shareImage} />
 
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph).replace(/</g, "\\u003c").replace(/>/g, "\\u003e")} />
 
     {
       ogType === "article" && recipeData && (
@@ -147,11 +147,11 @@ const jsonLdGraph = {
     <!-- Боковые липкие баннеры для больших мониторов (экраны шире 1560px) -->
     <!-- Они зафиксированы по бокам экрана и не перекрывают основной контент -->
     <div class="hidden min-[1480px]:block">
-      <div class="fixed top-28 left-4 z-40 h-150 w-40 overflow-hidden print:hidden">
-        <AdSlot id="R-A-19056160-22" className="sticky top-28" />
+      <div class="fixed top-28 bottom-4 left-4 z-40 w-40 overflow-hidden print:hidden">
+        <AdSlot id="R-A-19056160-22" className="!my-0 flex h-full flex-col [&>div[id]]:grow" />
       </div>
-      <div class="fixed top-28 right-4 z-40 h-150 w-40 overflow-hidden print:hidden">
-        <AdSlot id="R-A-19056160-23" className="sticky top-28" />
+      <div class="fixed top-28 right-4 bottom-4 z-40 w-40 overflow-hidden print:hidden">
+        <AdSlot id="R-A-19056160-23" className="!my-0 flex h-full flex-col [&>div[id]]:grow" />
       </div>
     </div>
     <PageProgress />

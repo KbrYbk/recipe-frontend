@@ -26,6 +26,7 @@ import { Icon } from "astro-icon/components";
 </Layout>
 
 <script>
+  import { formatTime } from "../lib/formatTime";
   // Рендер избранного: читаем id из localStorage, грузим каждый рецепт по отдельности
   async function renderFavorites() {
     const grid = document.getElementById("favorites-grid");
@@ -71,7 +72,7 @@ import { Icon } from "astro-icon/components";
       card.className = "group glass-border-3d relative overflow-hidden rounded-2xl bg-card-bg transition-all shadow-md shadow-black/15 hover:shadow-xl hover:shadow-black/20";
       card.setAttribute("role", "listitem");
 
-      const timeDisplay = recipe.cooking_time ? `${recipe.cooking_time} мин` : "";
+      const timeDisplay = recipe.cooking_time ? formatTime(recipe.cooking_time) : "";
       const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       const safeTitle = esc(recipe.title || "");
       const safeDesc = esc(recipe.description || "");

@@ -11,17 +11,7 @@ interface Props extends HTMLAttributes<"button"> {
   class?: string;
 }
 
-const {
-  variant = "primary",
-  size = "md",
-  href,
-  isExternal = false,
-  fullWidth = false,
-  as: Tag,
-  class: className = "",
-  type = "button",
-  ...rest
-} = Astro.props;
+const { variant = "primary", size = "md", href, isExternal = false, fullWidth = false, as: Tag, class: className = "", type = "button", ...rest } = Astro.props;
 
 const Component = Tag || (href ? "a" : "button");
 
@@ -29,10 +19,12 @@ const baseStyles =
   "inline-flex items-center justify-center font-bold transition-all duration-300 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer whitespace-nowrap";
 
 const variants = {
-  primary: "bg-brand text-white hover:bg-brand-hover shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_10px_rgba(255,105,0,0.5)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_6px_14px_rgba(255,105,0,0.6)] border-none",
+  primary:
+    "bg-brand text-white hover:bg-brand-hover shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_10px_rgba(255,105,0,0.5)] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_6px_14px_rgba(255,105,0,0.6)] border-none",
   secondary: "bg-card-bg/40 backdrop-blur-xl glass-border-3d text-text-main shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20 hover:bg-card-bg/60",
-  outline: "glass-border-3d bg-card-bg/20 backdrop-blur-lg text-text-main shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20 hover:text-brand hover:bg-card-bg/40 focus-visible:ring-brand",
-  ghost: "text-text-main hover:bg-card-bg/40 backdrop-blur-md",
+  outline:
+    "glass-border-3d bg-card-bg/20 backdrop-blur-lg text-text-main shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20 hover:text-brand hover:bg-card-bg/40 focus-visible:ring-brand",
+  ghost: "text-text-main hover:bg-card-bg/40",
   danger: "bg-rose-500/80 backdrop-blur-xl glass-border-3d text-white shadow-sm shadow-black/20 hover:shadow-md hover:bg-rose-600",
 };
 
@@ -49,14 +41,7 @@ const widthStyle = fullWidth ? "w-full" : "";
 const classes = [baseStyles, variants[variant], sizes[size], widthStyle, className].filter(Boolean).join(" ");
 ---
 
-<Component
-  href={href}
-  class={classes}
-  target={isExternal ? "_blank" : undefined}
-  rel={isExternal ? "noopener noreferrer" : undefined}
-  type={Component === "button" ? type : undefined}
-  {...rest}
->
+<Component href={href} class={classes} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} type={Component === "button" ? type : undefined} {...rest}>
   <slot name="icon-left" />
   <slot />
   <slot name="icon-right" />

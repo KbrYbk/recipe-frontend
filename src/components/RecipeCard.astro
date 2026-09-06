@@ -2,6 +2,7 @@
 import { Icon } from "astro-icon/components";
 import { Image } from "astro:assets";
 import { getRecipeUrl } from "../lib/slugify";
+import { formatTime } from "../lib/formatTime";
 
 interface Props {
   recipe: {
@@ -94,10 +95,10 @@ const imageAlt = `Фото блюда: ${title}`;
 
         <div
           class="glass-border-3d bg-page-bg/60 text-text-main flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-[10px] font-bold shadow-sm shadow-black/15 sm:text-xs"
-          aria-label={`Время приготовления: ${cooking_time} минут`}
+          aria-label={`Время приготовления: ${formatTime(cooking_time)}`}
         >
           <Icon name="lucide:clock" class="text-brand h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
-          <span class="tabular-nums">{cooking_time} мин</span>
+          <span class="tabular-nums">{formatTime(cooking_time)}</span>
         </div>
       </div>
     </div>

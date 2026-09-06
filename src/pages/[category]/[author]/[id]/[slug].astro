@@ -15,6 +15,7 @@ import Surface from "../../../../components/ui/Surface.astro";
 import Divider from "../../../../components/ui/Divider.astro";
 import { fetchRecipeById, mapBackendRecipe } from "../../../../lib/api/recipes";
 import { normalizeIngredients } from "../../../../lib/normalizeIngredients";
+import { formatTime } from "../../../../lib/formatTime";
 
 import ReadingProgress from "../../../../components/recipe/ReadingProgress.astro";
 import FavoriteButton from "../../../../components/recipe/FavoriteButton.astro";
@@ -250,10 +251,10 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
               {/* Время */}
               <span
                 class="glass-border-3d bg-card-bg/20 text-text-main flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-sm font-medium shadow-sm shadow-black/15 backdrop-blur-md sm:inline-flex sm:w-auto sm:px-4 print:border-none print:px-0"
-                aria-label={`Время приготовления: ${cooking_time} минут`}
+                aria-label={`Время приготовления: ${formatTime(cooking_time)}`}
               >
                 <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
-                <span class="tabular-nums">{cooking_time} мин</span>
+                <span class="tabular-nums">{formatTime(cooking_time)}</span>
               </span>
 
               {/* Сложность */}

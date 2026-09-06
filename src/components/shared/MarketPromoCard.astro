@@ -1,0 +1,42 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  url: string;
+  title: string;
+  description: string;
+  image?: string;
+  icon?: string;
+  buttonText?: string;
+}
+
+const { url, title, description, image, icon = "lucide:shopping-bag", buttonText = "Смотреть на Маркете" } = Astro.props;
+---
+
+<a
+  href={url}
+  rel="sponsored"
+  target="_blank"
+  class="glass-border-3d group bg-brand/5 hover:bg-brand/10 relative flex flex-col items-center gap-6 overflow-hidden rounded-2xl p-6 shadow-sm shadow-black/15 transition-all hover:shadow-lg hover:shadow-black/20 sm:flex-row"
+>
+  {
+    image ? (
+      <div class="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-white shadow-inner transition-transform group-hover:scale-105">
+        <img src={image} alt="Рекомендуемый товар" class="h-full w-full object-contain p-2" loading="lazy" />
+      </div>
+    ) : (
+      <div class="bg-brand/20 text-brand flex h-16 w-16 shrink-0 items-center justify-center rounded-full transition-transform group-hover:scale-110">
+        <Icon name={icon} class="h-8 w-8" />
+      </div>
+    )
+  }
+  <div class="flex-1 text-center sm:text-left">
+    <h3 class="text-text-main text-lg font-bold md:text-xl">{title}</h3>
+    <p class="text-text-muted mt-2 text-sm md:text-base">{description}</p>
+  </div>
+  <div class="mt-4 shrink-0 sm:mt-0">
+    <span class="bg-brand shadow-brand/20 hover:bg-brand-hover inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold text-white shadow-lg transition-all">
+      {buttonText}
+    </span>
+  </div>
+</a>

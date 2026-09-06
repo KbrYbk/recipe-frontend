@@ -11,6 +11,17 @@ import { Icon } from "astro-icon/components";
 import Divider from "../../components/ui/Divider.astro";
 import localRecipes from "../../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from "../../lib/api/recipes";
+import MarketPromoCard from "../../components/shared/MarketPromoCard.astro";
+
+const marketLinks: Record<string, { url: string; title: string; description: string; icon?: string; image?: string; buttonText?: string }> = {
+  aerogril: {
+    url: "https://market.yandex.ru/cc/AyzffM?erid=5jtCeReNx12oak2pVMEWZBW",
+    title: "Ищете идеальный аэрогриль?",
+    description: "Собрали для вас лучшие модели на Яндекс Маркете по отличным ценам. Начните готовить эти рецепты уже завтра!",
+    image: "/images/promo/aerogril.webp",
+    icon: "lucide:shopping-bag",
+  },
+};
 
 const url = Astro.url;
 const qRaw = url.searchParams.get("q")?.trim() || "";
@@ -204,7 +215,13 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
             Фильтры
           </h2>
 
-          <div class="filter-scroll-area flex-1 lg:overflow-y-auto lg:overscroll-contain" data-filters-scroll tabindex="0" role="region" aria-label="Фильтры рецептов, прокрутите чтобы увидеть все">
+          <div
+            class="filter-scroll-area -mx-2 flex-1 px-2 lg:overflow-y-auto lg:overscroll-contain"
+            data-filters-scroll
+            tabindex="0"
+            role="region"
+            aria-label="Фильтры рецептов, прокрутите чтобы увидеть все"
+          >
             <div class="space-y-6">
               <!-- Категории — аккордеон -->
               <div>
@@ -336,8 +353,6 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
                   </Button>
                 )
               }
-
-              <AdSlot id="R-A-19056160-18" className="hidden lg:block" />
             </div>
           </div>
         </div>
@@ -350,7 +365,7 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
               <>
                 {index === 2 && (
                   <div class="min-w-0 md:col-span-2 print:hidden" data-ad-wrapper>
-                    <AdSlot id="R-A-19056160-24" />
+                    {category && marketLinks[category] ? <MarketPromoCard {...marketLinks[category]} /> : <AdSlot id="R-A-19056160-24" />}
                   </div>
                 )}
                 <RecipeCard recipe={recipe} />
@@ -412,6 +427,9 @@ const minRatingParam = url.searchParams.get("minRating")?.trim() || "";
   function initEmptyAdCleanup() {
     document.querySelectorAll("[data-ad-wrapper]").forEach((wrapper) => {
       setTimeout(() => {
+        const isPromo = wrapper.querySelector("a[rel='sponsored']");
+        if (isPromo) return; // Пропускаем нашу промо-карточку
+
         const adSlot = wrapper.querySelector(".ad-slot");
         if (!adSlot) {
           wrapper.remove();
