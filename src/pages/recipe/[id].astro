@@ -26,6 +26,7 @@ import RecipeLightbox from "../../components/recipe/RecipeLightbox.astro";
 import FormattedText from "../../components/recipe/FormattedText.astro";
 import RecipeSteps from "../../components/recipe/RecipeSteps.astro";
 import BrowserPromoCard from "../../components/shared/BrowserPromoCard.astro";
+import MarketPromoCard from "../../components/shared/MarketPromoCard.astro";
 import { getRecipeUrl, slugify } from "../../lib/slugify";
 
 const { id } = Astro.params;
@@ -201,6 +202,29 @@ const recipeMeta = recipe
 
 const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
 const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : difficulty === "medium" ? "bg-amber-500/15 text-amber-500" : "bg-emerald-500/15 text-emerald-500";
+
+const aerogrilPromo = {
+  url: "https://market.yandex.ru/cc/BC9i2H?erid=5jtCeReNx12oak2pVMEWZBW",
+  title: "Ищете идеальный аэрогриль?",
+  description: "Собрали для вас лучшие модели на Яндекс Маркете по отличным ценам. Начните готовить эти рецепты уже завтра!",
+  image: "/images/promo/aerogril.webp",
+  icon: "lucide:shopping-bag",
+  erid: "5jtCeReNx12oak2pVMEWZBW",
+};
+
+const catObj = typeof recipe?.category === "object" ? recipe.category : null;
+const catTitle = String(catObj?.title || (typeof recipe?.category === "string" ? recipe.category : "")).trim();
+const catSlug = catObj?.slug || slugify(catTitle);
+
+const isAerogril =
+  catSlug === "aerogril" ||
+  catTitle.toLowerCase().includes("аэрогриль") ||
+  String(recipe?.title || "")
+    .toLowerCase()
+    .includes("аэрогриль") ||
+  String(recipe?.description || "")
+    .toLowerCase()
+    .includes("аэрогриль");
 ---
 
 <Layout title={pageTitle} description={metaDescription} image={main_image} canonical={canonical} noindex={!recipe} keywords={recipeKeywords} ogType="article" recipeData={recipeMeta}>
@@ -349,6 +373,21 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
               )}
               <VideoPlayer videoUrl={video_url} />
               <AdSlot id="R-A-19056160-19" refreshInterval={30} />
+
+              {isAerogril && (
+                <div class="my-8 print:hidden">
+                  <MarketPromoCard
+                    url={aerogrilPromo.url}
+                    title={aerogrilPromo.title}
+                    description={aerogrilPromo.description}
+                    image={aerogrilPromo.image}
+                    icon={aerogrilPromo.icon}
+                    buttonText="Выбрать на Яндекс Маркете"
+                    erid={aerogrilPromo.erid}
+                  />
+                </div>
+              )}
+
               <div id="textSteps" role={video_url ? "tabpanel" : undefined} aria-labelledby={video_url ? "tab-recipe-text" : "steps-heading"}>
                 <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
                   Приготовление
