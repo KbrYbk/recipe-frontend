@@ -13,13 +13,14 @@ import localRecipes from "../../data/recipes.json";
 import { fetchRecipesFromApi, mapBackendRecipe, fetchCategoriesFromApi } from "../../lib/api/recipes";
 import MarketPromoCard from "../../components/shared/MarketPromoCard.astro";
 
-const marketLinks: Record<string, { url: string; title: string; description: string; icon?: string; image?: string; buttonText?: string }> = {
+const marketLinks: Record<string, { url: string; title: string; description: string; icon?: string; image?: string; buttonText?: string; erid?: string }> = {
   aerogril: {
-    url: "https://market.yandex.ru/cc/AyzffM?erid=5jtCeReNx12oak2pVMEWZBW",
+    url: "https://market.yandex.ru/cc/BC9i2H?erid=5jtCeReNx12oak2pVMEWZBW",
     title: "Ищете идеальный аэрогриль?",
     description: "Собрали для вас лучшие модели на Яндекс Маркете по отличным ценам. Начните готовить эти рецепты уже завтра!",
     image: "/images/promo/aerogril.webp",
     icon: "lucide:shopping-bag",
+    erid: "5jtCeReNx12oak2pVMEWZBW",
   },
 };
 
