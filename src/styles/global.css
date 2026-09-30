@@ -36,8 +36,9 @@
   --color-line: var(--border-subtle);
 
   --color-accent-soft: var(--bg-accent);
-  --dark-mode: selector(.dark);
 }
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
@@ -73,7 +74,7 @@
     transition:
       background-color 0.3s ease,
       color 0.3s ease;
-    @apply antialiased relative min-h-screen;
+    @apply relative min-h-screen antialiased;
     overflow-x: hidden;
   }
 
@@ -135,7 +136,7 @@
     /* Используем имена из @theme (без префикса --color) */
     @apply bg-brand hover:bg-brand-hover shadow-brand/20 rounded-xl px-6 py-2 font-bold text-white shadow-lg transition-all;
   }
-  
+
   .glass-border-3d {
     border: none !important;
     position: relative;
@@ -143,21 +144,21 @@
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
-  
+
   .glass-border-3d::after {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    box-shadow: 
-      inset 0 1.5px 0 rgba(255, 255, 255, 0.8), 
+    box-shadow:
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.8),
       inset 0 -1px 0 rgba(0, 0, 0, 0.05);
   }
-  
+
   .dark .glass-border-3d::after {
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.12), 
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
       inset 0 -1px 0 rgba(0, 0, 0, 0.3);
   }
 

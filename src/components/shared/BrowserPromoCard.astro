@@ -1,0 +1,141 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  referralUrl?: string;
+  erid?: string;
+  className?: string;
+}
+
+const {
+  referralUrl = "https://redirect.appmetrica.yandex.com/serve/462352041671481484?partner_id=831050&appmetrica_js_redirect=0&clid=15344729&banerid=1315344730&full=0&erid=5jtCeReNx12oak2qytDBrEr",
+  erid = "5jtCeReNx12oak2qytDBrEr",
+  className = "",
+} = Astro.props;
+---
+
+<aside
+  class:list={[
+    "glass-border-3d group bg-card-bg relative overflow-hidden rounded-3xl p-6 shadow-xl shadow-black/10 transition-all hover:shadow-2xl hover:shadow-black/15 sm:p-8 print:hidden",
+    className,
+  ]}
+  aria-label="Рекомендация: Яндекс Браузер для кухни и кулинарии"
+>
+  <!-- Фоновый декоративный градиент -->
+  <div class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-red-500/10 blur-3xl transition-transform duration-700 group-hover:scale-125 dark:bg-red-500/15"></div>
+  <div class="bg-brand/10 dark:bg-brand/15 pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-125"></div>
+
+  <div class="relative flex flex-col">
+    <!-- Шапка карточки: Иконка + Заголовок -->
+    <div class="flex items-start gap-4 sm:gap-5">
+      <!-- Иконка Яндекс Браузера (оригинальные фирменные цвета Яндекса) -->
+      <div
+        class="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-zinc-100/90 p-2 shadow-sm ring-1 ring-black/10 transition-transform duration-300 group-hover:scale-105 sm:h-18 sm:w-18 dark:bg-[#1f2327] dark:ring-white/10"
+      >
+        <svg viewBox="0 0 200 200" class="h-full w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.14)]" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <filter id="yb_glow_filter" x="760.902" y="82.1415" width="177.41" height="177.41" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+              <feGaussianBlur stdDeviation="1.92837"></feGaussianBlur>
+            </filter>
+            <linearGradient id="yb_gradient" x1="764.759" y1="174.054" x2="932.78" y2="159.075" gradientUnits="userSpaceOnUse">
+              <stop offset="0.195275" stop-color="#FF7223"></stop>
+              <stop offset="0.512986" stop-color="#FF2C21"></stop>
+              <stop offset="0.819891" stop-color="#FF5CDB"></stop>
+            </linearGradient>
+          </defs>
+          <g transform="translate(-748.76, -70)">
+            <g filter="url(#yb_glow_filter)">
+              <path
+                d="M764.759 170.847C764.759 123.986 802.747 85.9983 849.607 85.9983C896.468 85.9983 934.456 123.986 934.456 170.847C934.456 217.707 896.468 255.695 849.607 255.695C802.747 255.695 764.759 217.707 764.759 170.847Z"
+                fill="url(#yb_gradient)"></path>
+            </g>
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M942.406 170C942.406 221.715 900.476 263.644 848.761 263.644C797.046 263.644 755.117 221.715 755.117 170C755.117 118.285 797.046 76.3556 848.761 76.3556C900.476 76.3556 942.406 118.285 942.406 170ZM911.216 127.486C911.874 128.487 912.381 129.412 912.673 130.172H912.736C912.875 130.539 912.989 130.919 913.002 131.274C913.015 131.616 912.951 132.06 912.609 132.389L861.562 182.067C861.106 182.511 860.853 183.119 860.853 183.753L860.903 244.517C860.903 244.973 860.637 245.315 860.409 245.531C860.169 245.746 859.852 245.949 859.497 246.113C858.788 246.456 857.812 246.772 856.659 247.038C854.328 247.57 851.148 247.951 847.625 247.951C844.103 247.951 840.923 247.57 838.592 247.038C837.439 246.772 836.463 246.456 835.754 246.113C835.399 245.949 835.082 245.759 834.842 245.531C834.613 245.315 834.347 244.973 834.347 244.517L834.398 183.753C834.398 183.119 834.145 182.511 833.689 182.067L782.642 132.389C782.3 132.06 782.236 131.616 782.249 131.274C782.274 130.932 782.376 130.552 782.515 130.172C782.794 129.412 783.313 128.487 783.972 127.486C785.29 125.471 787.279 123.001 789.483 120.669V120.657C791.84 118.3 794.247 116.235 796.198 114.879C797.161 114.208 798.061 113.676 798.796 113.384C799.163 113.232 799.543 113.131 799.885 113.106C800.227 113.093 800.658 113.156 800.988 113.473L846.675 157.969C847.182 158.464 848.006 158.464 848.512 157.969L894.2 113.473C894.529 113.144 894.96 113.08 895.302 113.106C895.657 113.131 896.024 113.232 896.392 113.384C897.127 113.676 898.014 114.208 898.989 114.879C900.94 116.235 903.348 118.287 905.704 120.657V120.669C907.909 123.001 909.898 125.471 911.216 127.486Z"
+              fill="white"></path>
+          </g>
+        </svg>
+        <span
+          class="bg-brand absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full text-white shadow-sm ring-2 ring-zinc-100 dark:ring-[#1f2327]"
+          title="Кулинарный помощник"
+        >
+          <Icon name="lucide:sparkles" class="h-3.5 w-3.5" />
+        </span>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <div class="mb-2 inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600 dark:text-red-400">
+          <Icon name="lucide:mic" class="h-3.5 w-3.5" />
+          <span>Удобно во время готовки</span>
+        </div>
+        <h3 class="text-text-main text-xl leading-snug font-bold tracking-tight sm:text-2xl md:text-3xl">Готовьте с комфортом в Яндекс Браузере</h3>
+      </div>
+    </div>
+
+    <!-- Текст описания -->
+    <p class="text-text-muted mt-4 text-sm leading-relaxed sm:text-base">
+      Голосовой помощник <strong class="text-text-main font-semibold">Алиса</strong> зачитает шаги рецепта и засечёт нужные таймеры, пока ваши руки заняты или в муке. А встроенные нейросети мгновенно озвучат
+      зарубежные кулинарные видео на русском языке!
+    </p>
+
+    <!-- Блок с преимуществами: лаконичные карточки -->
+    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <!-- 1. Голосовые команды -->
+      <div class="bg-page-bg/70 border-line/60 flex flex-row items-start gap-3 rounded-2xl border p-3.5 sm:flex-col sm:gap-2.5">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">
+          <Icon name="lucide:mic" class="h-4.5 w-4.5" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-text-main text-sm leading-snug font-bold sm:text-base">Голосовые команды</div>
+          <div class="text-text-muted mt-0.5 text-xs leading-snug sm:text-xs">Управление шагами и таймерами голосом</div>
+        </div>
+      </div>
+
+      <!-- 2. Перевод видео -->
+      <div class="bg-page-bg/70 border-line/60 flex flex-row items-start gap-3 rounded-2xl border p-3.5 sm:flex-col sm:gap-2.5">
+        <div class="bg-brand/10 text-brand flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
+          <Icon name="lucide:video" class="h-4.5 w-4.5" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-text-main text-sm leading-snug font-bold sm:text-base">Перевод видео</div>
+          <div class="text-text-muted mt-0.5 text-xs leading-snug sm:text-xs">Озвучка зарубежных роликов на русском</div>
+        </div>
+      </div>
+
+      <!-- 3. Без рекламы -->
+      <div class="bg-page-bg/70 border-line/60 flex flex-row items-start gap-3 rounded-2xl border p-3.5 sm:flex-col sm:gap-2.5">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <Icon name="lucide:shield-check" class="h-4.5 w-4.5" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-text-main text-sm leading-snug font-bold sm:text-base">Без рекламы</div>
+          <div class="text-text-muted mt-0.5 text-xs leading-snug sm:text-xs">Быстрая загрузка страниц без баннеров</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Кнопка установки (снизу) -->
+    <div class="mt-7 flex flex-col items-center justify-center">
+      <a
+        href={referralUrl}
+        rel="sponsored noopener"
+        target="_blank"
+        class="bg-brand shadow-brand/25 hover:bg-brand-hover hover:shadow-brand/35 inline-flex w-full items-center justify-center gap-2.5 rounded-2xl px-8 py-4 text-center text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0 sm:w-auto sm:min-w-[320px] sm:text-lg"
+      >
+        <Icon name="lucide:download" class="h-5 w-5" />
+        <span>Установить бесплатно</span>
+      </a>
+      <span class="text-text-muted mt-2 text-center text-xs font-medium"> Для Windows, macOS, Android и iPhone • Официальная загрузка </span>
+    </div>
+
+    <!-- Юридическая маркировка рекламы в соответствии с законом РФ -->
+    <div class="border-line/60 text-text-muted/70 mt-6 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-[11px]">
+      <div>
+        <span>Реклама. ООО «Яндекс», ИНН 7736207543</span>
+        {erid && <span> • erid: {erid}</span>}
+      </div>
+      <span class="opacity-80">Партнёрский материал</span>
+    </div>
+  </div>
+</aside>

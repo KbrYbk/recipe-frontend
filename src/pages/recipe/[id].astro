@@ -25,6 +25,7 @@ import RatingStars from "../../components/recipe/RatingStars.astro";
 import RecipeLightbox from "../../components/recipe/RecipeLightbox.astro";
 import FormattedText from "../../components/recipe/FormattedText.astro";
 import RecipeSteps from "../../components/recipe/RecipeSteps.astro";
+import BrowserPromoCard from "../../components/shared/BrowserPromoCard.astro";
 import { getRecipeUrl, slugify } from "../../lib/slugify";
 
 const { id } = Astro.params;
@@ -353,6 +354,10 @@ const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : d
                   Приготовление
                 </h2>
                 <RecipeSteps steps={recipe.steps} recipeSlug={id ?? "recipe"} />
+              </div>
+
+              <div class="mt-10">
+                <BrowserPromoCard />
               </div>
             </div>
           </div>
