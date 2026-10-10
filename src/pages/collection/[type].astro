@@ -5,6 +5,7 @@ import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
 import RecipeCard from "../../components/RecipeCard.astro";
 import Pagination from "../../components/ui/Pagination.astro";
 import { fetchCollectionFromApi, mapBackendRecipe } from "../../lib/api/recipes";
+import HttpNotFound from "../../components/errors/HttpNotFound.astro";
 
 const { type } = Astro.params;
 const currentPage = parseInt(Astro.url.searchParams.get("page") || "1");
@@ -17,11 +18,24 @@ const typeNames: Record<string, string> = {
   hd: "Здоровое питание",
 };
 
-const title = typeNames[type as string] || "Коллекция рецептов";
+const title = typeNames[type as string];
 
-const { list, total = 0, totalPages = 1, ok } = await fetchCollectionFromApi(type as string, currentPage);
+if (!title) {
+  Astro.response.status = 404;
+}
 
-const recipes = (list || []).map(mapBackendRecipe);
+let recipes: any[] = [];
+let total = 0;
+let totalPages = 1;
+let ok = false;
+
+if (title) {
+  const data = await fetchCollectionFromApi(type as string, currentPage);
+  recipes = (data.list || []).map(mapBackendRecipe);
+  total = data.total || 0;
+  totalPages = data.totalPages || 1;
+  ok = data.ok;
+}
 
 // Универсальный хелпер ссылок для пагинации коллекций
 function collectionHref(page: number) {
@@ -32,44 +46,50 @@ function collectionHref(page: number) {
 }
 
 // Для SEO
-const description = `Лучшие рецепты в категории ${title.toLowerCase()} на SwagEda. Пошаговые инструкции и фото.`;
+const description = title ? `Лучшие рецепты в категории ${title.toLowerCase()} на SwagEda. Пошаговые инструкции и фото.` : "Страница не найдена.";
 ---
 
 <Layout
-  title={`${title} — SwagEda`}
+  title={title ? `${title} — SwagEda` : "Страница не найдена — SwagEda"}
   description={description}
-  keywords={`${title.toLowerCase()} рецепты, ${title.toLowerCase()} рецепт, как приготовить ${title.toLowerCase()}, лучшие ${title.toLowerCase()}, ${title.toLowerCase()} с фото, пошаговые рецепты ${title.toLowerCase()}, домашняя кухня, рецепты на каждый день`}
-  noindex={currentPage > 1}
+  keywords={title
+    ? `${title.toLowerCase()} рецепты, ${title.toLowerCase()} рецепт, как приготовить ${title.toLowerCase()}, лучшие ${title.toLowerCase()}, ${title.toLowerCase()} с фото, пошаговые рецепты ${title.toLowerCase()}, домашняя кухня, рецепты на каждый день`
+    : undefined}
+  noindex={currentPage > 1 || !title}
 >
-  <div class="mx-auto max-w-6xl px-4">
-    <header class="border-line mb-12 border-b py-10 md:py-16">
-      <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: title }]} />
-      <h1 class="text-text-main mt-4 text-4xl font-bold md:text-5xl">
-        <span class="text-brand">{title}</span>
-      </h1>
-      <p class="text-text-muted mt-4 text-lg">
-        {total > 0 ? `Наша подборка вкусных идей для раздела "${title.toLowerCase()}". Показано ${recipes.length} из ${total} рецептов.` : "К сожалению, в этой коллекции пока нет рецептов."}
-      </p>
-    </header>
+  {
+    !title ? (
+      <HttpNotFound />
+    ) : (
+      <div class="mx-auto max-w-6xl px-4">
+        <header class="border-line mb-12 border-b py-10 md:py-16">
+          <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: title }]} />
+          <h1 class="text-text-main mt-4 text-4xl font-bold md:text-5xl">
+            <span class="text-brand">{title}</span>
+          </h1>
+          <p class="text-text-muted mt-4 text-lg">
+            {total > 0 ? `Наша подборка вкусных идей для раздела "${title.toLowerCase()}". Показано ${recipes.length} из ${total} рецептов.` : "К сожалению, в этой коллекции пока нет рецептов."}
+          </p>
+        </header>
 
-    <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-      {recipes.map((recipe: any) => <RecipeCard recipe={recipe} />)}
-    </div>
-
-    {
-      recipes.length === 0 && !ok && (
-        <div class="py-20 text-center">
-          <p class="text-text-muted">Не удалось загрузить коллекцию. Пожалуйста, попробуйте позже.</p>
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {recipes.map((recipe: any) => (
+            <RecipeCard recipe={recipe} />
+          ))}
         </div>
-      )
-    }
 
-    {
-      totalPages > 1 && recipes.length > 0 && (
-        <div class="mt-12">
-          <Pagination currentPage={currentPage} totalPages={totalPages} baseUrlFunc={(p) => collectionHref(p)} />
-        </div>
-      )
-    }
-  </div>
+        {recipes.length === 0 && !ok && (
+          <div class="py-20 text-center">
+            <p class="text-text-muted">Не удалось загрузить коллекцию. Пожалуйста, попробуйте позже.</p>
+          </div>
+        )}
+
+        {totalPages > 1 && recipes.length > 0 && (
+          <div class="mt-12">
+            <Pagination currentPage={currentPage} totalPages={totalPages} baseUrlFunc={(p) => collectionHref(p)} />
+          </div>
+        )}
+      </div>
+    )
+  }
 </Layout>
