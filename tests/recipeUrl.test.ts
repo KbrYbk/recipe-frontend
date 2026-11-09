@@ -22,7 +22,7 @@ describe("getRecipeUrl", () => {
     expect(getRecipeUrl({ id: "db-7", title: "Каша" })).toBe("/recipe/7-kasha");
   });
   it("невалидный id → каталог", () => {
-    expect(getRecipeUrl({ id: "local-5", title: "x" })).toBe("/recipes");
+    expect(getRecipeUrl({ id: "tmp-5", title: "x" })).toBe("/recipes");
   });
 });
 
@@ -48,9 +48,10 @@ describe("parseRecipeParam", () => {
   it("старые адреса", () => {
     expect(parseRecipeParam("db-40723")).toEqual({ id: 40723, slug: null });
     expect(parseRecipeParam("40723")).toEqual({ id: 40723, slug: null });
+    expect(parseRecipeParam("local-999001")).toEqual({ id: 999001, slug: null });
   });
   it("мусор → null", () => {
-    for (const v of ["", "abc", "local-999001", "0", "-5", "db-", "db-12-x", undefined, null]) expect(parseRecipeParam(v)).toBeNull();
+    for (const v of ["", "abc", "local-", "local-1-x", "0", "-5", "db-", "db-12-x", undefined, null]) expect(parseRecipeParam(v)).toBeNull();
   });
 });
 
@@ -63,7 +64,7 @@ describe("parseRecipeId / хранимые id", () => {
     expect(normalizeStoredId("db-12")).toBe("12");
   });
   it("список: старый формат, дубли и мусор", () => {
-    expect(normalizeStoredIdList(["db-1", "2", 1, "local-999001", null, "db-2", 3])).toEqual(["1", "2", "3"]);
+    expect(normalizeStoredIdList(["db-1", "2", 1, "local-999001", null, "db-2", 3, "x-5"])).toEqual(["1", "2", "999001", "3"]);
     expect(normalizeStoredIdList("oops")).toEqual([]);
   });
 });

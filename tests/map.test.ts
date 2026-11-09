@@ -60,7 +60,7 @@ describe("mapRecipeCard / mapRecipe", () => {
     expect(mapRecipe({ ...raw, servings: 4 })?.servings).toBe(4);
   });
   it("невалидный id → null, неизвестная сложность отбрасывается", () => {
-    expect(mapRecipeCard({ ...raw, id: "local-1" })).toBeNull();
+    expect(mapRecipeCard({ ...raw, id: "tmp-1" })).toBeNull();
     expect(mapRecipeCard({ ...raw, difficulty: "insane" })?.difficulty).toBeUndefined();
   });
 });

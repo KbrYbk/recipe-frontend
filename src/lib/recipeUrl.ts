@@ -28,10 +28,10 @@ export function isCanonicalRecipePath(value: unknown): value is string {
   return !!m && m[1] !== "recipe" && isValidRecipeSlug(m[2]);
 }
 
-/** Числовой id из любых исторических форм: 123, "123", "db-123". Невалидное → null. */
+/** Числовой id из любых исторических форм: 123, "123", "db-123", "local-999001" (авторские рецепты). Невалидное → null. */
 export function parseRecipeId(value: unknown): number | null {
   if (typeof value === "number") return Number.isSafeInteger(value) && value > 0 ? value : null;
-  const m = /^(?:db-)?(\d{1,12})$/.exec(String(value ?? "").trim());
+  const m = /^(?:db-|local-)?(\d{1,12})$/.exec(String(value ?? "").trim());
   if (!m) return null;
   const n = Number(m[1]);
   return Number.isSafeInteger(n) && n > 0 ? n : null;
@@ -62,11 +62,11 @@ export interface ParsedRecipeParam {
 
 /**
  * Разбор сегмента `[id]` устаревшего маршрута `/recipe/[id]`:
- * `123-borsch` → {id:123, slug:"borsch"}, `123` / `db-123` → {id:123, slug:null}. Остальное → null.
+ * `123-borsch` → {id:123, slug:"borsch"}, `123` / `db-123` / `local-123` → {id:123, slug:null}. Остальное → null.
  */
 export function parseRecipeParam(param: string | undefined | null): ParsedRecipeParam | null {
   const raw = String(param ?? "").trim();
-  const legacy = /^db-(\d{1,12})$/.exec(raw);
+  const legacy = /^(?:db|local)-(\d{1,12})$/.exec(raw);
   if (legacy) {
     const id = parseRecipeId(legacy[1]);
     return id === null ? null : { id, slug: null };
@@ -80,7 +80,7 @@ export function parseRecipeParam(param: string | undefined | null): ParsedRecipe
 
 /**
  * Нормализация id, сохранённого в localStorage (избранное, лайки, оценки):
- * исторически хранились значения вида "db-123", теперь — "123".
+ * исторически хранились значения вида "db-123" и "local-999001", теперь — "123".
  */
 export function normalizeStoredId(value: unknown): string | null {
   const id = parseRecipeId(value);
