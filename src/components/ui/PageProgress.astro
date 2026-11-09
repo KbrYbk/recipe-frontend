@@ -5,7 +5,7 @@
 <script>
   (() => {
     const KEY = "__pageLoading";
-    const _window = window as any;
+    const _window = window as unknown as Record<string, unknown>;
     const bar = () => document.getElementById("page-progress");
     const main = () => document.getElementById("main-content");
     const status = () => document.getElementById("route-status");
