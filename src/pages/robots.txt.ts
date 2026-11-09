@@ -1,20 +1,8 @@
 import type { APIRoute } from "astro";
+import { buildRobotsTxt } from "../lib/robots";
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = site?.origin ?? "https://swageda.ru";
-  const body = [
-    "User-agent: *",
-    "Allow: /",
-    "Disallow: /random",
-    "Disallow: /favorites",
-    "Disallow: /shopping-list",
-    "Disallow: /api-proxy/",
-    "Disallow: /partials/",
-    "",
-    `Sitemap: ${origin}/sitemap.xml`,
-    "",
-  ].join("\n");
-  return new Response(body, {
+  return new Response(buildRobotsTxt(site?.origin ?? "https://swageda.ru"), {
     headers: { "Content-Type": "text/plain; charset=utf-8" },
   });
 };
