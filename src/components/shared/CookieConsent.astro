@@ -1,24 +1,36 @@
 ---
 /**
- * Баннер согласия на cookie и аналитику. Логика — src/scripts/consent.ts.
- * Мобильный: компактная полоса над нижней навигацией; десктоп: карточка в левом нижнем углу.
+ * Баннер согласия на cookie и аналитику (дизайн как в исходной версии сайта).
+ * Логика — src/scripts/consent.ts: Метрика загружается только после «Принято!».
  */
+import { Icon } from "astro-icon/components";
+import Button from "../ui/Button.astro";
 ---
 
 <div
   id="cookie-banner"
-  class="glass-border-3d bg-card-bg/95 fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] hidden translate-y-4 rounded-2xl p-3 opacity-0 shadow-2xl shadow-black/20 backdrop-blur-md transition-all duration-300 md:inset-x-auto md:bottom-8 md:left-8 md:max-w-sm md:p-5 print:hidden"
-  role="region"
-  aria-label="Согласие на использование cookie"
+  class="glass-border-3d bg-card-bg/80 fixed bottom-6 left-6 z-50 hidden max-w-sm translate-y-10 rounded-3xl p-6 opacity-0 shadow-2xl shadow-black/20 backdrop-blur-md transition-all duration-500 md:bottom-8 md:left-8 print:hidden"
+  role="alert"
+  aria-live="polite"
 >
-  <p class="text-text-muted text-xs leading-snug md:text-sm md:leading-relaxed">
-    Мы используем cookie и Яндекс Метрику, чтобы понимать, как улучшить сайт. Аналитика включится только с вашего согласия.
-    <a href="/privacy#analytics" class="text-brand underline underline-offset-2">Подробнее</a>
-  </p>
-  <div class="mt-2 flex gap-2 md:mt-4">
-    <button type="button" data-consent-reject class="glass-border-3d text-text-main hover:text-brand flex-1 cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold transition-colors"
-      >Отклонить</button
-    >
-    <button type="button" data-consent-accept class="bg-brand hover:bg-brand-hover flex-1 cursor-pointer rounded-xl px-3 py-2 text-sm font-bold text-white transition-colors">Принять</button>
+  <div class="flex items-start gap-4">
+    <div class="bg-brand/10 text-brand flex h-12 w-12 shrink-0 items-center justify-center rounded-full">
+      <Icon name="lucide:cookie" class="h-6 w-6" aria-hidden="true" />
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-text-main text-lg font-bold">Рецепты и Cookie</h3>
+        <p class="text-text-muted text-sm leading-relaxed">
+          Мы используем cookie, чтобы сайт стал вкуснее. <a href="/privacy#analytics" class="text-brand underline underline-offset-2">Подробнее</a>
+        </p>
+      </div>
+
+      <Button data-consent-accept variant="primary" fullWidth class="px-5 py-3 text-sm">
+        <Icon name="lucide:check" slot="icon-left" class="h-4 w-4 shrink-0" />
+        Принято!
+      </Button>
+      <button type="button" data-consent-reject class="text-text-muted hover:text-brand -mt-2 cursor-pointer text-xs font-medium transition-colors"> Отклонить </button>
+    </div>
   </div>
 </div>

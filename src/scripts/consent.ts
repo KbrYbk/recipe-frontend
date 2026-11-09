@@ -48,13 +48,13 @@ function loadMetrika(): void {
 }
 
 function hideBanner(banner: HTMLElement): void {
-  banner.classList.add("translate-y-4", "opacity-0");
-  window.setTimeout(() => banner.classList.add("hidden"), 300);
+  banner.classList.add("translate-y-10", "opacity-0");
+  window.setTimeout(() => banner.classList.add("hidden"), 500);
 }
 
 function showBanner(banner: HTMLElement): void {
   banner.classList.remove("hidden");
-  requestAnimationFrame(() => banner.classList.remove("translate-y-4", "opacity-0"));
+  requestAnimationFrame(() => banner.classList.remove("translate-y-10", "opacity-0"));
 }
 
 function init(): void {
