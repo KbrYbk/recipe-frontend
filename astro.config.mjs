@@ -8,6 +8,8 @@ export default defineConfig({
   integrations: [icon()],
   vite: {
     plugins: [tailwindcss()],
+    // Время сборки: нижняя граница Last-Modified страниц (после выкатки шаблона страницы считаются изменёнными).
+    define: { __BUILD_TIME__: JSON.stringify(new Date().toISOString()) },
   },
   output: "server",
   adapter: node({
