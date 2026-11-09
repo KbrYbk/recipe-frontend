@@ -80,6 +80,13 @@ const activeIndex = category ? categories.findIndex((c) => c.id === category.id)
 // Активная категория всегда видна без раскрытия списка.
 const visibleCategories = categories.slice(0, VISIBLE_CATEGORIES).concat(activeIndex >= VISIBLE_CATEGORIES ? [categories[activeIndex]] : []);
 const hiddenCategories = categories.slice(VISIBLE_CATEGORIES).filter((c) => c.id !== category?.id);
+const pluralCategories = (n: number) => {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "категория";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "категории";
+  return "категорий";
+};
 const categoryHref = (c: Category | null) => buildCatalogHref(c ? `/${c.path}` : "/recipes", query, {});
 
 const promo = category ? CATEGORY_PROMOS[category.path] : undefined;
@@ -159,60 +166,13 @@ const searchParams: Record<string, string> = {
 
     <div class="flex flex-col gap-6 lg:flex-row lg:gap-8">
       <aside id="catalog-filters" class="hidden w-full shrink-0 lg:block lg:w-72" data-filters-panel>
-        <div class="glass-border-3d bg-card-bg/60 rounded-3xl p-5 shadow-xl shadow-black/15 backdrop-blur-md lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:p-6">
+        <div class="glass-border-3d bg-card-bg/60 rounded-3xl p-5 shadow-xl shadow-black/15 backdrop-blur-md lg:p-6">
           <h2 class="text-text-main mb-4 flex items-center gap-2 text-xl font-bold lg:mb-6">
             <Icon name="lucide:filter" class="text-brand h-5 w-5" aria-hidden="true" />
             Фильтры
           </h2>
 
-          <div class="-mx-2 flex-1 space-y-6 px-2 lg:overflow-y-auto lg:overscroll-contain" tabindex="0" role="region" aria-label="Фильтры рецептов">
-            <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
-              <ul class="space-y-1" role="list">
-                <li>
-                  <Button href={categoryHref(null)} variant="ghost" class={`w-full justify-start text-left ${!category ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}>Все</Button>
-                </li>
-                {
-                  visibleCategories.map((c) => (
-                    <li>
-                      <Button
-                        href={categoryHref(c)}
-                        variant="ghost"
-                        class={`w-full justify-start text-left whitespace-normal ${category?.id === c.id ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}
-                        aria-current={category?.id === c.id ? "page" : undefined}
-                      >
-                        {c.title}
-                      </Button>
-                    </li>
-                  ))
-                }
-              </ul>
-              {
-                hiddenCategories.length > 0 && (
-                  <div class="mt-2">
-                    <button
-                      type="button"
-                      class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
-                      data-category-toggle
-                      aria-expanded="false"
-                    >
-                      <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron aria-hidden="true" />
-                      Ещё {hiddenCategories.length} категорий
-                    </button>
-                    <ul class="mt-2 hidden space-y-1" data-category-hidden>
-                      {hiddenCategories.map((c) => (
-                        <li>
-                          <Button href={categoryHref(c)} variant="ghost" class="text-text-muted w-full justify-start text-left whitespace-normal">
-                            {c.title}
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )
-              }
-            </div>
-
+          <div class="space-y-6" role="region" aria-label="Фильтры рецептов">
             <div>
               <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
               <div class="flex flex-wrap gap-2">
@@ -275,6 +235,52 @@ const searchParams: Record<string, string> = {
                 </Button>
               )
             }
+            <div class="border-line border-t pt-5">
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
+              <ul class="space-y-1" role="list">
+                <li>
+                  <Button href={categoryHref(null)} variant="ghost" class={`w-full justify-start text-left ${!category ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}>Все</Button>
+                </li>
+                {
+                  visibleCategories.map((c) => (
+                    <li>
+                      <Button
+                        href={categoryHref(c)}
+                        variant="ghost"
+                        class={`w-full justify-start text-left whitespace-normal ${category?.id === c.id ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}
+                        aria-current={category?.id === c.id ? "page" : undefined}
+                      >
+                        {c.title}
+                      </Button>
+                    </li>
+                  ))
+                }
+              </ul>
+              {
+                hiddenCategories.length > 0 && (
+                  <div class="mt-2">
+                    <button
+                      type="button"
+                      class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
+                      data-category-toggle
+                      aria-expanded="false"
+                    >
+                      <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron aria-hidden="true" />
+                      Ещё {hiddenCategories.length} {pluralCategories(hiddenCategories.length)}
+                    </button>
+                    <ul class="mt-2 hidden space-y-1" data-category-hidden>
+                      {hiddenCategories.map((c) => (
+                        <li>
+                          <Button href={categoryHref(c)} variant="ghost" class="text-text-muted w-full justify-start text-left whitespace-normal">
+                            {c.title}
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              }
+            </div>
           </div>
         </div>
       </aside>
