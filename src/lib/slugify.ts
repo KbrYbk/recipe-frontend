@@ -1,3 +1,7 @@
+/**
+ * Транслитерация в URL-slug. Алгоритм — эталон для бэкенда (PHP `App\Support\Slug::make`):
+ * результаты должны совпадать байт в байт, поэтому менять его нельзя без синхронной правки бэкенда.
+ */
 export function slugify(str: string): string {
   if (!str) return "";
 
@@ -41,11 +45,4 @@ export function slugify(str: string): string {
   slug = slug.replace(/-+/g, "-").replace(/^-|-$/g, "");
 
   return slug || "recipe";
-}
-export function getRecipeUrl(r: any): string {
-  if (r?.seo_url) return `/${r.seo_url}`;
-
-  // fallback to old db- structure
-  const cleanId = String(r?.id || "").replace(/^(local-|db-)/, "");
-  return `/recipe/db-${cleanId}`;
 }
