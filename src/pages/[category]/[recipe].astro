@@ -26,7 +26,7 @@ import SimilarRecipes from "../../components/recipe/SimilarRecipes.astro";
 import { Icon } from "astro-icon/components";
 import { fetchRecipeBySlug, fetchSimilar } from "../../lib/api/recipes";
 import { isCanonicalRecipePath, isValidRecipeSlug } from "../../lib/recipeUrl";
-import { buildRecipeJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
+import { buildRecipeJsonLd, isoDate, serializeJsonLd } from "../../lib/recipeSchema";
 import { AEROGRIL_PROMO, isAerogrilRecipe } from "../../lib/promos";
 import { BUILD_TIME_MS, isNotModified, lastModifiedOf, toHttpDate } from "../../lib/httpCache";
 import { recipeDescription, recipeTitle } from "../../lib/seo";
@@ -77,7 +77,7 @@ const metaDescription = recipe ? recipeDescription(recipe) : "";
 const pageTitle = recipe ? recipeTitle(recipe.title) : "";
 
 const jsonLd = recipe ? serializeJsonLd(buildRecipeJsonLd(recipe, origin, canonical)) : "";
-const recipeMeta = recipe ? { publishDate: recipe.created_at, category: recipe.category?.title, author: recipe.author } : undefined;
+const recipeMeta = recipe ? { publishDate: isoDate(recipe.created_at), category: recipe.category?.title, author: recipe.author } : undefined;
 const showAerogrilPromo = recipe ? isAerogrilRecipe(recipe) : false;
 const breadcrumbs = recipe
   ? [{ name: "Категории", href: "/categories" }, ...(recipe.category ? [{ name: recipe.category.title, href: recipe.category.href }] : []), { name: recipe.title, href: canonical }]

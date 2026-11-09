@@ -13,27 +13,61 @@ export function serializeJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
 }
 
+/** Длительность ISO 8601 с часами: 90 → «PT1H30M», 120 → «PT2H», 15 → «PT15M». Неизвестно → undefined. */
+export function isoDuration(minutes: number): string | undefined {
+  if (!(minutes > 0)) return undefined;
+  const total = Math.round(minutes);
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  const out = `PT${h ? `${h}H` : ""}${m ? `${m}M` : ""}`;
+  return out === "PT" ? undefined : out;
+}
+
+/** Дата в каноническом ISO 8601 без микросекунд: «2026-03-30T14:46:44.000000Z» → «2026-03-30T14:46:44Z». */
+export function isoDate(value: string | undefined | null): string | undefined {
+  if (!value) return undefined;
+  const ms = Date.parse(String(value).trim());
+  if (!Number.isFinite(ms)) return undefined;
+  return new Date(Math.floor(ms / 1000) * 1000).toISOString().replace(".000Z", "Z");
+}
+
+/** Прямой видеофайл (contentUrl) или страница плеера для iframe (embedUrl: YouTube, RuTube, VK…). */
+function videoUrls(url: string): { contentUrl?: string; embedUrl?: string } {
+  return /\.(mp4|webm|ogv|mov|m3u8)(\?|#|$)/i.test(url) ? { contentUrl: url } : { embedUrl: url };
+}
+
+/** «1 порция», «2 порции», «5 порций». */
+function servingsText(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  const word = mod10 === 1 && mod100 !== 11 ? "порция" : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "порции" : "порций";
+  return `${n} ${word}`;
+}
+
 export function buildRecipeJsonLd(recipe: Recipe, origin: string, canonicalPath: string): Record<string, unknown> {
   const image = toAbsoluteUrl(origin, recipe.main_image);
   const pageUrl = toAbsoluteUrl(origin, canonicalPath);
-  const time = recipe.cooking_time > 0 ? `PT${recipe.cooking_time}M` : undefined;
+  const published = isoDate(recipe.created_at);
+  const modified = isoDate(recipe.updated_at) ?? published;
 
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Recipe",
+    "@id": pageUrl ? `${pageUrl}#recipe` : undefined,
+    mainEntityOfPage: pageUrl,
     name: recipe.title,
     description: recipe.description || undefined,
     image: image ? [image] : undefined,
     url: pageUrl,
-    cookTime: time,
-    totalTime: time,
+    // Одно значение времени из данных — это общее время; cookTime/prepTime не выдумываем.
+    totalTime: isoDuration(recipe.cooking_time),
     recipeCategory: recipe.category?.title,
+    keywords: recipe.category?.title ? recipe.category.title.toLocaleLowerCase("ru-RU") : undefined,
     recipeIngredient: recipe.ingredients.map(formatIngredientLine),
     recipeInstructions: recipe.steps.map((step, index) => {
       const position = step.order ?? index + 1;
       return {
         "@type": "HowToStep",
-        name: `Шаг ${position}`,
         url: `${pageUrl}#step-${position}`,
         position,
         text: step.text,
@@ -49,19 +83,20 @@ export function buildRecipeJsonLd(recipe: Recipe, origin: string, canonicalPath:
             reviewCount: recipe.ratings_count || recipe.likes_count || 1,
           }
         : undefined,
-    author: { "@type": "Person", name: recipe.author || "Команда SwagEda" },
+    // Автор неизвестен — это редакция сайта (организация), а не человек.
+    author: recipe.author ? { "@type": "Person", name: recipe.author } : { "@type": "Organization", name: "SwagEda", url: `${origin.replace(/\/$/, "")}/` },
     // Порции — только если поле реально есть в данных (без выдуманных значений по умолчанию).
-    recipeYield: recipe.servings ? String(recipe.servings) : undefined,
-    datePublished: recipe.created_at,
-    dateModified: recipe.updated_at ?? recipe.created_at,
+    recipeYield: recipe.servings ? servingsText(recipe.servings) : undefined,
+    datePublished: published,
+    dateModified: modified,
     video: recipe.video_url
       ? {
           "@type": "VideoObject",
           name: recipe.title,
           description: recipe.description || recipe.title,
           thumbnailUrl: image ? [image] : undefined,
-          contentUrl: recipe.video_url,
-          uploadDate: recipe.created_at,
+          ...videoUrls(recipe.video_url),
+          uploadDate: published,
         }
       : undefined,
   };

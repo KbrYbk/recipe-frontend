@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { clampStep, firstUndoneStep, swipeDirection } from "../src/lib/cookState";
 import { mapRecipe } from "../src/lib/api/map";
-import { buildRecipeJsonLd, serializeJsonLd } from "../src/lib/recipeSchema";
+import { buildRecipeJsonLd, isoDate, isoDuration, serializeJsonLd } from "../src/lib/recipeSchema";
 
 describe("cookState", () => {
   it("firstUndoneStep", () => {
@@ -42,7 +42,8 @@ describe("buildRecipeJsonLd", () => {
 
   it("без выдуманного recipeYield", () => {
     expect(ld).not.toHaveProperty("recipeYield");
-    expect(buildRecipeJsonLd({ ...recipe, servings: 6 }, "https://swageda.ru", recipe.url).recipeYield).toBe("6");
+    expect(buildRecipeJsonLd({ ...recipe, servings: 6 }, "https://swageda.ru", recipe.url).recipeYield).toBe("6 порций");
+    expect(buildRecipeJsonLd({ ...recipe, servings: 2 }, "https://swageda.ru", recipe.url).recipeYield).toBe("2 порции");
   });
   it("aggregateRating/reviewCount — как раньше (решение владельца)", () => {
     expect(ld.aggregateRating).toEqual({ "@type": "AggregateRating", ratingValue: 4.5, reviewCount: 120 });
@@ -54,5 +55,44 @@ describe("buildRecipeJsonLd", () => {
   });
   it("безопасная сериализация", () => {
     expect(serializeJsonLd({ a: "</script><b>&" })).toBe('{"a":"\\u003c/script\\u003e\\u003cb\\u003e\\u0026"}');
+  });
+  it("длительность только totalTime, в формате с часами", () => {
+    expect(ld.totalTime).toBe("PT30M");
+    expect(ld).not.toHaveProperty("cookTime");
+    expect(buildRecipeJsonLd({ ...recipe, cooking_time: 90 }, "https://swageda.ru", recipe.url).totalTime).toBe("PT1H30M");
+    expect(buildRecipeJsonLd({ ...recipe, cooking_time: 0 }, "https://swageda.ru", recipe.url)).not.toHaveProperty("totalTime");
+  });
+  it("автор-фолбэк — Organization, mainEntityOfPage, без HowToStep.name", () => {
+    expect(ld.author).toEqual({ "@type": "Organization", name: "SwagEda", url: "https://swageda.ru/" });
+    expect(buildRecipeJsonLd({ ...recipe, author: "Валентина" }, "https://swageda.ru", recipe.url).author).toEqual({ "@type": "Person", name: "Валентина" });
+    expect(ld.mainEntityOfPage).toBe("https://swageda.ru/recipe/5-bliny");
+    expect((ld.recipeInstructions as Record<string, unknown>[])[0]).not.toHaveProperty("name");
+  });
+  it("даты без микросекунд", () => {
+    const r = buildRecipeJsonLd({ ...recipe, created_at: "2026-03-30T14:46:44.000000Z", updated_at: "2026-04-01T10:00:00.123456Z" }, "https://swageda.ru", recipe.url);
+    expect(r.datePublished).toBe("2026-03-30T14:46:44Z");
+    expect(r.dateModified).toBe("2026-04-01T10:00:00Z");
+  });
+  it("YouTube-плеер — embedUrl, прямой файл — contentUrl", () => {
+    const yt = buildRecipeJsonLd({ ...recipe, video_url: "https://www.youtube.com/embed/abc" }, "https://swageda.ru", recipe.url).video as Record<string, unknown>;
+    expect(yt.embedUrl).toBe("https://www.youtube.com/embed/abc");
+    expect(yt).not.toHaveProperty("contentUrl");
+    const mp4 = buildRecipeJsonLd({ ...recipe, video_url: "https://swageda.ru/v/a.mp4" }, "https://swageda.ru", recipe.url).video as Record<string, unknown>;
+    expect(mp4.contentUrl).toBe("https://swageda.ru/v/a.mp4");
+  });
+});
+
+describe("isoDuration / isoDate", () => {
+  it("PT1H30M", () => {
+    expect(isoDuration(90)).toBe("PT1H30M");
+    expect(isoDuration(120)).toBe("PT2H");
+    expect(isoDuration(45)).toBe("PT45M");
+    expect(isoDuration(0)).toBeUndefined();
+    expect(isoDuration(NaN)).toBeUndefined();
+  });
+  it("isoDate", () => {
+    expect(isoDate("2026-03-30T14:46:44.000000Z")).toBe("2026-03-30T14:46:44Z");
+    expect(isoDate("bad")).toBeUndefined();
+    expect(isoDate(undefined)).toBeUndefined();
   });
 });
