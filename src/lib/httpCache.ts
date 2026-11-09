@@ -34,3 +34,6 @@ export function isNotModified(ifModifiedSince: string | null | undefined, lastMo
 export function toHttpDate(date: Date): string {
   return date.toUTCString();
 }
+
+/** Время сборки фронта (мс), подставляется Vite (`define` в astro.config.mjs); 0 — вне сборки (тесты). */
+export const BUILD_TIME_MS: number = typeof __BUILD_TIME__ === "string" ? Date.parse(__BUILD_TIME__) || 0 : 0;

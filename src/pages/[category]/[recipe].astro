@@ -28,7 +28,7 @@ import { fetchRecipeBySlug, fetchSimilar } from "../../lib/api/recipes";
 import { isCanonicalRecipePath, isValidRecipeSlug } from "../../lib/recipeUrl";
 import { buildRecipeJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
 import { AEROGRIL_PROMO, isAerogrilRecipe } from "../../lib/promos";
-import { isNotModified, lastModifiedOf, toHttpDate } from "../../lib/httpCache";
+import { BUILD_TIME_MS, isNotModified, lastModifiedOf, toHttpDate } from "../../lib/httpCache";
 
 // Сегменты приводим к нижнему регистру: /Supy/Borsch → 301 на /supy/borsch.
 const slugParam = String(Astro.params.recipe ?? "").toLowerCase();
@@ -51,7 +51,7 @@ if (recipe && Astro.url.pathname !== recipe.url) {
   }
 }
 // Last-Modified из updated_at (не раньше времени сборки) и 304 на If-Modified-Since.
-const lastModified = recipe ? lastModifiedOf([recipe.updated_at, recipe.created_at], Date.parse(__BUILD_TIME__) || 0) : null;
+const lastModified = recipe ? lastModifiedOf([recipe.updated_at, recipe.created_at], BUILD_TIME_MS) : null;
 if (lastModified) {
   Astro.response.headers.set("Last-Modified", toHttpDate(lastModified));
   if (isNotModified(Astro.request.headers.get("if-modified-since"), lastModified)) {
