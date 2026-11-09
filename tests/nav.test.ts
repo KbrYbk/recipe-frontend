@@ -10,6 +10,9 @@ describe("navSection", () => {
     expect(navSection("/recipes")).toBe("recipes");
     expect(navSection("/recipes", "?page=2")).toBe("recipes");
     expect(navSection("/recipe/12-borsch")).toBe("recipes");
+    expect(navSection("/supy/borsch")).toBe("recipes");
+    expect(navSection("/supy")).toBeNull();
+    expect(navSection("/partials/recipe-cards")).toBeNull();
     expect(navSection("/categories")).toBe("recipes");
     expect(navSection("/collection/breakfast")).toBe("recipes");
     expect(navSection("/about")).toBeNull();

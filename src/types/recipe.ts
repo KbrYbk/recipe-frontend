@@ -31,6 +31,8 @@ export interface ApiRecipe {
   id: number | string;
   title: string;
   slug?: string | null;
+  /** Путь страницы рецепта на фронте: `/{категория}/{slug}`. */
+  path?: string | null;
   description?: string | null;
   main_image?: string | null;
   cooking_time?: number | string | null;

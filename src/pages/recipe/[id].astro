@@ -1,162 +1,29 @@
 ---
 /**
- * Страница рецепта. Канонический URL: /recipe/{id}-{slug}.
- * /recipe/db-{id}, /recipe/{id} и неверный slug → 301 на канонический.
+ * Устаревшие адреса рецепта: /recipe/{id}-{slug}, /recipe/{id}, /recipe/db-{id} (и /recipe/{slug}).
+ * Только 301 на канонический /{категория}/{slug} — одним переходом, без цепочек.
+ * Бэкенд недоступен → 503 (не 302: временный редирект на промежуточный адрес поисковикам не нужен).
  */
-import { Image } from "astro:assets";
-import Layout from "../../layouts/Layout.astro";
-import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
 import NotFoundPage from "../../components/errors/NotFoundPage.astro";
 import UnavailablePage from "../../components/errors/UnavailablePage.astro";
-import AdSlot from "../../components/shared/AdSlot.astro";
-import BrowserPromoCard from "../../components/shared/BrowserPromoCard.astro";
-import MarketPromoCard from "../../components/shared/MarketPromoCard.astro";
-import Surface from "../../components/ui/Surface.astro";
-import Divider from "../../components/ui/Divider.astro";
-import VideoPlayer from "../../components/ui/VideoPlayer.astro";
-import CookMode from "../../components/recipe/CookMode.astro";
-import FormattedText from "../../components/recipe/FormattedText.astro";
-import IngredientsList from "../../components/recipe/IngredientsList.astro";
-import ReadingProgress from "../../components/recipe/ReadingProgress.astro";
-import RecipeHeader from "../../components/recipe/RecipeHeader.astro";
-import RecipeLightbox from "../../components/recipe/RecipeLightbox.astro";
-import RecipeSteps from "../../components/recipe/RecipeSteps.astro";
-import SimilarRecipes from "../../components/recipe/SimilarRecipes.astro";
-import { Icon } from "astro-icon/components";
-import { fetchRecipe, fetchSimilar } from "../../lib/api/recipes";
-import { parseRecipeParam } from "../../lib/recipeUrl";
-import { buildRecipeJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
-import { AEROGRIL_PROMO, isAerogrilRecipe } from "../../lib/promos";
+import { fetchRecipe, fetchRecipeBySlug } from "../../lib/api/recipes";
+import { isCanonicalRecipePath, isValidRecipeSlug, parseRecipeParam } from "../../lib/recipeUrl";
 
-const parsed = parseRecipeParam(Astro.params.id);
-let state: "ok" | "not_found" | "unavailable" = "not_found";
-const [recipeRes, similar] = parsed ? await Promise.all([fetchRecipe(parsed.id), fetchSimilar(parsed.id, 6)]) : [null, null];
+const raw = String(Astro.params.id ?? "")
+  .trim()
+  .toLowerCase();
+const parsed = parseRecipeParam(raw);
+const res = parsed ? await fetchRecipe(parsed.id) : isValidRecipeSlug(raw) ? await fetchRecipeBySlug(raw) : null;
 
-if (recipeRes?.ok) state = "ok";
-else if (recipeRes && recipeRes.status !== 404) state = "unavailable";
+if (res?.ok && isCanonicalRecipePath(res.data.url)) return Astro.redirect(res.data.url, 301);
 
-const recipe = recipeRes?.ok ? recipeRes.data : null;
-
-if (recipe && Astro.url.pathname !== recipe.url) {
-  return Astro.redirect(recipe.url, 301);
-}
-if (state === "not_found") Astro.response.status = 404;
-if (state === "unavailable") {
+const unavailable = res !== null && (res.ok || res.status !== 404);
+if (unavailable) {
   Astro.response.status = 503;
   Astro.response.headers.set("Retry-After", "60");
+} else {
+  Astro.response.status = 404;
 }
-
-const origin = Astro.site?.origin ?? Astro.url.origin;
-const canonical = recipe?.url ?? "/";
-
-let metaDescription = recipe?.description ?? "";
-if (metaDescription.length > 155) metaDescription = `${metaDescription.slice(0, 152).trim()}...`;
-if (recipe && metaDescription.length < 70) metaDescription = `${metaDescription} Пошаговый рецепт с фото и списком ингредиентов.`.trim();
-
-let pageTitle = recipe ? `${recipe.title} — SwagEda` : "";
-if (recipe && pageTitle.length > 60) pageTitle = recipe.title.length > 60 ? `${recipe.title.slice(0, 57).trim()}...` : recipe.title;
-
-const jsonLd = recipe ? serializeJsonLd(buildRecipeJsonLd(recipe, origin, canonical)) : "";
-const recipeMeta = recipe ? { publishDate: recipe.created_at, category: recipe.category?.title, author: recipe.author } : undefined;
-const showAerogrilPromo = recipe ? isAerogrilRecipe(recipe) : false;
-const breadcrumbs = recipe
-  ? [{ name: "Категории", href: "/categories" }, ...(recipe.category ? [{ name: recipe.category.title, href: recipe.category.href }] : []), { name: recipe.title, href: canonical }]
-  : [];
 ---
 
-{state === "not_found" && <NotFoundPage title="Рецепт не найден" />}
-{state === "unavailable" && <UnavailablePage />}
-{
-  recipe && (
-    <Layout title={pageTitle} description={metaDescription} image={recipe.main_image} canonical={canonical} ogType="article" recipeData={recipeMeta}>
-      <ReadingProgress />
-
-      {/* Ширина: 6xl; на 1480–1559px — 5xl, чтобы не заходить под боковые sticky-баннеры (fixed, 160px + 16px от края) */}
-      <article class="mx-auto max-w-6xl px-0 py-2 min-[1480px]:max-w-5xl min-[1560px]:max-w-6xl md:px-4 md:py-10" data-recipe-id={recipe.id}>
-        <script type="application/ld+json" is:inline set:html={jsonLd} />
-
-        <div class="mb-4 md:mb-8 print:hidden">
-          <Breadcrumbs items={breadcrumbs} />
-        </div>
-
-        <RecipeHeader recipe={recipe} />
-
-        <Surface
-          padding="none"
-          class="relative mb-10 aspect-video overflow-hidden shadow-2xl! md:mb-12 print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
-        >
-          {recipe.main_image ? (
-            <Image
-              src={recipe.main_image}
-              alt={`Фото готового блюда: ${recipe.title}`}
-              widths={[450, 800, 1200]}
-              sizes="(max-width: 768px) 450px, (max-width: 1100px) 800px, 1200px"
-              width={1200}
-              height={675}
-              data-zoomable
-              class="image-zoom h-full w-full object-cover print:float-right print:mb-3 print:ml-3 print:h-auto print:w-32.5 print:max-w-32.5 print:rounded print:grayscale"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              style={`view-transition-name: recipe-image-${recipe.id}`}
-            />
-          ) : (
-            <div class="flex h-full w-full items-center justify-center">
-              <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
-            </div>
-          )}
-        </Surface>
-
-        <div class="grid grid-cols-1 gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)] xl:gap-12">
-          <aside class="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:gap-8 lg:pb-4 print:static print:block print:max-h-none print:overflow-visible">
-            <IngredientsList ingredients={recipe.ingredients} recipeId={recipe.id} recipeTitle={recipe.title} recipeUrl={recipe.url} servings={recipe.servings} />
-          </aside>
-
-          <div class="min-w-0">
-            {recipe.description && (
-              <section aria-labelledby="about-heading" class="mb-12">
-                <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
-                  О рецепте
-                </h2>
-                <div class="relative">
-                  <div class="bg-brand/20 absolute top-0 bottom-0 -left-4 hidden w-1 rounded-full md:block" />
-                  <blockquote class="text-text-muted mb-6 text-xl leading-relaxed italic print:mb-3 print:text-[10pt] print:not-italic">
-                    <FormattedText text={`«${recipe.description}»`} />
-                  </blockquote>
-                </div>
-              </section>
-            )}
-            <VideoPlayer videoUrl={recipe.video_url ?? ""} />
-            <AdSlot id="R-A-19056160-19" refreshInterval={30} />
-
-            {showAerogrilPromo && (
-              <div class="my-8 print:hidden">
-                <MarketPromoCard {...AEROGRIL_PROMO} />
-              </div>
-            )}
-
-            <div id="textSteps" role={recipe.video_url ? "tabpanel" : undefined} aria-labelledby={recipe.video_url ? "tab-recipe-text" : "steps-heading"}>
-              <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
-                Приготовление
-              </h2>
-              <RecipeSteps steps={recipe.steps} recipeId={recipe.id} />
-            </div>
-
-            <div class="mt-10">
-              <BrowserPromoCard />
-            </div>
-          </div>
-        </div>
-
-        {similar && <SimilarRecipes recipes={similar} categoryHref={recipe.category?.href} />}
-
-        <Divider>
-          <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>
-          <AdSlot id="R-A-19056160-14" isFeed={true} refreshInterval={60} />
-        </Divider>
-      </article>
-      <RecipeLightbox />
-      <CookMode recipeId={recipe.id} title={recipe.title} steps={recipe.steps} ingredients={recipe.ingredients} servings={recipe.servings} />
-    </Layout>
-  )
-}
+{unavailable ? <UnavailablePage /> : <NotFoundPage title="Рецепт не найден" />}

@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { getRecipeUrl, normalizeStoredId, normalizeStoredIdList, parseRecipeId, parseRecipeParam, recipeSlug } from "../src/lib/recipeUrl";
+import { getRecipeUrl, isCanonicalRecipePath, isValidRecipeSlug, normalizeStoredId, normalizeStoredIdList, parseRecipeId, parseRecipeParam, recipeSlug } from "../src/lib/recipeUrl";
 
 describe("getRecipeUrl", () => {
-  it("строит /recipe/{id}-{slug} по slug из API", () => {
+  it("берёт канонический path из API: /{категория}/{slug}", () => {
+    expect(getRecipeUrl({ id: 42, title: "Борщ", slug: "borsch", path: "/supy/borsch" })).toBe("/supy/borsch");
+    expect(getRecipeUrl({ id: 42, title: "Борщ", slug: "borsch", path: "/recipes/borsch" })).toBe("/recipes/borsch");
+  });
+  it("некорректный path игнорируется — прежний вид (только для старого API)", () => {
+    for (const path of ["/recipe/borsch", "supy/borsch", "/supy/borsch/x", "/supy/Borsch", "//evil.com/x", "/supy/", "https://x.ru/a/b"]) {
+      expect(getRecipeUrl({ id: 42, title: "Борщ", slug: "borsch", path })).toBe("/recipe/42-borsch");
+    }
+  });
+  it("без path строит /recipe/{id}-{slug} по slug из API", () => {
     expect(getRecipeUrl({ id: 42, title: "Что угодно", slug: "borsch" })).toBe("/recipe/42-borsch");
   });
   it("вычисляет slug из title, если API его не отдаёт", () => {
@@ -14,6 +23,20 @@ describe("getRecipeUrl", () => {
   });
   it("невалидный id → каталог", () => {
     expect(getRecipeUrl({ id: "local-5", title: "x" })).toBe("/recipes");
+  });
+});
+
+describe("isCanonicalRecipePath / isValidRecipeSlug", () => {
+  it("канонический путь — ровно два валидных сегмента, не /recipe/", () => {
+    expect(isCanonicalRecipePath("/supy/borsch-2")).toBe(true);
+    expect(isCanonicalRecipePath("/recipes/5-minutnyy-pirog")).toBe(true);
+    expect(isCanonicalRecipePath("/recipe/123-borsch")).toBe(false);
+    expect(isCanonicalRecipePath("/supy")).toBe(false);
+    expect(isCanonicalRecipePath(null)).toBe(false);
+  });
+  it("формат slug", () => {
+    expect(isValidRecipeSlug("borsch-ukrainskiy")).toBe(true);
+    for (const v of ["", "Borsch", "borsch--2", "-borsch", "borsch-", "борщ", "a".repeat(121)]) expect(isValidRecipeSlug(v)).toBe(false);
   });
 });
 

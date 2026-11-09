@@ -68,6 +68,14 @@ export async function fetchRecipe(id: number): Promise<LoadResult<Recipe>> {
   return recipe ? { ok: true, data: recipe } : { ok: false, status: 404 };
 }
 
+/** Рецепт по slug (в т.ч. по прежнему slug — в ответе актуальный path). status 404 — не найден. */
+export async function fetchRecipeBySlug(slug: string): Promise<LoadResult<Recipe>> {
+  const res = await apiGet(`/getRecipes/slug/${encodeURIComponent(slug)}`);
+  if (!res.ok) return { ok: false, status: res.status };
+  const recipe = parseRecipeBody(res.data);
+  return recipe ? { ok: true, data: recipe } : { ok: false, status: 404 };
+}
+
 /** Похожие рецепты. null — эндпоинт недоступен (старый API → 404): блок нужно скрыть. */
 export async function fetchSimilar(id: number, limit = 6): Promise<RecipeCard[] | null> {
   const res = await apiGet(`/getRecipes/${id}/similar?limit=${limit}`);

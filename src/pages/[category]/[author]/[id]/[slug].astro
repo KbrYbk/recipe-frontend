@@ -1,7 +1,7 @@
 ---
 /**
  * Устаревший 4-сегментный адрес рецепта /{категория}/{автор}/{id}/{slug}.
- * Только 301 на канонический /recipe/{id}-{slug}; всё остальное — 404.
+ * Только 301 на канонический /{категория}/{slug}; всё остальное — 404.
  */
 import NotFoundPage from "../../../../components/errors/NotFoundPage.astro";
 import { fetchRecipe } from "../../../../lib/api/recipes";
@@ -10,7 +10,7 @@ import { parseRecipeId } from "../../../../lib/recipeUrl";
 const id = parseRecipeId(Astro.params.id);
 if (id !== null) {
   const res = await fetchRecipe(id);
-  // Если бэкенд недоступен — отправляем на /recipe/{id}: там будет корректный 503 и следующий 301.
+  // Если бэкенд недоступен — на /recipe/{id}: там будет корректный 503, а позже — 301 на канонический адрес.
   if (res.ok) return Astro.redirect(res.data.url, 301);
   if (res.status !== 404) return Astro.redirect(`/recipe/${id}`, 302);
 }

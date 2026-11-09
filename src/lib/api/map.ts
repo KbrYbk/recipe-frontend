@@ -57,7 +57,7 @@ export function mapRecipeCard(raw: ApiRecipe): RecipeCard | null {
   return {
     id,
     slug,
-    url: getRecipeUrl({ id, title, slug }),
+    url: getRecipeUrl({ id, title, slug, path: raw.path }),
     title,
     description: text(raw.description),
     ...(main_image ? { main_image } : {}),

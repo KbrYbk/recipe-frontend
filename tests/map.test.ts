@@ -46,6 +46,9 @@ describe("mapRecipeCard / mapRecipe", () => {
       created_at: "2026-01-01T00:00:00Z",
     });
   });
+  it("path из API — URL карточки", () => {
+    expect(mapRecipeCard({ ...raw, slug: "kurica-v-aerogrile", path: "/aerogril/kurica-v-aerogrile" })?.url).toBe("/aerogril/kurica-v-aerogrile");
+  });
   it("slug из API имеет приоритет", () => {
     expect(mapRecipeCard({ ...raw, slug: "kurica" })?.url).toBe("/recipe/40723-kurica");
   });
