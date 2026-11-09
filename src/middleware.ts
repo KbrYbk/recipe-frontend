@@ -85,13 +85,20 @@ async function proxyRequest(request: Request, clientIp: string, targetUrl: strin
   }
 }
 
+/**
+ * Кто может встраивать сайт во фрейм: свой домен и Яндекс Метрика (Вебвизор, карты кликов/ссылок
+ * показывают сайт во фрейме). X-Frame-Options: SAMEORIGIN не используем — он ломает Вебвизор.
+ */
+const FRAME_ANCESTORS =
+  "frame-ancestors 'self' https://metrika.yandex.ru https://*.metrika.yandex.ru https://metrika.yandex.by https://metrika.yandex.kz https://metrica.yandex.com https://*.metrica.yandex.com https://metrica.yandex.com.tr https://webvisor.com https://*.webvisor.com";
+
 /** Заголовки безопасности для всех ответов Astro. */
 function applySecurityHeaders(response: Response): Response {
   const h = response.headers;
   try {
     if (!h.has("X-Content-Type-Options")) h.set("X-Content-Type-Options", "nosniff");
     if (!h.has("Referrer-Policy")) h.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    if (!h.has("X-Frame-Options")) h.set("X-Frame-Options", "SAMEORIGIN");
+    if (!h.has("Content-Security-Policy")) h.set("Content-Security-Policy", FRAME_ANCESTORS);
     // screen-wake-lock разрешён для «Режима готовки».
     if (!h.has("Permissions-Policy")) h.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), interest-cohort=(), screen-wake-lock=(self)");
   } catch {
