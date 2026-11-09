@@ -6,7 +6,7 @@ import type { RecipeCard } from "../types/recipe";
 
 interface Props {
   recipe: RecipeCard;
-  /** Первая карточка на экране: грузить картинку сразу (LCP). */
+  /** Первая карточка на экране: грузить картинку сразу и без анимации появления (LCP). */
   priority?: boolean;
   /** Уровень заголовка карточки. */
   headingLevel?: "h2" | "h3" | "h4";
@@ -38,8 +38,7 @@ const imageAlt = `Фото блюда: ${title}`;
           loading={priority ? "eager" : "lazy"}
           fetchpriority={priority ? "high" : undefined}
           decoding="async"
-          class="animate-fade-in h-full w-full object-cover opacity-0 transition-transform duration-500 group-hover:scale-110"
-          style={`view-transition-name: recipe-image-${id}`}
+          class:list={["h-full w-full object-cover transition-transform duration-500 group-hover:scale-110", !priority && "animate-fade-in opacity-0"]}
         />
       ) : null
     }

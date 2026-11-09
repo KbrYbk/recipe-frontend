@@ -93,8 +93,8 @@ const itemLists = [
           </div>
 
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-            {latestRecipes.map((recipe) => (
-              <RecipeCard recipe={recipe} headingLevel="h3" />
+            {latestRecipes.map((recipe, i) => (
+              <RecipeCard recipe={recipe} headingLevel="h3" priority={i === 0} />
             ))}
           </div>
         </section>

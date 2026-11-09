@@ -7,6 +7,9 @@ import BackToTop from "../components/layout/BackToTop.astro";
 import CookieConsent from "../components/shared/CookieConsent.astro";
 import AdSlot from "../components/shared/AdSlot.astro";
 import PageProgress from "../components/ui/PageProgress.astro";
+// Те же файлы, что в @font-face (src/styles/global.css): после сборки URL с одинаковым хэшем.
+import interCyrillicUrl from "../assets/fonts/Inter-Cyrillic.woff2?url";
+import interLatinUrl from "../assets/fonts/Inter-Latin.woff2?url";
 interface Props {
   title: string;
   description?: string;
@@ -138,6 +141,9 @@ const jsonLdGraph = {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <!-- Шрифты грузим сразу, не дожидаясь CSS: меньше сдвигов макета при подмене шрифта -->
+    <link rel="preload" href={interCyrillicUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={interLatinUrl} as="font" type="font/woff2" crossorigin />
     <meta name="theme-color" content="#ff6900" />
     <meta name="yandex-verification" content="e0698217d6d9209f" />
     <!-- Preconnect to Yandex ad domains for faster loading -->
