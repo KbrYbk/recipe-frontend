@@ -2,7 +2,7 @@
  * Серверные функции получения рецептов (SSR). Клиентский код ходит через /api-proxy (см. src/lib/client/api.ts).
  */
 import type { Recipe, RecipeCard, RecipeList } from "../../types/recipe";
-import { toApiSearchParams, type CatalogQuery } from "../catalog";
+import { DEFAULT_SORT, toApiSearchParams, type CatalogQuery } from "../catalog";
 import { apiGet } from "./client";
 import { parseRecipeArray, parseRecipeBody, parseRecipeList } from "./map";
 
@@ -47,7 +47,8 @@ export function isCollectionType(v: unknown): v is CollectionType {
 }
 
 export async function fetchCollection(type: CollectionType, page = 1): Promise<LoadResult<RecipeList>> {
-  const res = await apiGet(`/getRecipes/collection/${type}/${page}`);
+  // Как и у категорий, по умолчанию — популярные (старый бэкенд параметр игнорирует).
+  const res = await apiGet(`/getRecipes/collection/${type}/${page}?sort=${DEFAULT_SORT}`);
   if (!res.ok) return { ok: false, status: res.status };
   return { ok: true, data: parseRecipeList(res.data, page) };
 }

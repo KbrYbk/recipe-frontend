@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { buildCatalogHref, catalogCanonical, parseCatalogQuery, pluralRecipes, toApiSearchParams } from "../src/lib/catalog";
+import { describe, expect, it, vi } from "vitest";
+import { buildCatalogHref, catalogCanonical, isPristineFirstPage, mergeFeatured, parseCatalogQuery, pluralRecipes, toApiSearchParams } from "../src/lib/catalog";
+import { recipeListPath } from "../src/lib/api/recipes";
+
+// API-клиент читает секреты из astro:env — в юнит-тестах сеть не нужна.
+vi.mock("../src/lib/api/client", () => ({ apiGet: vi.fn() }));
 import { categoryDescription, normalizeCategories, resolveCategory } from "../src/lib/categories";
 
 const q = (s: string) => parseCatalogQuery(new URLSearchParams(s));
@@ -12,8 +16,8 @@ describe("parseCatalogQuery / toApiSearchParams", () => {
   });
   it("значения по умолчанию не отправляются, мусор игнорируется", () => {
     const query = q("sort=drop&difficulty=x&maxTime=-1&minRating=9&page=abc");
-    expect(query).toMatchObject({ page: 1, sort: "newest", difficulty: "", maxTime: null, minRating: null });
-    expect(toApiSearchParams(query).toString()).toBe("");
+    expect(query).toMatchObject({ page: 1, sort: "popular", difficulty: "", maxTime: null, minRating: null });
+    expect(toApiSearchParams(query).toString()).toBe("sort=popular");
   });
   it("«больше часа» = 9999", () => {
     expect(toApiSearchParams(q("maxTime=9999")).get("maxTime")).toBe("9999");
@@ -30,7 +34,9 @@ describe("buildCatalogHref", () => {
     expect(buildCatalogHref("/supy", cur, { page: 1 })).toBe("/supy?sort=name&difficulty=hard");
   });
   it("сброс значений", () => {
-    expect(buildCatalogHref("/recipes", cur, { sort: "newest", difficulty: null })).toBe("/recipes");
+    expect(buildCatalogHref("/recipes", cur, { sort: "popular", difficulty: null })).toBe("/recipes");
+    expect(buildCatalogHref("/recipes", cur, { sort: null, difficulty: null })).toBe("/recipes");
+    expect(buildCatalogHref("/recipes", cur, { sort: "newest", difficulty: null })).toBe("/recipes?sort=newest");
   });
   it("canonical — только страница", () => {
     expect(catalogCanonical("/supy", 1)).toBe("/supy");
@@ -70,5 +76,31 @@ describe("категории", () => {
   it("описание с названием и числом рецептов", () => {
     expect(categoryDescription("Аэрогриль", 1234)).toContain("Аэрогриль: 1\u00a0234 рецепта");
     expect(categoryDescription("Супы", 0)).toContain("Супы: Рецепты");
+  });
+});
+
+describe("сортировка popular по умолчанию", () => {
+  it("без sort в URL API получает popular", () => {
+    expect(toApiSearchParams(q("")).toString()).toBe("sort=popular");
+    expect(recipeListPath(q(""), 5)).toBe("/getRecipes/category/5/1?sort=popular");
+    expect(recipeListPath(q("page=3"))).toBe("/getRecipes/page/3?sort=popular");
+  });
+  it("явная сортировка сохраняется, newest пишется в URL", () => {
+    expect(toApiSearchParams(q("sort=newest")).get("sort")).toBe("newest");
+    expect(buildCatalogHref("/supy", q(""), { sort: "newest" })).toBe("/supy?sort=newest");
+    expect(buildCatalogHref("/supy", q("sort=newest"), { sort: "popular" })).toBe("/supy");
+  });
+  it("в поиске без явной сортировки sort не отправляется (релевантность)", () => {
+    expect(toApiSearchParams(q("q=борщ")).has("sort")).toBe(false);
+    expect(toApiSearchParams(q("q=борщ&sort=rating")).get("sort")).toBe("rating");
+  });
+  it("закреплённые рецепты первыми, без дублей", () => {
+    expect(mergeFeatured([{ id: 3 }, { id: 9 }], [{ id: 1 }, { id: 3 }, { id: 2 }]).map((r) => r.id)).toEqual([3, 9, 1, 2]);
+    expect(mergeFeatured([], [{ id: 1 }]).map((r) => r.id)).toEqual([1]);
+  });
+  it("чистая первая страница — без поиска, фильтров, другой сортировки и пагинации", () => {
+    expect(isPristineFirstPage(q(""))).toBe(true);
+    expect(isPristineFirstPage(q("utm_source=x"))).toBe(true);
+    for (const s of ["page=2", "q=борщ", "sort=newest", "difficulty=easy", "maxTime=30"]) expect(isPristineFirstPage(q(s))).toBe(false);
   });
 });

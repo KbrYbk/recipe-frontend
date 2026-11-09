@@ -1,9 +1,9 @@
 /** Загрузка данных каталога (`/recipes` и `/{категория}`) на SSR. */
 import type { RecipeList } from "../../types/recipe";
-import { parseCatalogQuery, type CatalogQuery } from "../catalog";
+import { isPristineFirstPage, mergeFeatured, parseCatalogQuery, type CatalogQuery } from "../catalog";
 import { resolveCategory, type Category } from "../categories";
 import { getCategories } from "./categories";
-import { fetchRecipeList } from "./recipes";
+import { fetchRecipeCardsByIds, fetchRecipeList } from "./recipes";
 
 export type CatalogState =
   | { kind: "ok"; basePath: string; query: CatalogQuery; result: RecipeList; categories: Category[]; category: Category | null }
@@ -51,5 +51,12 @@ export async function loadCatalog(url: URL, categorySegment?: string): Promise<C
   // Страница за пределами диапазона — 404 (а не пустая индексируемая страница).
   if (query.page > 1 && res.data.list.length === 0) return { kind: "not_found" };
 
-  return { kind: "ok", basePath: category ? `/${category.path}` : "/recipes", query, result: res.data, categories, category };
+  let result = res.data;
+  // Закреплённые рецепты раздела — первыми на чистой 1-й странице (если API их отдаёт; при сбое просто без них).
+  if (category?.featuredRecipeIds?.length && isPristineFirstPage(query)) {
+    const featured = await fetchRecipeCardsByIds(category.featuredRecipeIds);
+    if (featured?.length) result = { ...result, list: mergeFeatured(featured, result.list) };
+  }
+
+  return { kind: "ok", basePath: category ? `/${category.path}` : "/recipes", query, result, categories, category };
 }

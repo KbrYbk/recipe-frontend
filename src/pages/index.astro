@@ -17,10 +17,10 @@ const COLLECTION_CONFIG: { id: CollectionType; title: string; icon: string }[] =
   { id: "bakery", title: "Выпечка", icon: "lucide:croissant" },
 ];
 
-// Первая страница каталога даёт и новые рецепты, и общее число рецептов (один запрос, кэшируется).
+// Первая страница каталога (по новизне) даёт и новые рецепты, и общее число рецептов (один запрос, кэшируется).
 // Популярное и подборки грузятся параллельно; если какой-то блок не загрузился — он просто не показывается.
 const [res, popularRes, ...collectionRes] = await Promise.all([
-  fetchRecipeList(DEFAULT_QUERY),
+  fetchRecipeList({ ...DEFAULT_QUERY, sort: "newest" }),
   fetchRecipeList({ ...DEFAULT_QUERY, sort: "likes" }),
   ...COLLECTION_CONFIG.map((c) => fetchCollection(c.id, 1)),
 ]);

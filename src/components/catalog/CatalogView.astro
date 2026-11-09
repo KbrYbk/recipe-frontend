@@ -17,9 +17,11 @@ import {
   activeFilterCount,
   buildCatalogHref,
   catalogCanonical,
+  DEFAULT_SORT,
   DIFFICULTY_OPTIONS,
   formatCount,
   hasActiveFilters,
+  isPristineFirstPage,
   pluralRecipes,
   RATING_OPTIONS,
   SORT_OPTIONS,
@@ -29,6 +31,7 @@ import {
 import type { Category } from "../../lib/categories";
 import { CATEGORY_PROMOS } from "../../lib/promos";
 import { listingNoindex, recipesSeo, sectionSeo } from "../../lib/seo";
+import { serializeJsonLd } from "../../lib/recipeSchema";
 import type { RecipeList } from "../../types/recipe";
 
 interface Props {
@@ -88,11 +91,25 @@ const pluralCategories = (n: number) => {
 const categoryHref = (c: Category | null) => buildCatalogHref(c ? `/${c.path}` : "/recipes", query, {});
 
 const promo = category ? CATEGORY_PROMOS[category.path] : undefined;
+
+// Текст раздела (интро, FAQ) из API — только на чистой первой странице, чтобы не дублировать его на пагинации.
+const showSectionText = !!category && isPristineFirstPage(query);
+const intro = showSectionText ? (category?.intro ?? []) : [];
+const faq = showSectionText ? (category?.faq ?? []) : [];
+const sectionName = category?.title ?? "";
+const faqJsonLd =
+  faq.length > 0
+    ? serializeJsonLd({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+      })
+    : "";
 const filtersCount = activeFilterCount(query);
 
 const chip = (active: boolean) => (active ? "bg-brand/10! text-brand! ring-brand/30 ring-1" : "text-text-main font-medium");
 const searchParams: Record<string, string> = {
-  ...(query.sort !== "newest" ? { sort: query.sort } : {}),
+  ...(query.sort !== DEFAULT_SORT ? { sort: query.sort } : {}),
   ...(query.difficulty ? { difficulty: query.difficulty } : {}),
   ...(query.maxTime !== null ? { maxTime: String(query.maxTime) } : {}),
   ...(query.minRating !== null ? { minRating: String(query.minRating) } : {}),
@@ -103,6 +120,7 @@ const searchParams: Record<string, string> = {
   <Fragment slot="head">
     {prevHref && !query.q && <link rel="prev" href={prevHref} />}
     {nextHref && !query.q && <link rel="next" href={nextHref} />}
+    {faqJsonLd && <script type="application/ld+json" is:inline set:html={faqJsonLd} />}
   </Fragment>
 
   <div class="mx-auto max-w-6xl md:px-4">
@@ -130,6 +148,14 @@ const searchParams: Record<string, string> = {
         </div>
       </div>
     </header>
+
+    {
+      intro.length > 0 && (
+        <div class="text-text-muted mb-6 max-w-4xl text-base leading-relaxed md:mb-8 md:text-lg" data-section-intro>
+          <p>{intro[0]}</p>
+        </div>
+      )
+    }
 
     <!-- Сортировка (горизонтальная прокрутка на мобильных) + кнопка фильтров на мобильных -->
     <div class="mb-4 flex items-center gap-2 md:mb-6">
@@ -317,6 +343,39 @@ const searchParams: Record<string, string> = {
             <div class="mt-12">
               <Pagination currentPage={page} totalPages={totalPages} baseUrlFunc={(p) => href({ page: p })} />
             </div>
+          )
+        }
+
+        {
+          (intro.length > 1 || faq.length > 0) && (
+            <section class="mt-12 max-w-4xl" aria-label={`О разделе «${sectionName}»`}>
+              {intro.length > 1 && (
+                <div class="text-text-muted space-y-4 text-base leading-relaxed md:text-lg">
+                  <h2 class="text-text-main text-2xl font-bold">О разделе «{sectionName}»</h2>
+                  {intro.slice(1).map((paragraph) => (
+                    <p>{paragraph}</p>
+                  ))}
+                </div>
+              )}
+              {faq.length > 0 && (
+                <div class="mt-10">
+                  <h2 class="text-text-main mb-4 text-2xl font-bold">Частые вопросы</h2>
+                  <div class="space-y-3">
+                    {faq.map((f) => (
+                      <details class="glass-border-3d bg-card-bg/60 group rounded-2xl px-5 py-4 shadow-sm shadow-black/15">
+                        <summary class="text-text-main cursor-pointer list-none font-semibold">
+                          <span class="flex items-center justify-between gap-4">
+                            {f.q}
+                            <Icon name="lucide:chevron-down" class="text-text-muted h-5 w-5 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+                          </span>
+                        </summary>
+                        <p class="text-text-muted mt-3 leading-relaxed">{f.a}</p>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
           )
         }
       </div>
