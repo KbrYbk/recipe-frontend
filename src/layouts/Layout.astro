@@ -132,21 +132,21 @@ const jsonLdGraph = {
     <!-- Они зафиксированы по бокам экрана и не перекрывают основной контент -->
     <div class="hidden min-[1480px]:block">
       <div class="fixed top-28 bottom-4 left-4 z-40 w-40 overflow-hidden print:hidden">
-        <AdSlot id="R-A-19056160-22" className="!my-0 flex h-full flex-col [&>div[id]]:grow" reserve="none" />
+        <AdSlot id="R-A-19056160-22" className="!my-0 flex h-full flex-col [&>div[id]]:grow" />
       </div>
       <div class="fixed top-28 right-4 bottom-4 z-40 w-40 overflow-hidden print:hidden">
-        <AdSlot id="R-A-19056160-23" className="!my-0 flex h-full flex-col [&>div[id]]:grow" reserve="none" />
+        <AdSlot id="R-A-19056160-23" className="!my-0 flex h-full flex-col [&>div[id]]:grow" />
       </div>
     </div>
     <PageProgress />
     <Header />
     <!-- Баннер 15 — над контентом, виден на всех страницах -->
-    <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" reserve="banner" />
+    <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" />
     <main id="main-content" tabindex="-1" class="main-content-transition grow px-4 pt-4 pb-24 md:px-8 md:pt-8 md:pb-8 lg:px-12">
       <slot />
     </main>
     <!-- Баннер 16 — после контента, перед футером -->
-    <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" reserve="banner" />
+    <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" />
     <Footer />
     <BottomNav />
     <BackToTop />

@@ -18,12 +18,9 @@ const { url, title, description, image, icon = "lucide:shopping-bag", buttonText
   href={url}
   rel="sponsored"
   target="_blank"
-  class="glass-border-3d group bg-brand/5 hover:bg-brand/10 @container relative flex flex-col overflow-hidden rounded-2xl p-6 shadow-sm shadow-black/15 transition-all hover:shadow-lg hover:shadow-black/20"
+  class="glass-border-3d group bg-brand/5 hover:bg-brand/10 relative flex flex-col overflow-hidden rounded-2xl p-6 shadow-sm shadow-black/15 transition-all hover:shadow-lg hover:shadow-black/20"
 >
-  <!-- Раскладка по ширине самой карточки (container queries): узко — столбец, шире — картинка | текст, совсем широко — картинка | текст | кнопка -->
-  <div
-    class="grid grid-cols-1 justify-items-center gap-4 text-center @md:grid-cols-[auto_minmax(0,1fr)] @md:items-center @md:justify-items-start @md:gap-x-6 @md:text-left @3xl:grid-cols-[auto_minmax(0,1fr)_auto]"
-  >
+  <div class="flex flex-col items-center gap-6 sm:flex-row">
     {
       image ? (
         <div class="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-white shadow-inner transition-transform group-hover:scale-105">
@@ -35,12 +32,12 @@ const { url, title, description, image, icon = "lucide:shopping-bag", buttonText
         </div>
       )
     }
-    <div class="min-w-0">
+    <div class="flex-1 text-center sm:text-left">
       <h3 class="text-text-main text-lg font-bold md:text-xl">{title}</h3>
       <p class="text-text-muted mt-2 text-sm md:text-base">{description}</p>
     </div>
-    <div class="@md:col-start-2 @3xl:col-start-auto">
-      <span class="bg-brand shadow-brand/20 hover:bg-brand-hover inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold whitespace-nowrap text-white shadow-lg transition-all">
+    <div class="mt-4 shrink-0 sm:mt-0">
+      <span class="bg-brand shadow-brand/20 hover:bg-brand-hover inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold text-white shadow-lg transition-all">
         {buttonText}
       </span>
     </div>

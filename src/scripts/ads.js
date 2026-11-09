@@ -133,33 +133,3 @@ window.initAdSlot = function (containerId, id, isFeed, refreshInterval) {
     }
   });
 })();
-
-// Заголовок над рекламным блоком ([data-ad-titled] > [data-ad-heading]) показываем,
-// только когда в контейнер блока что-то реально отрисовалось (иначе — блокировщик/нет показа).
-(function () {
-  function watch(wrapper) {
-    var heading = wrapper.querySelector("[data-ad-heading]");
-    var container = wrapper.querySelector("[data-ad-slot]");
-    if (!heading || !container) return;
-    function check() {
-      if (container.children.length > 0) {
-        heading.classList.remove("hidden");
-        if (observer) observer.disconnect();
-        return true;
-      }
-      return false;
-    }
-    var observer = null;
-    if (check()) return;
-    try {
-      observer = new MutationObserver(check);
-      observer.observe(container, { childList: true });
-    } catch (e) {
-      // без MutationObserver заголовок просто остаётся скрытым
-    }
-  }
-  function run() {
-    document.querySelectorAll("[data-ad-titled]").forEach(watch);
-  }
-  document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", run) : run();
-})();
