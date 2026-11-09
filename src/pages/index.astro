@@ -5,10 +5,11 @@ import CategoryCard from "../components/CategoryCard.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import AdSlot from "../components/shared/AdSlot.astro";
 import UnavailablePage from "../components/errors/UnavailablePage.astro";
-import { fetchRecipeList } from "../lib/api/recipes";
+import { Icon } from "astro-icon/components";
+import { fetchCollection, fetchRecipeList, type CollectionType } from "../lib/api/recipes";
 import { DEFAULT_QUERY } from "../lib/catalog";
 
-const COLLECTION_CONFIG = [
+const COLLECTION_CONFIG: { id: CollectionType; title: string; icon: string }[] = [
   { id: "breakfast", title: "Завтраки", icon: "lucide:coffee" },
   { id: "lunch", title: "Обеды", icon: "lucide:soup" },
   { id: "dinner", title: "Ужины", icon: "lucide:drumstick" },
@@ -16,7 +17,17 @@ const COLLECTION_CONFIG = [
 ];
 
 // Первая страница каталога даёт и новые рецепты, и общее число рецептов (один запрос, кэшируется).
-const res = await fetchRecipeList(DEFAULT_QUERY);
+// Популярное и подборки грузятся параллельно; если какой-то блок не загрузился — он просто не показывается.
+const [res, popularRes, ...collectionRes] = await Promise.all([
+  fetchRecipeList(DEFAULT_QUERY),
+  fetchRecipeList({ ...DEFAULT_QUERY, sort: "likes" }),
+  ...COLLECTION_CONFIG.map((c) => fetchCollection(c.id, 1)),
+]);
+const popularRecipes = popularRes.ok ? popularRes.data.list.slice(0, 6) : [];
+const collections = COLLECTION_CONFIG.map((c, i) => {
+  const r = collectionRes[i];
+  return { ...c, recipes: r.ok ? r.data.list.slice(0, 3) : [] };
+}).filter((c) => c.recipes.length > 0);
 if (!res.ok) {
   Astro.response.status = 503;
   Astro.response.headers.set("Retry-After", "60");
@@ -59,26 +70,79 @@ const description = roundedTotal
         {/* Баннер 17 — после категорий, горячий трафик главной */}
         <AdSlot id="R-A-19056160-17" className="max-w-6xl" />
 
-        <section aria-labelledby="recipes-heading" class="mb-20">
-          <div class="mb-10 flex items-end justify-between">
+        <section aria-labelledby="recipes-heading" class="mb-16 md:mb-20">
+          <div class="mb-8 flex items-end justify-between gap-4 md:mb-10">
             <div>
               <h2 id="recipes-heading" class="text-text-main text-3xl font-bold md:text-4xl">
                 Новые рецепты
               </h2>
               <div class="bg-brand mt-2 h-1.5 w-20 rounded-full" />
             </div>
-            <a href="/recipes" class="text-brand hidden font-semibold hover:underline md:block">
-              {" "}
-              Все рецепты &rarr;{" "}
+            <a href="/recipes" class="text-brand shrink-0 py-2 font-semibold hover:underline">
+              Все рецепты &rarr;
             </a>
           </div>
 
-          <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
             {latestRecipes.map((recipe) => (
               <RecipeCard recipe={recipe} headingLevel="h3" />
             ))}
           </div>
         </section>
+
+        {popularRecipes.length > 0 && (
+          <section aria-labelledby="popular-heading" class="mb-16 md:mb-20">
+            <div class="mb-8 flex items-end justify-between gap-4 md:mb-10">
+              <div>
+                <h2 id="popular-heading" class="text-text-main text-3xl font-bold md:text-4xl">
+                  Популярное
+                </h2>
+                <div class="bg-brand mt-2 h-1.5 w-20 rounded-full" />
+              </div>
+              <a href="/recipes?sort=likes" class="text-brand shrink-0 py-2 font-semibold hover:underline">
+                Смотреть все &rarr;
+              </a>
+            </div>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+              {popularRecipes.map((recipe) => (
+                <RecipeCard recipe={recipe} headingLevel="h3" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {collections.length > 0 && (
+          <section aria-labelledby="collections-heading" class="mb-16 md:mb-20">
+            <div class="mb-8 md:mb-10">
+              <h2 id="collections-heading" class="text-text-main text-3xl font-bold md:text-4xl">
+                Подборки
+              </h2>
+              <div class="bg-brand mt-2 h-1.5 w-20 rounded-full" />
+            </div>
+            <div class="space-y-12 md:space-y-14">
+              {collections.map((c) => (
+                <section aria-labelledby={`collection-${c.id}-heading`}>
+                  <div class="mb-5 flex items-center justify-between gap-4">
+                    <h3 id={`collection-${c.id}-heading`} class="text-text-main flex items-center gap-3 text-2xl font-bold">
+                      <span class="bg-accent-soft text-brand flex h-10 w-10 items-center justify-center rounded-xl">
+                        <Icon name={c.icon} class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      {c.title}
+                    </h3>
+                    <a href={`/collection/${c.id}`} class="text-brand shrink-0 py-2 font-semibold hover:underline" aria-label={`Смотреть все: ${c.title}`}>
+                      Смотреть все &rarr;
+                    </a>
+                  </div>
+                  <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+                    {c.recipes.map((recipe) => (
+                      <RecipeCard recipe={recipe} headingLevel="h4" />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </Layout>
   )
