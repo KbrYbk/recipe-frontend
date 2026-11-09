@@ -1,41 +1,18 @@
 ---
-import { getRecipeUrl } from "../lib/slugify";
-import { fetchRecipesFromApi } from "../lib/api/recipes";
+/** «Удиви меня»: редирект на случайный рецепт со случайной страницы каталога. Не кэшируется. */
+import { fetchRecipeList, fetchRecipesTotal } from "../lib/api/recipes";
+import { DEFAULT_QUERY } from "../lib/catalog";
+import { PER_PAGE } from "../lib/api/map";
 
-const TOTAL_TTL_MS = 5 * 60 * 1000;
-let totalCache: { value: number; expires: number } | null = null;
+const total = await fetchRecipesTotal();
+const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+const page = Math.floor(Math.random() * totalPages) + 1;
 
-async function getDbTotal(): Promise<{ total: number; ok: boolean }> {
-  const now = Date.now();
-  if (totalCache && totalCache.expires > now) {
-    return { total: totalCache.value, ok: true };
-  }
-  const res = await fetchRecipesFromApi({ page: 1 });
-  if (res.ok && res.total > 0) {
-    totalCache = { value: res.total, expires: now + TOTAL_TTL_MS };
-  }
-  return { total: res.total, ok: res.ok };
-}
+let res = await fetchRecipeList({ ...DEFAULT_QUERY, page });
+if (!res.ok || res.data.list.length === 0) res = await fetchRecipeList(DEFAULT_QUERY);
 
-const { total: dbTotal, ok } = await getDbTotal();
+if (!res.ok || res.data.list.length === 0) return Astro.redirect("/recipes", 302);
 
-if (!ok || dbTotal === 0) {
-  return Astro.redirect("/");
-}
-
-const perPage = 20;
-const totalPages = Math.max(1, Math.ceil(dbTotal / perPage));
-const randomPage = Math.floor(Math.random() * totalPages) + 1;
-
-const { list } = await fetchRecipesFromApi({ page: randomPage });
-
-if (!list || list.length === 0) {
-  const { list: fallbackList } = await fetchRecipesFromApi({ page: 1 });
-  if (fallbackList && fallbackList.length > 0) {
-    return Astro.redirect(getRecipeUrl(fallbackList[Math.floor(Math.random() * fallbackList.length)]));
-  }
-  return Astro.redirect("/recipes");
-}
-
-return Astro.redirect(getRecipeUrl(list[Math.floor(Math.random() * list.length)]));
+const pick = res.data.list[Math.floor(Math.random() * res.data.list.length)];
+return Astro.redirect(pick.url, 302);
 ---

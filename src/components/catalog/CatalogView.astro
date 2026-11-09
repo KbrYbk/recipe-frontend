@@ -1,0 +1,360 @@
+---
+/**
+ * Общий каталог для `/recipes` и `/{категория}`: SEO, фильтры, сортировка, сетка, пагинация.
+ * Данные загружает src/lib/api/catalog.ts (loadCatalog); статус ответа выставляет страница.
+ */
+import { Icon } from "astro-icon/components";
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../layout/Breadcrumbs.astro";
+import RecipeCard from "../RecipeCard.astro";
+import SearchBar from "../ui/SearchBar.astro";
+import Pagination from "../ui/Pagination.astro";
+import Button from "../ui/Button.astro";
+import Divider from "../ui/Divider.astro";
+import AdSlot from "../shared/AdSlot.astro";
+import MarketPromoCard from "../shared/MarketPromoCard.astro";
+import {
+  activeFilterCount,
+  buildCatalogHref,
+  catalogCanonical,
+  DIFFICULTY_OPTIONS,
+  formatCount,
+  hasActiveFilters,
+  pluralRecipes,
+  RATING_OPTIONS,
+  SORT_OPTIONS,
+  TIME_OPTIONS,
+  type CatalogQuery,
+} from "../../lib/catalog";
+import { categoryDescription, type Category } from "../../lib/categories";
+import { CATEGORY_PROMOS } from "../../lib/promos";
+import type { RecipeList } from "../../types/recipe";
+
+interface Props {
+  basePath: string;
+  query: CatalogQuery;
+  result: RecipeList;
+  categories: Category[];
+  category: Category | null;
+}
+
+const { basePath, query, result, categories, category } = Astro.props;
+const { list, total, totalPages } = result;
+const page = query.page;
+const href = (o: Parameters<typeof buildCatalogHref>[2]) => buildCatalogHref(basePath, query, o);
+
+// --- SEO ---
+const pageSuffix = page > 1 ? ` — страница ${page}` : "";
+const countText = `${formatCount(total)} ${pluralRecipes(total)}`;
+let h1: string;
+let title: string;
+let description: string;
+if (query.q) {
+  h1 = category ? `Поиск «${query.q}» в разделе «${category.title}»` : `Поиск: «${query.q}»`;
+  title = `${h1}${pageSuffix} — SwagEda`;
+  description = `Результаты поиска рецептов по запросу «${query.q}» на SwagEda.`;
+} else if (category) {
+  h1 = category.title;
+  title = `${category.title} — рецепты с фото${pageSuffix} | SwagEda`;
+  description = categoryDescription(category.title, total);
+} else {
+  h1 = "Все рецепты";
+  title = `Все рецепты с фото и пошаговыми инструкциями${pageSuffix} | SwagEda`;
+  description = `Каталог SwagEda: ${countText} с фото и пошаговыми инструкциями. Фильтры по времени, сложности и рейтингу — от завтраков до ужинов.`;
+}
+if (page > 1) description = `${description} Страница ${page}.`;
+
+const canonical = catalogCanonical(basePath, page);
+const prevHref = page > 1 ? catalogCanonical(basePath, page - 1) : null;
+const nextHref = page < totalPages ? catalogCanonical(basePath, page + 1) : null;
+
+const breadcrumbs = category
+  ? [
+      { name: "Категории", href: "/categories" },
+      { name: category.title, href: canonical },
+    ]
+  : [{ name: "Все рецепты", href: "/recipes" }];
+
+const VISIBLE_CATEGORIES = 6;
+const activeIndex = category ? categories.findIndex((c) => c.id === category.id) : -1;
+// Активная категория всегда видна без раскрытия списка.
+const visibleCategories = categories.slice(0, VISIBLE_CATEGORIES).concat(activeIndex >= VISIBLE_CATEGORIES ? [categories[activeIndex]] : []);
+const hiddenCategories = categories.slice(VISIBLE_CATEGORIES).filter((c) => c.id !== category?.id);
+const categoryHref = (c: Category | null) => buildCatalogHref(c ? `/${c.path}` : "/recipes", query, {});
+
+const promo = category ? CATEGORY_PROMOS[category.path] : undefined;
+const filtersCount = activeFilterCount(query);
+
+const chip = (active: boolean) => (active ? "bg-brand/10! text-brand! ring-brand/30 ring-1" : "text-text-main font-medium");
+const searchParams: Record<string, string> = {
+  ...(query.sort !== "newest" ? { sort: query.sort } : {}),
+  ...(query.difficulty ? { difficulty: query.difficulty } : {}),
+  ...(query.maxTime !== null ? { maxTime: String(query.maxTime) } : {}),
+  ...(query.minRating !== null ? { minRating: String(query.minRating) } : {}),
+};
+---
+
+<Layout title={title} description={description} canonical={canonical} noindex={!!query.q}>
+  <Fragment slot="head">
+    {prevHref && !query.q && <link rel="prev" href={prevHref} />}
+    {nextHref && !query.q && <link rel="next" href={nextHref} />}
+  </Fragment>
+
+  <div class="mx-auto max-w-6xl md:px-4">
+    <header class="border-line mb-4 border-b pb-4 md:mb-10 md:pt-6 md:pb-10">
+      <div class="hidden sm:block">
+        <Breadcrumbs items={breadcrumbs} />
+      </div>
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
+        <div class="min-w-0">
+          <h1 class="text-text-main text-2xl leading-tight font-bold md:text-5xl">{h1}</h1>
+          <p class="text-text-muted mt-1 text-sm md:mt-4 md:text-lg">
+            {total > 0 ? (query.q ? `Найдено ${countText}` : countText) : "Рецептов не найдено"}
+            {
+              totalPages > 1 && (
+                <span>
+                  {" "}
+                  · страница {page} из {totalPages}
+                </span>
+              )
+            }
+          </p>
+        </div>
+        <div class="w-full md:w-120 lg:w-xl">
+          <SearchBar compact action={basePath} initialQuery={query.q} preserveParams={searchParams} placeholder={category ? `Искать в «${category.title}»` : undefined} />
+        </div>
+      </div>
+    </header>
+
+    <!-- Сортировка (горизонтальная прокрутка на мобильных) + кнопка фильтров на мобильных -->
+    <div class="mb-4 flex items-center gap-2 md:mb-6">
+      <button
+        type="button"
+        class="glass-border-3d bg-card-bg/40 text-text-main flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-sm font-semibold lg:hidden"
+        aria-expanded="false"
+        aria-controls="catalog-filters"
+        data-filters-toggle
+      >
+        <Icon name="lucide:sliders-horizontal" class="h-4 w-4" aria-hidden="true" />
+        Фильтры{filtersCount > 0 && <span class="bg-brand rounded-full px-1.5 text-xs text-white">{filtersCount}</span>}
+      </button>
+      <span class="text-text-muted hidden text-sm font-semibold lg:inline">Сортировка:</span>
+      <nav class="-my-1 flex min-w-0 gap-2 overflow-x-auto py-1 [scrollbar-width:none]" aria-label="Сортировка">
+        {
+          SORT_OPTIONS.map((s) => (
+            <Button
+              href={href({ sort: s.value })}
+              variant="outline"
+              size="sm"
+              class={`h-9 shrink-0 py-0! ${chip(query.sort === s.value)}`}
+              aria-current={query.sort === s.value ? "true" : undefined}
+              rel="nofollow"
+            >
+              {s.label}
+            </Button>
+          ))
+        }
+      </nav>
+    </div>
+
+    <div class="flex flex-col gap-6 lg:flex-row lg:gap-8">
+      <aside id="catalog-filters" class="hidden w-full shrink-0 lg:block lg:w-72" data-filters-panel>
+        <div class="glass-border-3d bg-card-bg/60 rounded-3xl p-5 shadow-xl shadow-black/15 backdrop-blur-md lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:p-6">
+          <h2 class="text-text-main mb-4 flex items-center gap-2 text-xl font-bold lg:mb-6">
+            <Icon name="lucide:filter" class="text-brand h-5 w-5" aria-hidden="true" />
+            Фильтры
+          </h2>
+
+          <div class="-mx-2 flex-1 space-y-6 px-2 lg:overflow-y-auto lg:overscroll-contain" tabindex="0" role="region" aria-label="Фильтры рецептов">
+            <div>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
+              <ul class="space-y-1" role="list">
+                <li>
+                  <Button href={categoryHref(null)} variant="ghost" class={`w-full justify-start text-left ${!category ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}>Все</Button>
+                </li>
+                {
+                  visibleCategories.map((c) => (
+                    <li>
+                      <Button
+                        href={categoryHref(c)}
+                        variant="ghost"
+                        class={`w-full justify-start text-left whitespace-normal ${category?.id === c.id ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}
+                        aria-current={category?.id === c.id ? "page" : undefined}
+                      >
+                        {c.title}
+                      </Button>
+                    </li>
+                  ))
+                }
+              </ul>
+              {
+                hiddenCategories.length > 0 && (
+                  <div class="mt-2">
+                    <button
+                      type="button"
+                      class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
+                      data-category-toggle
+                      aria-expanded="false"
+                    >
+                      <Icon name="lucide:chevron-down" class="h-4 w-4 transition-transform" data-category-chevron aria-hidden="true" />
+                      Ещё {hiddenCategories.length} категорий
+                    </button>
+                    <ul class="mt-2 hidden space-y-1" data-category-hidden>
+                      {hiddenCategories.map((c) => (
+                        <li>
+                          <Button href={categoryHref(c)} variant="ghost" class="text-text-muted w-full justify-start text-left whitespace-normal">
+                            {c.title}
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              }
+            </div>
+
+            <div>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
+              <div class="flex flex-wrap gap-2">
+                {
+                  DIFFICULTY_OPTIONS.map((d) => (
+                    <Button href={href({ difficulty: d.value })} variant="outline" size="sm" class={chip(query.difficulty === d.value)} rel="nofollow">
+                      {d.label}
+                    </Button>
+                  ))
+                }
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Время</h3>
+              <div class="flex flex-wrap gap-2">
+                {
+                  TIME_OPTIONS.map((t) => {
+                    const active = String(query.maxTime) === t.value;
+                    return (
+                      <Button href={href({ maxTime: active ? null : Number(t.value), minTime: null })} variant="outline" size="sm" class={chip(active)} rel="nofollow">
+                        {t.label}
+                      </Button>
+                    );
+                  })
+                }
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Рейтинг</h3>
+              <div class="flex flex-wrap gap-2">
+                {
+                  RATING_OPTIONS.map((r) => (
+                    <Button
+                      href={href({ minRating: r.value ? Number(r.value) : null })}
+                      variant="outline"
+                      size="sm"
+                      class={chip(r.value ? String(query.minRating) === r.value : query.minRating === null)}
+                      rel="nofollow"
+                    >
+                      {r.label}
+                    </Button>
+                  ))
+                }
+              </div>
+            </div>
+
+            {
+              hasActiveFilters(query) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  fullWidth
+                  href={href({ difficulty: null, maxTime: null, minTime: null, minRating: null })}
+                  class="bg-rose-500/10! text-rose-500! transition-colors hover:bg-rose-500/20!"
+                >
+                  <Icon name="lucide:x" class="h-4 w-4" slot="icon-left" />
+                  Сбросить фильтры
+                </Button>
+              )
+            }
+          </div>
+        </div>
+      </aside>
+
+      <div class="min-w-0 grow">
+        {
+          list.length > 0 ? (
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+              {list.map((recipe, index) => (
+                <>
+                  {index === 2 && (
+                    <div class="min-w-0 md:col-span-2 print:hidden" data-ad-wrapper>
+                      {promo ? <MarketPromoCard {...promo} /> : <AdSlot id="R-A-19056160-24" />}
+                    </div>
+                  )}
+                  <RecipeCard recipe={recipe} priority={index === 0} />
+                </>
+              ))}
+            </div>
+          ) : (
+            <div class="py-20 text-center">
+              <Icon name="lucide:search-x" class="text-text-muted mx-auto mb-4 h-16 w-16 opacity-20" />
+              <h2 class="text-text-main text-xl font-bold">Ничего не нашли</h2>
+              <p class="text-text-muted mt-2">Попробуйте изменить запрос или фильтры</p>
+              {(query.q || hasActiveFilters(query)) && (
+                <a href={basePath} class="text-brand mt-6 inline-block font-semibold hover:underline">
+                  Сбросить фильтры и поиск
+                </a>
+              )}
+            </div>
+          )
+        }
+
+        {
+          totalPages > 1 && list.length > 0 && (
+            <div class="mt-12">
+              <Pagination currentPage={page} totalPages={totalPages} baseUrlFunc={(p) => href({ page: p })} />
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    <Divider>
+      <h2 class="text-text-main mb-6 text-2xl font-bold">Популярные рецепты:</h2>
+      <AdSlot id="R-A-19056160-14" isFeed={true} reserve="feed" />
+    </Divider>
+  </div>
+</Layout>
+
+<script>
+  function initCatalog() {
+    const toggle = document.querySelector<HTMLElement>("[data-category-toggle]");
+    const hidden = document.querySelector<HTMLElement>("[data-category-hidden]");
+    const chevron = document.querySelector<HTMLElement>("[data-category-chevron]");
+    toggle?.addEventListener("click", () => {
+      const open = hidden?.classList.toggle("hidden") === false;
+      toggle.setAttribute("aria-expanded", String(open));
+      if (chevron) chevron.style.transform = open ? "rotate(180deg)" : "";
+    });
+
+    const filtersToggle = document.querySelector<HTMLElement>("[data-filters-toggle]");
+    const panel = document.querySelector<HTMLElement>("[data-filters-panel]");
+    filtersToggle?.addEventListener("click", () => {
+      const open = panel?.classList.toggle("hidden") === false;
+      filtersToggle.setAttribute("aria-expanded", String(open));
+    });
+  }
+  initCatalog();
+
+  // Скрыть обёртку in-feed рекламы, если она не отрисовалась (adblock / нет рекламодателя) — как в main.
+  function initEmptyAdCleanup() {
+    document.querySelectorAll("[data-ad-wrapper]").forEach((wrapper) => {
+      setTimeout(() => {
+        if (wrapper.querySelector("a[rel='sponsored']")) return; // промо-карточка
+        const adSlot = wrapper.querySelector(".ad-slot");
+        const yandexDiv = adSlot?.querySelector("div[id^='yandex_rtb_']");
+        if (!adSlot || !yandexDiv || yandexDiv.children.length === 0) wrapper.remove();
+      }, 4000);
+    });
+  }
+  initEmptyAdCleanup();
+</script>

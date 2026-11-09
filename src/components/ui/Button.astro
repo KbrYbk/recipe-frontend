@@ -5,9 +5,10 @@ interface Props extends HTMLAttributes<"button"> {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
   size?: "sm" | "md" | "lg" | "icon";
   href?: string;
+  rel?: string;
   isExternal?: boolean;
   fullWidth?: boolean;
-  as?: any;
+  as?: "a" | "button" | "label" | "span" | "div";
   class?: string;
 }
 

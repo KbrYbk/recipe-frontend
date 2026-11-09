@@ -1,0 +1,14 @@
+---
+/** Полная страница 404 (Layout + HttpNotFound). Статус 404 выставляет вызывающая страница. */
+import Layout from "../../layouts/Layout.astro";
+import HttpNotFound from "./HttpNotFound.astro";
+
+interface Props {
+  title?: string;
+}
+const { title } = Astro.props;
+---
+
+<Layout title={`${title ?? "Страница не найдена"} — SwagEda`} description="Запрашиваемая страница не найдена. Вернитесь на главную или воспользуйтесь поиском по рецептам." noindex>
+  <HttpNotFound title={title} />
+</Layout>

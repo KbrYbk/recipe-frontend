@@ -3,35 +3,56 @@ import Button from "./Button.astro";
 import { Icon } from "astro-icon/components";
 
 interface Props {
-  /** Сохранять фильтры при отправке поиска (например category, difficulty). */
+  /** Скрытые параметры, сохраняемые при поиске (фильтры каталога). */
   preserveParams?: Record<string, string>;
   initialQuery?: string;
+  /** Куда отправлять форму (на странице категории — поиск внутри категории). */
+  action?: string;
+  /** Компактный вид: одна строка, кнопка-иконка (каталог). */
+  compact?: boolean;
+  placeholder?: string;
 }
 
-const { preserveParams = {}, initialQuery = "" } = Astro.props;
+const { preserveParams = {}, initialQuery = "", action = "/recipes", compact = false, placeholder = "Курица, картошка, суп..." } = Astro.props;
+const autofocus = Astro.url.searchParams.get("action") === "search";
 ---
 
-<div class="mx-auto max-w-3xl">
-  <form action="/recipes" method="GET" role="search" class="flex flex-col gap-4 sm:flex-row">
-    <input type="hidden" name="page" value="1" />
+<div class:list={["mx-auto", compact ? "w-full" : "max-w-3xl"]}>
+  <form action={action} method="GET" role="search" class:list={["flex gap-2", compact ? "flex-row" : "flex-col gap-4 sm:flex-row"]}>
     {Object.entries(preserveParams).map(([name, value]) => (value ? <input type="hidden" name={name} value={value} /> : null))}
     <div class="relative flex-1">
-      <Icon name="lucide:search" class="absolute z-10 left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-text-muted opacity-70 pointer-events-none md:left-6 md:h-7 md:w-7" aria-hidden="true" />
+      <Icon
+        name="lucide:search"
+        class:list={["text-text-muted pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 opacity-70", compact ? "left-4 h-5 w-5" : "left-5 h-6 w-6 md:left-6 md:h-7 md:w-7"]}
+        aria-hidden="true"
+      />
       <input
         type="search"
         name="q"
         value={initialQuery}
-        placeholder="Курица, картошка, суп..."
-        class="glass-border-3d bg-card-bg/60 backdrop-blur-md text-text-main placeholder:text-text-muted focus:ring-brand/20 w-full rounded-2xl pl-14 pr-6 py-4 text-lg transition-all focus:ring-4 focus:outline-none md:pl-16 md:py-5 md:text-xl shadow-md shadow-black/15"
+        placeholder={placeholder}
+        maxlength="100"
+        class:list={[
+          "glass-border-3d bg-card-bg/60 text-text-main placeholder:text-text-muted focus:ring-brand/20 w-full rounded-2xl shadow-md shadow-black/15 backdrop-blur-md transition-all focus:ring-4 focus:outline-none",
+          compact ? "py-3 pr-4 pl-11 text-base" : "py-4 pr-6 pl-14 text-lg md:py-5 md:pl-16 md:text-xl",
+        ]}
         aria-label="Поиск рецепта"
         autocomplete="off"
-        autofocus={Astro.url.searchParams.get("action") === "search"}
+        autofocus={autofocus}
       />
     </div>
 
-    <Button type="submit" size="lg" class="min-w-40">
-      Найти
-    </Button>
+    {
+      compact ? (
+        <Button type="submit" class="h-12 shrink-0 px-4" aria-label="Найти">
+          <Icon name="lucide:search" class="h-5 w-5 sm:hidden" aria-hidden="true" />
+          <span class="hidden sm:inline">Найти</span>
+        </Button>
+      ) : (
+        <Button type="submit" size="lg" class="min-w-40">
+          Найти
+        </Button>
+      )
+    }
   </form>
 </div>
-

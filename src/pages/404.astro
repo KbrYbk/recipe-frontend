@@ -1,8 +1,6 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import HttpNotFound from "../components/errors/HttpNotFound.astro";
+import NotFoundPage from "../components/errors/NotFoundPage.astro";
+Astro.response.status = 404;
 ---
 
-<Layout title="Страница не найдена — SwagEda" description="К сожалению, запрашиваемая страница не найдена. Попробуйте вернуться на главную или воспользуйтесь поиском, чтобы найти лучшие рецепты для вашего стола.">
-  <HttpNotFound />
-</Layout>
+<NotFoundPage />

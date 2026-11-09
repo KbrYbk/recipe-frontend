@@ -1,95 +1,67 @@
 ---
-export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
 import RecipeCard from "../../components/RecipeCard.astro";
 import Pagination from "../../components/ui/Pagination.astro";
-import { fetchCollectionFromApi, mapBackendRecipe } from "../../lib/api/recipes";
-import HttpNotFound from "../../components/errors/HttpNotFound.astro";
+import NotFoundPage from "../../components/errors/NotFoundPage.astro";
+import UnavailablePage from "../../components/errors/UnavailablePage.astro";
+import { COLLECTION_TYPES, fetchCollection, isCollectionType } from "../../lib/api/recipes";
+import { catalogCanonical, formatCount, parseCatalogQuery, pluralRecipes } from "../../lib/catalog";
 
 const { type } = Astro.params;
-const currentPage = parseInt(Astro.url.searchParams.get("page") || "1");
+const page = parseCatalogQuery(Astro.url.searchParams).page;
+const valid = isCollectionType(type);
+const res = valid ? await fetchCollection(type, page) : null;
 
-const typeNames: Record<string, string> = {
-  breakfast: "Завтраки",
-  lunch: "Обеды",
-  dinner: "Ужины",
-  bakery: "Выпечка",
-  hd: "Здоровое питание",
-};
+let state: "ok" | "not_found" | "unavailable" = "not_found";
+if (res?.ok) state = page > 1 && res.data.list.length === 0 ? "not_found" : "ok";
+else if (res) state = res.status === 404 ? "not_found" : "unavailable";
 
-const title = typeNames[type as string];
-
-if (!title) {
-  Astro.response.status = 404;
+if (state === "not_found") Astro.response.status = 404;
+if (state === "unavailable") {
+  Astro.response.status = 503;
+  Astro.response.headers.set("Retry-After", "60");
 }
 
-let recipes: any[] = [];
-let total = 0;
-let totalPages = 1;
-let ok = false;
-
-if (title) {
-  const data = await fetchCollectionFromApi(type as string, currentPage);
-  recipes = (data.list || []).map(mapBackendRecipe);
-  total = data.total || 0;
-  totalPages = data.totalPages || 1;
-  ok = data.ok;
-}
-
-// Универсальный хелпер ссылок для пагинации коллекций
-function collectionHref(page: number) {
-  const p = new URLSearchParams();
-  p.set("page", String(page));
-  const s = p.toString();
-  return s ? `/collection/${type}?${s}` : `/collection/${type}`;
-}
-
-// Для SEO
-const description = title ? `Лучшие рецепты в категории ${title.toLowerCase()} на SwagEda. Пошаговые инструкции и фото.` : "Страница не найдена.";
+const title = valid ? COLLECTION_TYPES[type] : "";
+const basePath = `/collection/${type}`;
+const data = res?.ok ? res.data : null;
+const total = data?.total ?? 0;
+const pageSuffix = page > 1 ? ` — страница ${page}` : "";
+const description = `${title}: ${formatCount(total)} ${pluralRecipes(total)} с фото и пошаговыми инструкциями на SwagEda.${page > 1 ? ` Страница ${page}.` : ""}`;
 ---
 
-<Layout
-  title={title ? `${title} — SwagEda` : "Страница не найдена — SwagEda"}
-  description={description}
-  keywords={title
-    ? `${title.toLowerCase()} рецепты, ${title.toLowerCase()} рецепт, как приготовить ${title.toLowerCase()}, лучшие ${title.toLowerCase()}, ${title.toLowerCase()} с фото, пошаговые рецепты ${title.toLowerCase()}, домашняя кухня, рецепты на каждый день`
-    : undefined}
-  noindex={currentPage > 1 || !title}
->
-  {
-    !title ? (
-      <HttpNotFound />
-    ) : (
-      <div class="mx-auto max-w-6xl px-4">
-        <header class="border-line mb-12 border-b py-10 md:py-16">
-          <Breadcrumbs items={[{ name: "Все рецепты", href: "/recipes" }, { name: title }]} />
-          <h1 class="text-text-main mt-4 text-4xl font-bold md:text-5xl">
-            <span class="text-brand">{title}</span>
-          </h1>
-          <p class="text-text-muted mt-4 text-lg">
-            {total > 0 ? `Наша подборка вкусных идей для раздела "${title.toLowerCase()}". Показано ${recipes.length} из ${total} рецептов.` : "К сожалению, в этой коллекции пока нет рецептов."}
+{state === "not_found" && <NotFoundPage />}
+{state === "unavailable" && <UnavailablePage />}
+{
+  state === "ok" && data && (
+    <Layout title={`${title} — рецепты с фото${pageSuffix} | SwagEda`} description={description} canonical={catalogCanonical(basePath, page)}>
+      <div class="mx-auto max-w-6xl md:px-4">
+        <header class="border-line mb-8 border-b pb-6 md:mb-12 md:py-10">
+          <Breadcrumbs
+            items={[
+              { name: "Все рецепты", href: "/recipes" },
+              { name: title, href: basePath },
+            ]}
+          />
+          <h1 class="text-brand mt-2 text-3xl font-bold md:mt-4 md:text-5xl">{title}</h1>
+          <p class="text-text-muted mt-2 text-base md:mt-4 md:text-lg">
+            {total > 0 ? `Подборка «${title.toLowerCase()}»: ${formatCount(total)} ${pluralRecipes(total)}.` : "В этой подборке пока нет рецептов."}
           </p>
         </header>
 
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {recipes.map((recipe: any) => (
-            <RecipeCard recipe={recipe} />
+          {data.list.map((recipe, i) => (
+            <RecipeCard recipe={recipe} priority={i === 0} />
           ))}
         </div>
 
-        {recipes.length === 0 && !ok && (
-          <div class="py-20 text-center">
-            <p class="text-text-muted">Не удалось загрузить коллекцию. Пожалуйста, попробуйте позже.</p>
-          </div>
-        )}
-
-        {totalPages > 1 && recipes.length > 0 && (
+        {data.totalPages > 1 && (
           <div class="mt-12">
-            <Pagination currentPage={currentPage} totalPages={totalPages} baseUrlFunc={(p) => collectionHref(p)} />
+            <Pagination currentPage={page} totalPages={data.totalPages} baseUrlFunc={(p) => catalogCanonical(basePath, p)} />
           </div>
         )}
       </div>
-    )
-  }
-</Layout>
+    </Layout>
+  )
+}

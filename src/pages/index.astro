@@ -4,11 +4,9 @@ import SearchBar from "../components/ui/SearchBar.astro";
 import CategoryCard from "../components/CategoryCard.astro";
 import RecipeCard from "../components/RecipeCard.astro";
 import AdSlot from "../components/shared/AdSlot.astro";
-import BackendErrorAlert from "../components/errors/BackendErrorAlert.astro";
-import localRecipes from "../data/recipes.json";
-import { fetchRecipesFromApi, mapBackendRecipe, fetchCollectionFromApi } from "../lib/api/recipes";
-
-let errorMessage = "";
+import UnavailablePage from "../components/errors/UnavailablePage.astro";
+import { fetchRecipeList } from "../lib/api/recipes";
+import { DEFAULT_QUERY } from "../lib/catalog";
 
 const COLLECTION_CONFIG = [
   { id: "breakfast", title: "Завтраки", icon: "lucide:coffee" },
@@ -17,76 +15,71 @@ const COLLECTION_CONFIG = [
   { id: "bakery", title: "Выпечка", icon: "lucide:croissant" },
 ];
 
-// Загружаем популярные и все коллекции параллельно
-const [popularRes, ...collectionResults] = await Promise.all([fetchRecipesFromApi({ limit: 3 }), ...COLLECTION_CONFIG.map((c) => fetchCollectionFromApi(c.id))]);
-
-const ok = popularRes.ok;
-const status = popularRes.status;
-
-if (!ok && status === 403) {
-  errorMessage = "Бэкенд: доступ запрещен (IP Whitelist). Покажу только локальные рецепты.";
-} else if (!ok && status !== 0) {
-  errorMessage = "Не удалось загрузить рецепты с сервера. Показаны локальные данные.";
-} else if (!ok) {
-  errorMessage = "Бэкенд недоступен. Использую резервные данные.";
+// Первая страница каталога даёт и новые рецепты, и общее число рецептов (один запрос, кэшируется).
+const res = await fetchRecipeList(DEFAULT_QUERY);
+if (!res.ok) {
+  Astro.response.status = 503;
+  Astro.response.headers.set("Retry-After", "60");
 }
-
-// Популярные рецепты
-const popularRecipes = ok ? (popularRes.list as any[]).map(mapBackendRecipe) : localRecipes.slice(0, 3).map((r) => ({ ...r, id: r.id }));
-
-// Обрабатываем коллекции
-COLLECTION_CONFIG.map((config, index) => {
-  const res = collectionResults[index];
-  const recipes = (res.list || []).slice(0, 3).map(mapBackendRecipe);
-  return { ...config, recipes };
-}).filter((c) => c.recipes.length > 0);
+const latestRecipes = res.ok ? res.data.list.slice(0, 3) : [];
+const total = res.ok ? res.data.total : 0;
+// «Более 39 000» — округление вниз до тысяч; без числа, если оно неизвестно или мало.
+const roundedTotal = total >= 2000 ? Math.floor(total / 1000) * 1000 : 0;
+const description = roundedTotal
+  ? `SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более ${new Intl.NumberFormat("ru-RU").format(roundedTotal)} рецептов с фото: от завтраков до ужинов. Готовим просто, вкусно и с любовью.`
+  : "SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Тысячи рецептов с фото и пошаговыми инструкциями: от завтраков до ужинов. Готовим просто, вкусно и с любовью.";
 ---
 
-<Layout
-  title="SwagEda — Твоя уютная кухня"
-  description="SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более 31,000 быстрых рецептов: от завтраков до ужинов. Готовим просто, вкусно и с любовью."
-  keywords="рецепты, кулинария, свэгеда, СвэгЕда, свегеда, СвегЕда, свагеда, Свагеда, SwagEda, swageda, swag eda, сваг еда, рецепты дома, пошаговые рецепты, вкусные рецепты, быстрые рецепты, домашняя кухня, готовим дома, что приготовить"
->
-  <div class="mx-auto max-w-6xl px-4">
-    {
-      errorMessage && (
-        <BackendErrorAlert message={errorMessage}>
-          Наш сайт сейчас испытывает небольшие технические неполадки. Не переживайте, мы уже вовсю «колдуем» над плитой и исправляем проблему! Возвращайтесь совсем скоро — мы вас очень ждем. А пока вы
-          можете спокойно листать наши лучшие рецепты ниже в режиме офлайн.
-        </BackendErrorAlert>
-      )
-    }
+{!res.ok && <UnavailablePage />}
+{
+  res.ok && (
+    <Layout title="SwagEda — Твоя уютная кухня" description={description}>
+      <div class="mx-auto max-w-6xl px-4">
+        <section class="py-12 text-center md:py-16">
+          <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+            Что <span class="text-brand">приготовим</span> сегодня?
+          </h1>
+          <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">
+            Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.
+          </p>
+          <SearchBar />
+        </section>
 
-    <section class="py-12 text-center md:py-16">
-      <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-        Что <span class="text-brand">приготовим</span> сегодня?
-      </h1>
-      <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.</p>
-      <SearchBar />
-    </section>
+        <section aria-labelledby="categories-heading" class="mb-12">
+          <h2 id="categories-heading" class="sr-only">
+            Популярные категории
+          </h2>
+          <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
+            {COLLECTION_CONFIG.map((c) => (
+              <CategoryCard iconName={c.icon} title={c.title} href={`/collection/${c.id}`} />
+            ))}
+          </div>
+        </section>
 
-    <section aria-labelledby="categories-heading" class="mb-12">
-      <h2 id="categories-heading" class="sr-only">Популярные категории</h2>
-      <div class="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-        {COLLECTION_CONFIG.map((c) => <CategoryCard iconName={c.icon} title={c.title} href={`/collection/${c.id}`} />)}
+        {/* Баннер 17 — после категорий, горячий трафик главной */}
+        <AdSlot id="R-A-19056160-17" className="max-w-6xl" />
+
+        <section aria-labelledby="recipes-heading" class="mb-20">
+          <div class="mb-10 flex items-end justify-between">
+            <div>
+              <h2 id="recipes-heading" class="text-text-main text-3xl font-bold md:text-4xl">
+                Новые рецепты
+              </h2>
+              <div class="bg-brand mt-2 h-1.5 w-20 rounded-full" />
+            </div>
+            <a href="/recipes" class="text-brand hidden font-semibold hover:underline md:block">
+              {" "}
+              Все рецепты &rarr;{" "}
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {latestRecipes.map((recipe) => (
+              <RecipeCard recipe={recipe} headingLevel="h3" />
+            ))}
+          </div>
+        </section>
       </div>
-    </section>
-
-    <!-- Баннер 17 — после категорий, горячий трафик главной -->
-    <AdSlot id="R-A-19056160-17" className="max-w-6xl" />
-
-    <section aria-labelledby="recipes-heading" class="mb-20">
-      <div class="mb-10 flex items-end justify-between">
-        <div>
-          <h2 id="recipes-heading" class="text-text-main text-3xl font-bold md:text-4xl">Новые рецепты</h2>
-          <div class="bg-brand mt-2 h-1.5 w-20 rounded-full"></div>
-        </div>
-        <a href="/recipes" class="text-brand hidden font-semibold hover:underline md:block"> Все рецепты &rarr; </a>
-      </div>
-
-      <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {popularRecipes.map((recipe) => <RecipeCard recipe={recipe} />)}
-      </div>
-    </section>
-  </div>
-</Layout>
+    </Layout>
+  )
+}

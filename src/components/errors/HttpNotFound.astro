@@ -1,11 +1,14 @@
 ---
-
+interface Props {
+  title?: string;
+}
+const { title = "Страница не найдена" } = Astro.props;
 ---
 
 <div class="mx-auto flex max-w-lg flex-col items-center px-4 py-16 text-center">
-  <img src="/images/404.webp" alt="Изображение, указывающее на то, что страница не найдена" class="text-text-muted mb-6 h-60 w-60" aria-hidden="true" />
+  <img src="/images/404.webp" alt="" class="mb-6 h-60 w-60" width="240" height="240" aria-hidden="true" />
   <p class="text-text-muted mb-2 text-sm font-semibold tracking-wider uppercase">404</p>
-  <h1 class="text-text-main mb-3 text-3xl font-bold md:text-4xl">Рецепт не найден</h1>
+  <h1 class="text-text-main mb-3 text-3xl font-bold md:text-4xl">{title}</h1>
   <p class="text-text-muted mb-8">Проверьте ссылку или вернитесь к каталогу.</p>
   <a href="/recipes" class="btn-primary inline-flex items-center gap-2 rounded-2xl px-8 py-3 no-underline"> Все рецепты </a>
 </div>
