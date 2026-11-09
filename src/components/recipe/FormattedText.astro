@@ -23,7 +23,7 @@ const paragraphs = normalizedText
 
 {
   paragraphs.length > 0 && (
-    <div class:list={["text-base md:text-lg", "leading-relaxed md:leading-8", "max-w-[65ch]", "space-y-4 md:space-y-6", "hyphens-auto", "text-pretty", "text-justify sm:text-left", className]}>
+    <div class:list={["text-base md:text-lg", "leading-relaxed md:leading-8", "max-w-[65ch]", "space-y-4 md:space-y-6", "text-left text-pretty break-words", className]}>
       {paragraphs.map((paragraph) => (
         <p>{paragraph}</p>
       ))}
