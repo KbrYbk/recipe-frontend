@@ -10,26 +10,34 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "check": "astro check",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "format": "prettier --write .",
     "prepare": "husky"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.9",
-    "@astrojs/netlify": "^7.0.4",
     "@astrojs/node": "^10.0.4",
     "@iconify-json/lucide": "^1.2.98",
     "astro": "^6.0.8",
-    "astro-icon": "^1.1.5",
-    "typescript": "^5.9.3"
+    "astro-icon": "^1.1.5"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@eslint/js": "^9.39.5",
+    "@prettier/plugin-xml": "^3.4.2",
+    "@tailwindcss/vite": "^4.2.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-astro": "^1.7.0",
+    "globals": "^17.14.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
-    "@prettier/plugin-xml": "^3.4.2",
-    "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "^4.2.1",
     "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "tailwindcss": "^4.2.1"
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^3.2.7"
   }
 }
