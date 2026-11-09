@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { clampStep, firstUndoneStep, swipeDirection } from "../src/lib/cookState";
 import { mapRecipe } from "../src/lib/api/map";
-import { buildRecipeJsonLd, isoDate, isoDuration, serializeJsonLd } from "../src/lib/recipeSchema";
+import { buildItemListJsonLd, buildRecipeJsonLd, isoDate, isoDuration, serializeJsonLd } from "../src/lib/recipeSchema";
 
 describe("cookState", () => {
   it("firstUndoneStep", () => {
@@ -94,5 +94,30 @@ describe("isoDuration / isoDate", () => {
     expect(isoDate("2026-03-30T14:46:44.000000Z")).toBe("2026-03-30T14:46:44Z");
     expect(isoDate("bad")).toBeUndefined();
     expect(isoDate(undefined)).toBeUndefined();
+  });
+});
+
+describe("buildItemListJsonLd", () => {
+  const items = [
+    { url: "/borsch/borsch-moskovskiy", title: "Борщ Московский" },
+    { url: "https://swageda.ru/borsch/zelenyy", title: "Зелёный борщ" },
+  ];
+  it("абсолютные URL и сквозные позиции на странице N", () => {
+    const ld = buildItemListJsonLd(items, "https://swageda.ru", 20, "Борщ — рецепты с фото");
+    expect(ld).toEqual({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Борщ — рецепты с фото",
+      numberOfItems: 2,
+      itemListElement: [
+        { "@type": "ListItem", position: 21, url: "https://swageda.ru/borsch/borsch-moskovskiy", name: "Борщ Московский" },
+        { "@type": "ListItem", position: 22, url: "https://swageda.ru/borsch/zelenyy", name: "Зелёный борщ" },
+      ],
+    });
+  });
+  it("без имени и с нулевым смещением", () => {
+    const ld = buildItemListJsonLd(items.slice(0, 1), "https://swageda.ru/");
+    expect(ld).not.toHaveProperty("name");
+    expect((ld.itemListElement as { position: number }[])[0].position).toBe(1);
   });
 });

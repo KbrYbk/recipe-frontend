@@ -102,3 +102,22 @@ export function buildRecipeJsonLd(recipe: Recipe, origin: string, canonicalPath:
   };
   return JSON.parse(JSON.stringify(data)) as Record<string, unknown>;
 }
+
+/**
+ * schema.org/ItemList для списков (каталог, категории, лендинги, подборки, главная, /categories).
+ * Только элементы текущей страницы; position на странице N = (N-1)·perPage + i.
+ */
+export function buildItemListJsonLd(items: ReadonlyArray<{ url: string; title: string }>, origin: string, offset = 0, name?: string): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    ...(name ? { name } : {}),
+    numberOfItems: items.length,
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: offset + i + 1,
+      url: toAbsoluteUrl(origin, item.url),
+      name: item.title,
+    })),
+  };
+}

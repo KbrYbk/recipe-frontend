@@ -31,7 +31,8 @@ import {
 import type { Category } from "../../lib/categories";
 import { CATEGORY_PROMOS } from "../../lib/promos";
 import { listingNoindex, recipesSeo, sectionSeo } from "../../lib/seo";
-import { serializeJsonLd } from "../../lib/recipeSchema";
+import { buildItemListJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
+import { PER_PAGE } from "../../lib/api/map";
 import type { RecipeList } from "../../types/recipe";
 import type { Landing } from "../../lib/landings";
 
@@ -104,6 +105,9 @@ const showSectionText = !!section && isPristineFirstPage(query);
 const intro = showSectionText ? (section?.intro ?? []) : [];
 const faq = showSectionText ? (section?.faq ?? []) : [];
 const sectionName = section?.title ?? "";
+// ItemList карточек текущей страницы (у поиска не выводим — он noindex).
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const itemListJsonLd = !query.q && list.length > 0 ? serializeJsonLd(buildItemListJsonLd(list, origin, (page - 1) * PER_PAGE, h1)) : "";
 const faqJsonLd =
   faq.length > 0
     ? serializeJsonLd({
@@ -127,6 +131,7 @@ const searchParams: Record<string, string> = {
   <Fragment slot="head">
     {prevHref && !query.q && <link rel="prev" href={prevHref} />}
     {nextHref && !query.q && <link rel="next" href={nextHref} />}
+    {itemListJsonLd && <script type="application/ld+json" is:inline set:html={itemListJsonLd} />}
     {faqJsonLd && <script type="application/ld+json" is:inline set:html={faqJsonLd} />}
   </Fragment>
 

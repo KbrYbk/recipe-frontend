@@ -9,6 +9,7 @@ import { Icon } from "astro-icon/components";
 import { fetchCollection, fetchRecipeList, type CollectionType } from "../lib/api/recipes";
 import { DEFAULT_QUERY } from "../lib/catalog";
 import { homeSeo } from "../lib/seo";
+import { buildItemListJsonLd, serializeJsonLd } from "../lib/recipeSchema";
 
 const COLLECTION_CONFIG: { id: CollectionType; title: string; icon: string }[] = [
   { id: "breakfast", title: "Завтраки", icon: "lucide:coffee" },
@@ -37,12 +38,22 @@ const latestRecipes = res.ok ? res.data.list.slice(0, 3) : [];
 const total = res.ok ? res.data.total : 0;
 // «Более 39 000» — округление вниз до тысяч; без числа, если оно неизвестно или мало.
 const seo = homeSeo(total);
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const itemLists = [
+  latestRecipes.length ? buildItemListJsonLd(latestRecipes, origin, 0, "Новые рецепты") : null,
+  popularRecipes.length ? buildItemListJsonLd(popularRecipes, origin, 0, "Популярные рецепты") : null,
+].filter(Boolean);
 ---
 
 {!res.ok && <UnavailablePage />}
 {
   res.ok && (
     <Layout title={seo.title} description={seo.description}>
+      <Fragment slot="head">
+        {itemLists.map((ld) => (
+          <script type="application/ld+json" is:inline set:html={serializeJsonLd(ld)} />
+        ))}
+      </Fragment>
       <div class="mx-auto max-w-6xl px-4">
         <section class="py-12 text-center md:py-16">
           <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">

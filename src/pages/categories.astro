@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import Breadcrumbs from "../components/layout/Breadcrumbs.astro";
 import UnavailablePage from "../components/errors/UnavailablePage.astro";
 import { getCategories } from "../lib/api/categories";
+import { buildItemListJsonLd, serializeJsonLd } from "../lib/recipeSchema";
 import { Icon } from "astro-icon/components";
 
 const categories = await getCategories();
@@ -11,12 +12,23 @@ if (!categories) {
   Astro.response.headers.set("Retry-After", "60");
 }
 const sorted = (categories ?? []).slice().sort((a, b) => a.title.localeCompare(b.title, "ru"));
+const itemListJsonLd = sorted.length
+  ? serializeJsonLd(
+      buildItemListJsonLd(
+        sorted.map((c) => ({ url: `/${c.path}`, title: c.title })),
+        Astro.site?.origin ?? Astro.url.origin,
+        0,
+        "Категории рецептов",
+      ),
+    )
+  : "";
 ---
 
 {!categories && <UnavailablePage />}
 {
   categories && (
     <Layout title="Категории рецептов — SwagEda" description={`Все категории рецептов SwagEda: ${sorted.length} разделов — от супов и салатов до выпечки и блюд в аэрогриле.`}>
+      <Fragment slot="head">{itemListJsonLd && <script type="application/ld+json" is:inline set:html={itemListJsonLd} />}</Fragment>
       <div class="container mx-auto px-0 py-4 md:px-4 md:py-12">
         <div class="mb-6 print:hidden">
           <Breadcrumbs items={[{ name: "Категории", href: "/categories" }]} />
