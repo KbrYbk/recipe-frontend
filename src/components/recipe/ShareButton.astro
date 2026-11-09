@@ -1,35 +1,36 @@
 ---
 import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
+import { ACTION_BUTTON_CLASS, ACTION_LABEL_CLASS } from "./actionStyles";
 ---
-<share-button class="block w-full sm:w-auto">
-  <Button
-    variant="primary"
-    class="share-btn h-11 w-full text-sm px-2 sm:w-auto sm:px-4 print:hidden"
-    aria-label="Поделиться рецептом"
-  >
+
+<share-button class="block shrink-0">
+  <Button variant="outline" size="sm" class={`share-btn ${ACTION_BUTTON_CLASS} print:hidden`} aria-label="Поделиться рецептом">
     <Icon name="lucide:share-2" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
-    <span class="button-label">Поделиться</span>
+    <span class={ACTION_LABEL_CLASS}>Поделиться</span>
   </Button>
 </share-button>
-  
-  <script>
-    class ShareButton extends HTMLElement {
-      connectedCallback() {
-        const btn = this.querySelector('button');
-        if (!btn) return;
-  
-        btn.addEventListener("click", () => {
-          if (navigator.share) {
-            navigator.share({ title: document.title, url: window.location.href }).catch(() => {});
-          } else {
-            navigator.clipboard.writeText(window.location.href)
-              .then(() => alert("Ссылка скопирована!"))
-              .catch(() => {});
-          }
-        });
-      }
+
+<script>
+  import { showToast } from "../../lib/client/toast";
+
+  class ShareButton extends HTMLElement {
+    connectedCallback() {
+      const btn = this.querySelector("button");
+      if (!btn) return;
+
+      btn.addEventListener("click", () => {
+        if (navigator.share) {
+          navigator.share({ title: document.title, url: window.location.href }).catch(() => {});
+        } else {
+          navigator.clipboard
+            .writeText(window.location.href)
+            .then(() => showToast("Ссылка скопирована", "success"))
+            .catch(() => showToast("Не удалось скопировать ссылку", "error"));
+        }
+      });
     }
-  
-    customElements.define('share-button', ShareButton);
-  </script>
+  }
+
+  if (!customElements.get("share-button")) customElements.define("share-button", ShareButton);
+</script>

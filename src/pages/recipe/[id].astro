@@ -71,10 +71,11 @@ const breadcrumbs = recipe
     <Layout title={pageTitle} description={metaDescription} image={recipe.main_image} canonical={canonical} ogType="article" recipeData={recipeMeta}>
       <ReadingProgress />
 
-      <article class="mx-auto max-w-4xl px-0 py-4 md:px-4 md:py-12" data-recipe-id={recipe.id}>
+      {/* Ширина: 6xl; на 1480–1559px — 5xl, чтобы не заходить под боковые sticky-баннеры (fixed, 160px + 16px от края) */}
+      <article class="mx-auto max-w-6xl px-0 py-2 min-[1480px]:max-w-5xl min-[1560px]:max-w-6xl md:px-4 md:py-10" data-recipe-id={recipe.id}>
         <script type="application/ld+json" is:inline set:html={jsonLd} />
 
-        <div class="mb-6 md:mb-8 print:hidden">
+        <div class="mb-4 md:mb-8 print:hidden">
           <Breadcrumbs items={breadcrumbs} />
         </div>
 
@@ -82,14 +83,14 @@ const breadcrumbs = recipe
 
         <Surface
           padding="none"
-          class="relative mb-12 aspect-video overflow-hidden shadow-2xl! print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
+          class="relative mb-10 aspect-video overflow-hidden shadow-2xl! md:mb-12 print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
         >
           {recipe.main_image ? (
             <Image
               src={recipe.main_image}
               alt={`Фото готового блюда: ${recipe.title}`}
               widths={[450, 800, 1200]}
-              sizes="(max-width: 768px) 450px, (max-width: 1200px) 800px, 1200px"
+              sizes="(max-width: 768px) 450px, (max-width: 1100px) 800px, 1200px"
               width={1200}
               height={675}
               data-zoomable
@@ -106,12 +107,12 @@ const breadcrumbs = recipe
           )}
         </Surface>
 
-        <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)] xl:gap-12">
           <aside class="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:gap-8 lg:pb-4 print:static print:block print:max-h-none print:overflow-visible">
-            <IngredientsList ingredients={recipe.ingredients} recipeId={recipe.id} recipeTitle={recipe.title} recipeUrl={recipe.url} />
+            <IngredientsList ingredients={recipe.ingredients} recipeId={recipe.id} recipeTitle={recipe.title} recipeUrl={recipe.url} servings={recipe.servings} />
           </aside>
 
-          <div class="lg:col-span-2">
+          <div class="min-w-0">
             {recipe.description && (
               <section aria-labelledby="about-heading" class="mb-12">
                 <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
@@ -158,7 +159,7 @@ const breadcrumbs = recipe
         </Divider>
       </article>
       <RecipeLightbox />
-      <CookMode recipeId={recipe.id} title={recipe.title} steps={recipe.steps} ingredients={recipe.ingredients} />
+      <CookMode recipeId={recipe.id} title={recipe.title} steps={recipe.steps} ingredients={recipe.ingredients} servings={recipe.servings} />
     </Layout>
   )
 }

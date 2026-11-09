@@ -1,6 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
+import { ACTION_BUTTON_CLASS, ACTION_LABEL_CLASS } from "./actionStyles";
 
 interface Props {
   recipeId: number;
@@ -8,10 +9,10 @@ interface Props {
 const { recipeId } = Astro.props;
 ---
 
-<like-button data-id={recipeId} class="block w-full sm:w-auto">
-  <Button variant="outline" aria-label="Лайкнуть рецепт" aria-pressed="false" class="like-btn h-11 w-full px-2 text-sm sm:w-auto sm:px-4">
+<like-button data-id={recipeId} class="block shrink-0">
+  <Button variant="outline" aria-label="Лайкнуть рецепт" aria-pressed="false" size="sm" class={`like-btn ${ACTION_BUTTON_CLASS}`}>
     <Icon name="lucide:heart" slot="icon-left" class="heart-icon h-4 w-4 shrink-0" aria-hidden="true" />
-    <span class="button-label">Лайк</span>
+    <span class={ACTION_LABEL_CLASS}>Лайк</span>
   </Button>
 </like-button>
 

@@ -6,9 +6,9 @@ interface Props {
 const { recipeId, averageRating } = Astro.props;
 ---
 
-<rating-stars data-id={recipeId} data-avg={averageRating} class="block w-full sm:w-auto">
+<rating-stars data-id={recipeId} data-avg={averageRating} class="block shrink-0">
   <div
-    class="rating-container glass-border-3d bg-card-bg/20 hover:bg-card-bg/40 flex h-11 w-full items-center justify-center gap-2 rounded-2xl px-3 text-sm font-bold text-amber-500 shadow-sm shadow-black/15 backdrop-blur-md transition-all hover:shadow-md hover:shadow-black/20 sm:w-auto"
+    class="rating-container glass-border-3d bg-card-bg/20 hover:bg-card-bg/40 flex h-10 items-center justify-center gap-1 rounded-2xl px-1.5 text-sm font-bold text-amber-500 shadow-sm shadow-black/15 backdrop-blur-md transition-all hover:shadow-md hover:shadow-black/20 sm:w-auto sm:gap-2 sm:px-3"
     role="group"
     aria-label={`Рейтинг: ${averageRating ? Number(averageRating).toFixed(1) : "0"} из 5`}
   >
@@ -18,18 +18,26 @@ const { recipeId, averageRating } = Astro.props;
           <button
             type="button"
             data-star={star}
-            class="star-btn focus: focus-visible:ring-brand rounded-md p-1 transition-transform outline-none hover:scale-110 focus-visible:ring-2 disabled:hover:scale-100"
+            class="star-btn focus-visible:ring-brand flex h-8 w-6 items-center justify-center rounded-md transition-transform outline-none hover:scale-110 focus-visible:ring-2 disabled:hover:scale-100"
             aria-label={`Оценить на ${star}`}
             aria-pressed="false"
           >
-            <svg class="star-svg h-5 w-5 shrink-0 fill-none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              class="star-svg h-4.5 w-4.5 shrink-0 fill-none sm:h-5 sm:w-5"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
             </svg>
           </button>
         ))
       }
     </div>
-    <div class="text-text-main ml-1">
+    <div class="text-text-main ml-0.5 whitespace-nowrap sm:ml-1">
       <span class="avg-val font-bold">{averageRating ? Number(averageRating).toFixed(1) : "0"}</span>
       <span class="sr-only"> из 5</span>
       <span class="user-val text-text-muted hidden text-xs">Ваша оценка: <span class="val text-text-main font-semibold"></span></span>
