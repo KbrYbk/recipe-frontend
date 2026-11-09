@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import { getApiRoot, getProjectKey, PROJECT_HEADER } from "./lib/server/env";
 import { canonicalPathRedirect } from "./lib/urlNormalize";
+import { CONDITIONAL_REQUEST_HEADERS, SITEMAP_PATTERN } from "./lib/sitemap";
 
 /**
  * Белый список маршрутов, которые браузер может вызывать через /api-proxy.
@@ -24,15 +25,13 @@ function isValidBatchQuery(params: URLSearchParams): boolean {
   return /^\d{1,12}(,\d{1,12}){0,49}$/.test(ids);
 }
 
-const SITEMAP_PATTERN = /^\/sitemap(_static|_categories|_recipes_\d+)?\.xml$/;
-
 /** Страницы с персональным/случайным содержимым — не кэшировать публично. */
 const PRIVATE_PAGES = new Set(["/favorites", "/shopping-list"]);
 const NO_STORE_PAGES = new Set(["/random"]);
 const PUBLIC_PAGE_CACHE = "public, s-maxage=60, stale-while-revalidate=600";
 
 /** Заголовки ответа бэкенда, которые не пробрасываем клиенту. */
-const HOP_BY_HOP = ["connection", "keep-alive", "transfer-encoding", "content-encoding", "content-length", "set-cookie", "server", "x-powered-by"];
+const HOP_BY_HOP = ["connection", "keep-alive", "transfer-encoding", "content-encoding", "content-length", "set-cookie", "server", "x-powered-by", "host", "access-control-allow-origin"];
 
 const MAX_BODY_BYTES = 4 * 1024;
 
@@ -54,12 +53,16 @@ function jsonError(status: number, message: string): Response {
   });
 }
 
-async function proxyRequest(request: Request, clientIp: string, targetUrl: string): Promise<Response> {
+async function proxyRequest(request: Request, clientIp: string, targetUrl: string, forwardHeaders: readonly string[] = []): Promise<Response> {
   const headers = new Headers({
     Accept: "application/json",
     [PROJECT_HEADER]: getProjectKey(),
   });
   if (clientIp) headers.set("X-Forwarded-For", clientIp);
+  for (const name of forwardHeaders) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
 
   const init: RequestInit = { method: request.method, headers };
 
@@ -78,7 +81,9 @@ async function proxyRequest(request: Request, clientIp: string, targetUrl: strin
     upstream.headers.forEach((value, key) => {
       if (!HOP_BY_HOP.includes(key.toLowerCase())) responseHeaders.set(key, value);
     });
-    return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
+    // У 204/304 тела быть не может (конструктор Response бросает исключение на тело с таким статусом).
+    const body = upstream.status === 204 || upstream.status === 304 ? null : upstream.body;
+    return new Response(body, { status: upstream.status, headers: responseHeaders });
   } catch (error) {
     const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
     console.error(`[api-proxy] ${request.method} ${new URL(targetUrl).pathname} failed: ${reason}`);
@@ -161,8 +166,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (SITEMAP_PATTERN.test(url.pathname)) {
     if (request.method !== "GET" && request.method !== "HEAD") return applySecurityHeaders(jsonError(404, "Not found"));
-    const res = await proxyRequest(request, "", `${getApiRoot()}${url.pathname}`);
-    if (res.ok) res.headers.set("Cache-Control", "public, max-age=3600");
+    // If-Modified-Since/If-None-Match → бэкенду; его Last-Modified и 304 возвращаются как есть.
+    const res = await proxyRequest(request, "", `${getApiRoot()}${url.pathname}`, CONDITIONAL_REQUEST_HEADERS);
+    if (res.ok || res.status === 304) res.headers.set("Cache-Control", "public, max-age=3600");
     return applySecurityHeaders(res);
   }
 
