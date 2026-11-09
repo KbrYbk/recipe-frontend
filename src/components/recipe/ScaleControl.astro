@@ -1,0 +1,32 @@
+---
+/**
+ * Переключатель количества ингредиентов (½× … 3×). Все переключатели и количества
+ * ([data-amount-base]) на странице синхронизирует src/scripts/scale.ts; выбор хранится на рецепт.
+ */
+import { SCALE_OPTIONS, scaleCaption } from "../../lib/scaleAmount";
+
+interface Props {
+  recipeId: number;
+  servings?: number;
+  class?: string;
+}
+const { recipeId, servings, class: className = "" } = Astro.props;
+const name = `scale-${recipeId}-${Math.random().toString(36).slice(2, 7)}`;
+---
+
+<fieldset class:list={["print:hidden", className]} data-scale-control data-recipe-id={recipeId} data-servings={servings ?? ""}>
+  <legend class="sr-only">Пересчёт количества ингредиентов</legend>
+  <div class="bg-page-bg/70 border-line grid grid-cols-5 gap-1 rounded-2xl border p-1">
+    {
+      SCALE_OPTIONS.map((o) => (
+        <label class="relative">
+          <input type="radio" name={name} value={o.value} checked={o.value === 1} class="peer sr-only" data-scale-option />
+          <span class="text-text-muted hover:text-text-main peer-checked:bg-brand peer-focus-visible:ring-brand flex h-9 cursor-pointer items-center justify-center rounded-xl text-sm font-bold tabular-nums transition-colors peer-checked:text-white peer-focus-visible:ring-2">
+            {o.label}
+          </span>
+        </label>
+      ))
+    }
+  </div>
+  <p class="text-text-muted mt-2 text-xs font-medium" aria-live="polite" data-scale-caption>{scaleCaption(1, servings)}</p>
+</fieldset>
