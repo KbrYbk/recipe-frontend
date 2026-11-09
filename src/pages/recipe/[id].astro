@@ -149,8 +149,11 @@ const breadcrumbs = recipe
 
         {similar && <SimilarRecipes recipes={similar} categoryHref={recipe.category?.href} />}
 
-        <Divider>
-          <h2 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h2>
+        <Divider data-ad-titled>
+          {/* Заголовок показывается только после того, как в блок что-то отрисовалось (src/scripts/ads.js) */}
+          <h2 class="text-text-main mb-6 hidden text-2xl font-bold" data-ad-heading>
+            Рекомендуем приготовить:
+          </h2>
           <AdSlot id="R-A-19056160-14" isFeed={true} refreshInterval={60} reserve="feed" />
         </Divider>
       </article>

@@ -1,11 +1,12 @@
 ---
 interface Props {
   class?: string;
+  [key: `data-${string}`]: unknown;
 }
 
-const { class: className } = Astro.props;
+const { class: className, ...rest } = Astro.props;
 ---
 
-<div class:list={["border-t border-line mt-12 pt-8 print:hidden", className]}>
+<div class:list={["border-line mt-12 border-t pt-8 print:hidden", className]} {...rest}>
   <slot />
 </div>
