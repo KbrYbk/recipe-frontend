@@ -1,47 +1,17 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { CHECKBOX_CLASS } from "../../lib/ui";
 
 interface Props extends HTMLAttributes<"input"> {
   class?: string;
 }
 
 const { class: className = "", ...rest } = Astro.props;
+const size = /(^|\s)h-\d/.test(className) ? "" : "h-6 w-6";
+// Классы и стили галочки (.app-checkbox в global.css) общие с чекбоксами, которые создаёт JS (список покупок).
 ---
 
 <!--
   Контрастный чекбокс: рамка 2px (≥3:1 к фону карточки в обеих темах), отмеченный — оранжевый с белой галочкой.
 -->
-<input
-  type="checkbox"
-  class:list={[
-    "app-checkbox relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors duration-200",
-    "bg-card-bg border-2 border-slate-500 dark:border-slate-400",
-    "hover:border-brand",
-    "checked:border-brand checked:bg-brand text-white",
-    "focus-visible:ring-brand/40 focus-visible:ring-offset-page-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-    "print:h-4 print:w-4 print:appearance-auto print:rounded-none print:border print:border-black print:bg-transparent",
-    className,
-  ]}
-  {...rest}
-/>
-
-<style>
-  .app-checkbox {
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  .app-checkbox:checked::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    width: 70%;
-    height: 70%;
-    background-color: currentColor;
-    -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12"/></svg>')
-      center/contain no-repeat;
-    mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12"/></svg>')
-      center/contain no-repeat;
-  }
-</style>
+<input type="checkbox" class:list={[size, CHECKBOX_CLASS, "print:h-4 print:w-4 print:appearance-auto print:rounded-none print:border print:border-black print:bg-transparent", className]} {...rest} />

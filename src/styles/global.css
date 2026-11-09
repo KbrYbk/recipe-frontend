@@ -451,6 +451,26 @@
   pointer-events: none;
 }
 
+/* Чекбоксы (src/lib/ui.ts → CHECKBOX_CLASS) */
+.app-checkbox {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.app-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 70%;
+  height: 70%;
+  background-color: currentColor;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12"/></svg>')
+    center/contain no-repeat;
+  mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12"/></svg>')
+    center/contain no-repeat;
+}
+
 /* Плавное появление фото карточек рецептов (глобально: карточки приходят и HTML-фрагментом, см. /partials/recipe-cards) */
 @keyframes card-fade-in {
   from {
