@@ -14,6 +14,7 @@ import Button from "../ui/Button.astro";
     <nav class="hidden items-center gap-8 md:flex" aria-label="Основная навигация">
       <a href="/recipes" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Все рецепты">Все рецепты</a>
       <a href="/favorites" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Избранное">Избранное</a>
+      <a href="/shopping-list" class="text-text-main hover:text-brand font-medium transition-colors">Покупки</a>
       <a href="/random" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Показать случайный рецепт">Удиви меня</a>
       <div class="bg-line h-6 w-px"></div>
 
@@ -24,7 +25,10 @@ import Button from "../ui/Button.astro";
     </nav>
 
     <!-- Mobile Controls -->
-    <div class="flex items-center gap-3 md:hidden">
+    <div class="flex items-center gap-1 md:hidden">
+      <a href="/shopping-list" class="text-text-main hover:text-brand flex h-10 w-10 items-center justify-center rounded-2xl" aria-label="Список покупок">
+        <Icon name="lucide:shopping-cart" class="h-6 w-6" aria-hidden="true" />
+      </a>
       <Button variant="ghost" size="icon" id="themeToggleMobile" class="shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-6 w-6" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-6 w-6" aria-hidden="true" />

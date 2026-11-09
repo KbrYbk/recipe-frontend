@@ -2,31 +2,30 @@
 import { Icon } from "astro-icon/components";
 import Checkbox from "../ui/Checkbox.astro";
 import Button from "../ui/Button.astro";
-
-interface Ingredient {
-  name: string;
-  amount?: string | number;
-  unit?: string;
-}
+import type { Ingredient } from "../../types/recipe";
+import { formatIngredientAmount } from "../../lib/normalizeIngredients";
 
 interface Props {
   ingredients: Ingredient[];
-  recipeSlug?: string;
+  recipeId: number;
+  recipeTitle: string;
+  recipeUrl: string;
 }
 
-const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
+const { ingredients = [], recipeId, recipeTitle, recipeUrl } = Astro.props;
+const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, amount: formatIngredientAmount(i) })));
 ---
 
-<div class="group" aria-labelledby={`ingredients-heading-${recipeSlug}`}>
+<div class="group" data-ingredients data-recipe-id={recipeId} data-no-copy-signature>
   <div
     class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-all hover:shadow-2xl hover:shadow-black/20 print:border-0 print:bg-transparent print:p-0 print:shadow-none"
   >
     <div class="mb-6 flex w-full flex-wrap items-baseline justify-between gap-y-2">
       <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
-        <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" />
+        <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" aria-hidden="true" />
         Ингредиенты
       </h2>
-      <button data-reset-ingredients={recipeSlug} class="text-text-muted hover:text-brand cursor-pointer text-xs font-medium transition-colors"> Сбросить </button>
+      <button type="button" data-reset-ingredients class="text-text-muted hover:text-brand cursor-pointer text-xs font-medium transition-colors print:hidden">Сбросить</button>
     </div>
 
     <div class="relative">
@@ -35,24 +34,21 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
         data-ingredients-scroll
         tabindex="0"
         role="region"
-        aria-label="Список ингредиентов, прокрутите чтобы увидеть все"
+        aria-label="Список ингредиентов"
       >
         <ul class="space-y-3 pr-1 print:columns-2 print:space-y-1 print:gap-x-4">
           {
             ingredients.map((item, i) => {
-              const cbId = `ing-${recipeSlug}-${i}`;
+              const cbId = `ing-${recipeId}-${i}`;
+              const amount = formatIngredientAmount(item);
               return (
                 <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors print:gap-2 print:rounded-none print:border-b print:border-gray-200 print:py-1">
                   <div class="flex h-6 shrink-0 items-center">
-                    <Checkbox id={cbId} data-ingredient-checkbox data-recipe-slug={recipeSlug} />
+                    <Checkbox id={cbId} data-ingredient-checkbox data-ingredient-index={i} />
                   </div>
-                  <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all select-none">
+                  <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all">
                     <span class="ingredient-name text-text-main leading-tight font-medium print:text-[10pt]">{item.name}</span>
-                    {item.amount && (
-                      <span class="ingredient-amount text-text-muted text-xs font-bold italic opacity-80">
-                        {item.amount} {item.unit}
-                      </span>
-                    )}
+                    {amount && <span class="ingredient-amount text-text-muted text-xs font-bold italic opacity-80">{amount}</span>}
                   </label>
                 </li>
               );
@@ -61,7 +57,6 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
         </ul>
       </div>
 
-      <!-- Индикатор: показывает что есть ещё ингредиенты и сколько осталось -->
       <div class="ingredients-scroll-hint absolute inset-x-0 bottom-0 z-10 flex items-end justify-center pb-2 print:hidden" data-scroll-hint aria-hidden="true">
         <button
           type="button"
@@ -75,115 +70,135 @@ const { ingredients = [], recipeSlug = "recipe" } = Astro.props;
       </div>
     </div>
 
-    <Button data-copy-ingredients variant="outline" fullWidth class="mt-6 flex h-11 w-full px-2! text-sm font-semibold">
-      <Icon name="lucide:copy" slot="icon-left" class="h-4 w-4 shrink-0" />
-      Копировать список
-    </Button>
+    <div class="mt-6 grid grid-cols-1 gap-2 print:hidden">
+      <Button variant="primary" fullWidth class="h-11 px-2! text-sm" data-add-to-shopping data-items={shoppingPayload} data-recipe-title={recipeTitle} data-recipe-url={recipeUrl}>
+        <Icon name="lucide:list-plus" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
+        В список покупок
+      </Button>
+      <Button data-copy-ingredients variant="outline" fullWidth class="h-11 px-2! text-sm font-semibold">
+        <Icon name="lucide:copy" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span data-copy-label>Копировать список</span>
+      </Button>
+    </div>
   </div>
 </div>
 
 <script>
-  function initIngredients() {
-    const slug = document.querySelector("[data-recipe-slug]")?.getAttribute("data-recipe-slug");
-    const checkboxes = document.querySelectorAll<HTMLInputElement>("[data-ingredient-checkbox]");
-    const resetBtn = document.querySelector(`[data-reset-ingredients="${slug}"]`);
-    const copyBtn = document.querySelector("[data-copy-ingredients]");
+  import { ingredientKey } from "../../lib/cookState";
+  import { readJson, readString, writeJson, writeString } from "../../lib/client/storage";
+  import { showToast } from "../../lib/client/toast";
+  import { addItems, sanitizeShoppingList, SHOPPING_LIST_KEY, type NewShoppingItem } from "../../lib/shoppingList";
 
-    // Логика чекбоксов (сохранение + зачёркивание)
-    const updateCheckedState = (input: HTMLInputElement) => {
-      const label = input.closest("li")?.querySelector(".ingredient-label");
-      label?.classList.toggle("is-checked", input.checked);
-    };
+  function initIngredients() {
+    const root = document.querySelector<HTMLElement>("[data-ingredients]");
+    if (!root) return;
+    const recipeId = Number(root.dataset.recipeId);
+    const checkboxes = root.querySelectorAll<HTMLInputElement>("[data-ingredient-checkbox]");
+
+    const sync = (input: HTMLInputElement) => input.closest("li")?.querySelector(".ingredient-label")?.classList.toggle("is-checked", input.checked);
 
     checkboxes.forEach((input) => {
-      const key = `recipe:ing:${slug}:${input.id}`;
-      input.checked = localStorage.getItem(key) === "1";
-      updateCheckedState(input);
-
+      const key = ingredientKey(recipeId, Number(input.dataset.ingredientIndex));
+      input.checked = readString(key) === "1";
+      sync(input);
       input.addEventListener("change", () => {
-        localStorage.setItem(key, input.checked ? "1" : "0");
-        updateCheckedState(input);
+        writeString(key, input.checked ? "1" : null);
+        sync(input);
+        document.dispatchEvent(new CustomEvent("recipe:ingredients-changed"));
       });
     });
 
-    // Логика сброса
-    resetBtn?.addEventListener("click", () => {
+    // Синхронизация с «Режимом готовки»
+    document.addEventListener("recipe:cook-ingredients-changed", () => {
+      checkboxes.forEach((input) => {
+        input.checked = readString(ingredientKey(recipeId, Number(input.dataset.ingredientIndex))) === "1";
+        sync(input);
+      });
+    });
+
+    root.querySelector("[data-reset-ingredients]")?.addEventListener("click", () => {
       checkboxes.forEach((input) => {
         input.checked = false;
-        localStorage.removeItem(`recipe:ing:${slug}:${input.id}`);
-        updateCheckedState(input);
+        writeString(ingredientKey(recipeId, Number(input.dataset.ingredientIndex)), null);
+        sync(input);
       });
+      document.dispatchEvent(new CustomEvent("recipe:ingredients-changed"));
     });
 
-    // Логика копирования
-    copyBtn?.addEventListener("click", () => {
+    const copyBtn = root.querySelector<HTMLElement>("[data-copy-ingredients]");
+    const copyLabel = root.querySelector<HTMLElement>("[data-copy-label]");
+    copyBtn?.addEventListener("click", async () => {
       const text = Array.from(checkboxes)
         .map((input) => {
           const label = input.closest("li")?.querySelector("label");
-          return `• ${label?.innerText.replace("\n", " ")}`;
+          return `• ${(label?.innerText ?? "").replace(/\s*\n\s*/g, " — ")}`;
         })
         .join("\n");
+      try {
+        await navigator.clipboard.writeText(`Ингредиенты:\n${text}`);
+        if (copyLabel) {
+          copyLabel.textContent = "Скопировано!";
+          setTimeout(() => (copyLabel.textContent = "Копировать список"), 2000);
+        }
+      } catch {
+        showToast("Не удалось скопировать", "error");
+      }
+    });
 
-      navigator.clipboard.writeText(`Ингредиенты:\n${text}`).then(() => {
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = "Скопировано!";
-        setTimeout(() => (copyBtn.innerHTML = originalText), 2000);
-      });
+    const addBtn = root.querySelector<HTMLElement>("[data-add-to-shopping]");
+    addBtn?.addEventListener("click", () => {
+      let items: { name: string; amount?: string }[] = [];
+      try {
+        items = JSON.parse(addBtn.dataset.items || "[]");
+      } catch {
+        items = [];
+      }
+      const toAdd: NewShoppingItem[] = items.map((i) => ({
+        name: i.name,
+        amount: i.amount,
+        recipeId,
+        recipeTitle: addBtn.dataset.recipeTitle,
+        recipeUrl: addBtn.dataset.recipeUrl,
+      }));
+      const { list, added } = addItems(sanitizeShoppingList(readJson<unknown>(SHOPPING_LIST_KEY, [])), toAdd);
+      writeJson(SHOPPING_LIST_KEY, list);
+      document.dispatchEvent(new CustomEvent("shopping-list:changed"));
+      showToast(added > 0 ? `Добавлено в список покупок: ${added}` : "Эти ингредиенты уже в списке", added > 0 ? "success" : "info", { label: "Открыть", href: "/shopping-list" });
     });
   }
 
   initIngredients();
 
-  // === Scroll hint: показывает сколько ингредиентов осталось и даёт прокрутить ===
+  // Подсказка «N ингредиентов внизу» для прокручиваемого списка (десктоп)
   function initScrollHint() {
     const scrollArea = document.querySelector<HTMLElement>("[data-ingredients-scroll]");
     const hint = document.querySelector<HTMLElement>("[data-scroll-hint]");
     const remainingEl = document.querySelector<HTMLElement>("[data-remaining-count]");
     const scrollDownBtn = document.querySelector<HTMLElement>("[data-scroll-down-btn]");
     if (!scrollArea || !hint) return;
-
     const items = scrollArea.querySelectorAll<HTMLElement>("[data-ingredient-checkbox]");
-
 
     const updateHint = () => {
       const scrollBottom = scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight;
       const isScrollable = scrollArea.scrollHeight > scrollArea.clientHeight;
       const atBottom = scrollBottom < 12;
-
-      // Считаем сколько ингредиентов ниже видимой области
       let hiddenCount = 0;
       if (isScrollable && !atBottom) {
-        const areaRect = scrollArea.getBoundingClientRect();
-        const visibleBottom = areaRect.bottom - 8; // небольшой порог
+        const visibleBottom = scrollArea.getBoundingClientRect().bottom - 8;
         items.forEach((item) => {
-          const itemRect = item.getBoundingClientRect();
-          if (itemRect.top >= visibleBottom) {
-            hiddenCount++;
-          }
+          if (item.getBoundingClientRect().top >= visibleBottom) hiddenCount++;
         });
       }
-
-      // Показываем/скрываем индикатор
-      const showHint = isScrollable && !atBottom && hiddenCount > 0;
-      hint.style.opacity = showHint ? "1" : "0";
-      hint.style.pointerEvents = showHint ? "auto" : "none";
-      hint.setAttribute("aria-hidden", String(!showHint));
-
-      // Обновляем счётчик
-      if (remainingEl) {
-        remainingEl.textContent = String(hiddenCount);
-      }
+      const show = isScrollable && !atBottom && hiddenCount > 0;
+      hint.style.opacity = show ? "1" : "0";
+      hint.style.pointerEvents = show ? "auto" : "none";
+      if (remainingEl) remainingEl.textContent = String(hiddenCount);
     };
 
     scrollArea.addEventListener("scroll", updateHint, { passive: true });
     window.addEventListener("resize", updateHint);
-    // Небольшая задержка для корректного расчёта после рендера
     requestAnimationFrame(updateHint);
-
-    // Кнопка «прокрутить вниз» — скроллит на одну экранную высоту
-    scrollDownBtn?.addEventListener("click", () => {
-      scrollArea.scrollBy({ top: scrollArea.clientHeight * 0.7, behavior: "smooth" });
-    });
+    scrollDownBtn?.addEventListener("click", () => scrollArea.scrollBy({ top: scrollArea.clientHeight * 0.7, behavior: "smooth" }));
   }
 
   initScrollHint();

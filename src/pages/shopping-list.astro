@@ -1,0 +1,173 @@
+---
+/** Список покупок: хранится только в браузере (localStorage), без бэкенда. */
+import Layout from "../layouts/Layout.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<Layout title="Список покупок — SwagEda" description="Список покупок из ингредиентов рецептов SwagEda." noindex>
+  <div class="mx-auto max-w-2xl">
+    <header class="mb-6 md:mb-8">
+      <h1 class="text-text-main text-3xl font-bold md:text-4xl">Список покупок</h1>
+      <p class="text-text-muted mt-2 text-sm md:text-base">Добавляйте ингредиенты кнопкой «В список покупок» на странице рецепта. Список хранится только на этом устройстве.</p>
+    </header>
+
+    <form class="mb-6 flex gap-2" data-shopping-add>
+      <label for="shopping-new" class="sr-only">Добавить позицию</label>
+      <input
+        id="shopping-new"
+        name="item"
+        type="text"
+        maxlength="200"
+        autocomplete="off"
+        placeholder="Добавить: молоко, хлеб…"
+        class="glass-border-3d bg-card-bg/60 text-text-main placeholder:text-text-muted focus:ring-brand/20 w-full rounded-2xl px-4 py-3 focus:ring-4 focus:outline-none"
+      />
+      <button type="submit" class="bg-brand hover:bg-brand-hover shrink-0 cursor-pointer rounded-2xl px-4 font-bold text-white" aria-label="Добавить">
+        <Icon name="lucide:plus" class="h-5 w-5" aria-hidden="true" />
+      </button>
+    </form>
+
+    <div class="mb-6 flex flex-wrap gap-2" data-shopping-actions hidden>
+      <button type="button" class="glass-border-3d text-text-main hover:text-brand inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold" data-shopping-share>
+        <Icon name="lucide:share-2" class="h-4 w-4" aria-hidden="true" />
+        Поделиться
+      </button>
+      <button type="button" class="glass-border-3d text-text-main hover:text-brand inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold" data-shopping-copy>
+        <Icon name="lucide:copy" class="h-4 w-4" aria-hidden="true" />
+        Копировать
+      </button>
+      <button type="button" class="glass-border-3d text-text-main hover:text-brand inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold" data-shopping-clear-done>
+        <Icon name="lucide:check-check" class="h-4 w-4" aria-hidden="true" />
+        Убрать купленное
+      </button>
+      <button type="button" class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-500 hover:bg-rose-500/20" data-shopping-clear>
+        <Icon name="lucide:trash-2" class="h-4 w-4" aria-hidden="true" />
+        Очистить всё
+      </button>
+    </div>
+
+    <div data-shopping-list class="space-y-6" aria-live="polite"></div>
+
+    <div class="hidden flex-col items-center py-16 text-center" data-shopping-empty>
+      <div class="bg-accent-soft mb-4 rounded-full p-6">
+        <Icon name="lucide:shopping-cart" class="text-brand h-12 w-12" aria-hidden="true" />
+      </div>
+      <h2 class="text-text-main text-xl font-semibold">Список пуст</h2>
+      <p class="text-text-muted mt-2">Откройте рецепт и нажмите «В список покупок».</p>
+      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-block rounded-xl px-6 py-3 font-bold text-white">Найти рецепты</a>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { readJson, writeJson } from "../lib/client/storage";
+  import { showToast } from "../lib/client/toast";
+  import { addItems, formatShoppingList, groupByRecipe, removeDone, removeItem, removeRecipe, sanitizeShoppingList, SHOPPING_LIST_KEY, toggleItem, type ShoppingItem } from "../lib/shoppingList";
+
+  const listEl = document.querySelector<HTMLElement>("[data-shopping-list]");
+  const emptyEl = document.querySelector<HTMLElement>("[data-shopping-empty]");
+  const actionsEl = document.querySelector<HTMLElement>("[data-shopping-actions]");
+
+  const load = (): ShoppingItem[] => sanitizeShoppingList(readJson<unknown>(SHOPPING_LIST_KEY, []));
+  const save = (list: ShoppingItem[]) => {
+    writeJson(SHOPPING_LIST_KEY, list);
+    render();
+  };
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text = ""): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  }
+
+  function render() {
+    if (!listEl || !emptyEl || !actionsEl) return;
+    const list = load();
+    listEl.replaceChildren();
+    const isEmpty = list.length === 0;
+    emptyEl.classList.toggle("hidden", !isEmpty);
+    emptyEl.classList.toggle("flex", isEmpty);
+    actionsEl.hidden = isEmpty;
+
+    for (const group of groupByRecipe(list)) {
+      const section = el("section", "glass-border-3d bg-card-bg/60 rounded-3xl p-4 md:p-6");
+      const head = el("div", "mb-3 flex items-center justify-between gap-3");
+      const title = group.url ? el("a", "text-text-main hover:text-brand text-lg font-bold", group.title) : el("h2", "text-text-main text-lg font-bold", group.title);
+      if (group.url && title instanceof HTMLAnchorElement) title.href = group.url;
+      head.appendChild(title);
+      if (group.recipeId) {
+        const rm = el("button", "text-text-muted hover:text-rose-500 shrink-0 cursor-pointer text-xs font-medium", "Убрать рецепт");
+        rm.type = "button";
+        rm.addEventListener("click", () => save(removeRecipe(load(), group.recipeId!)));
+        head.appendChild(rm);
+      }
+      section.appendChild(head);
+
+      const ul = el("ul", "space-y-1");
+      for (const item of group.items) {
+        const li = el("li", "flex items-center gap-3 rounded-xl p-2 hover:bg-page-bg/50");
+        const label = el("label", "flex flex-1 cursor-pointer items-start gap-3");
+        const cb = el("input", "mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-primary)]");
+        cb.type = "checkbox";
+        cb.checked = item.done;
+        cb.addEventListener("change", () => save(toggleItem(load(), item.id)));
+        const text = el("span", item.done ? "text-text-muted line-through" : "text-text-main");
+        text.textContent = item.name;
+        if (item.amount) text.appendChild(el("span", "text-text-muted ml-2 text-sm", item.amount));
+        label.append(cb, text);
+        const del = el("button", "text-text-muted hover:text-rose-500 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg", "✕");
+        del.type = "button";
+        del.setAttribute("aria-label", `Удалить «${item.name}»`);
+        del.addEventListener("click", () => save(removeItem(load(), item.id)));
+        li.append(label, del);
+        ul.appendChild(li);
+      }
+      section.appendChild(ul);
+      listEl.appendChild(section);
+    }
+  }
+
+  document.querySelector<HTMLFormElement>("[data-shopping-add]")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = (e.currentTarget as HTMLFormElement).elements.namedItem("item") as HTMLInputElement | null;
+    const name = input?.value.trim();
+    if (!input || !name) return;
+    save(addItems(load(), [{ name }]).list);
+    input.value = "";
+  });
+
+  async function copyText(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("Список скопирован", "success");
+    } catch {
+      showToast("Не удалось скопировать", "error");
+    }
+  }
+
+  document.querySelector("[data-shopping-copy]")?.addEventListener("click", () => copyText(formatShoppingList(load())));
+  document.querySelector("[data-shopping-share]")?.addEventListener("click", async () => {
+    const text = formatShoppingList(load());
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Список покупок", text });
+        return;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    }
+    copyText(text);
+  });
+  document.querySelector("[data-shopping-clear-done]")?.addEventListener("click", () => save(removeDone(load())));
+  document.querySelector("[data-shopping-clear]")?.addEventListener("click", () => {
+    if (confirm("Очистить весь список покупок?")) save([]);
+  });
+
+  // Изменения из другой вкладки
+  window.addEventListener("storage", (e) => {
+    if (e.key === SHOPPING_LIST_KEY) render();
+  });
+
+  render();
+</script>
