@@ -2,123 +2,133 @@
 import Layout from "../layouts/Layout.astro";
 import { Icon } from "astro-icon/components";
 import Surface from "../components/ui/Surface.astro";
+import { fetchRecipesTotal } from "../lib/api/recipes";
+import { formatCount } from "../lib/catalog";
+import { serializeJsonLd } from "../lib/recipeSchema";
+
+// Число рецептов — из API, как на главной: «более 39 000» (округление вниз до тысяч). Нет данных — без цифры.
+const total = await fetchRecipesTotal();
+const rounded = total >= 2000 ? Math.floor(total / 1000) * 1000 : 0;
+const countText = rounded ? `более ${formatCount(rounded)}` : "тысячи";
+const description = `SwagEda — кулинарный сайт с пошаговыми рецептами: ${countText} рецептов с фото. Кто мы, как отбираем и проверяем рецепты и как сообщить об ошибке.`;
+
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const aboutJsonLd = serializeJsonLd({
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  url: `${origin}/about`,
+  name: "О проекте — SwagEda",
+  isPartOf: { "@id": `${origin}/#website` },
+  about: { "@id": `${origin}/#organization` },
+});
+
+const checks = [
+  { icon: "lucide:list-checks", title: "Полный список ингредиентов", text: "С количеством и единицами измерения, чтобы всё можно было купить заранее и ничего не искать в середине готовки." },
+  { icon: "lucide:camera", title: "Шаги с фотографиями", text: "Каждый этап описан отдельно, а к шагам приложены фото: видно, какой должна быть консистенция и как выглядит блюдо на каждом этапе." },
+  { icon: "lucide:clock", title: "Время и сложность", text: "У каждого рецепта указано время приготовления и уровень сложности — легко выбрать блюдо на будний вечер или на праздник." },
+];
+
+const features = [
+  { icon: "lucide:chef-hat", title: "Режим готовки", text: "Крупные шаги на весь экран, экран не гаснет, пока вы готовите." },
+  { icon: "lucide:scale", title: "Пересчёт порций", text: "Количество ингредиентов меняется в один клик — от половины до тройной порции." },
+  { icon: "lucide:shopping-cart", title: "Список покупок", text: "Ингредиенты из нескольких рецептов собираются в один список, одинаковые складываются." },
+];
 ---
 
-<Layout title="О проекте — SwagEda" description="SwagEda — уютная кухня, а не корпорация. Более 31 000 рецептов в одном месте: готовим честно, без попапов и скрытых ингредиентов.">
-  <main class="mx-auto max-w-4xl px-4 py-12 md:py-16">
-    <!-- Hero -->
+<Layout title="О проекте — SwagEda" description={description}>
+  <Fragment slot="head"><script type="application/ld+json" is:inline set:html={aboutJsonLd} /></Fragment>
+  <div class="mx-auto max-w-4xl px-4 py-12 md:py-16">
     <section class="mb-14 text-center">
       <span class="bg-accent-soft text-brand inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold">
         <Icon name="lucide:utensils" class="h-4 w-4" aria-hidden="true" />
-        Уютная кухня, а не корпорация
+        О проекте
       </span>
-      <h1 class="text-text-main mt-5 text-4xl font-extrabold md:text-5xl">
-        Привет! Рад, что заглянул к нам на кухню <Icon name="lucide:hand" class="text-brand -mt-1 ml-1 inline h-7 w-7" aria-hidden="true" />
-      </h1>
+      <h1 class="text-text-main mt-5 text-4xl font-extrabold md:text-5xl">SwagEda — рецепты, по которым удобно готовить</h1>
       <p class="text-text-muted mx-auto mt-5 max-w-2xl text-lg leading-relaxed">
-        SwagEda — это место, где рецепты не прячутся за десятком попапов и пятиминутным видео. Мы сделали сайт таким, каким сами хотели бы пользоваться: быстрым, честным и без лишнего шума.
+        Мы делаем кулинарный сайт для обычной домашней кухни. Сейчас на SwagEda <strong class="text-text-main">{countText} рецептов</strong> с пошаговыми фото: супы, салаты, вторые блюда, выпечка, десерты,
+        заготовки и блюда для аэрогриля.
       </p>
     </section>
 
-    <!-- Story -->
     <section class="mb-14">
       <Surface padding="lg">
         <h2 class="text-text-main mb-4 flex items-center gap-2 text-2xl font-bold">
-          <Icon name="lucide:chef-hat" class="text-brand h-6 w-6" aria-hidden="true" />
-          Коротко о нас
+          <Icon name="lucide:users" class="text-brand h-6 w-6" aria-hidden="true" />
+          Кто стоит за сайтом
         </h2>
         <div class="text-text-muted space-y-4 leading-relaxed">
           <p>
-            Мы собрали <strong class="text-text-main">31 000+</strong> рецептов в одном месте и прикрутили к ним интерфейс, который открывается быстрее, чем закипает чайник. Никакой магии — просто нормальный
-            современный код.
+            SwagEda ведёт небольшая редакция. Мы отбираем рецепты, следим за тем, чтобы они были понятны и полны, разбиваем приготовление на шаги и собираем их в разделы и подборки — «что приготовить
+            на завтрак», «на ужин», праздничные салаты, выпечку.
           </p>
-          <p>Никакой регистрации ради «полного рецепта». Никаких «подпишись, чтобы увидеть ингредиенты». Заходи, находи что-то вкусное и — пошёл готовить.</p>
+          <p>
+            У рецептов есть авторы — их имена указаны на странице рецепта вместе с датой публикации. Некоторые рецепты написала и приготовила сама редакция. Мы не прячем рецепт за регистрацией и не
+            просим подписку, чтобы увидеть ингредиенты.
+          </p>
         </div>
       </Surface>
     </section>
 
-    <!-- Features -->
     <section class="mb-14">
-      <h2 class="text-text-main mb-6 text-center text-2xl font-bold">За что нас (надеемся) полюбят</h2>
+      <h2 class="text-text-main mb-6 text-center text-2xl font-bold">Каким должен быть рецепт на SwagEda</h2>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        <Surface padding="md" hoverable>
-          <div class="bg-accent-soft text-brand mb-3 flex h-12 w-12 items-center justify-center rounded-2xl">
-            <Icon name="lucide:zap" class="h-6 w-6" aria-hidden="true" />
-          </div>
-          <h3 class="text-text-main mb-2 text-lg font-semibold">Скорость</h3>
-          <p class="text-text-muted text-sm">Собрано на Astro — страницы открываются за миллисекунды, даже если ваш интернет решил вздремнуть.</p>
-        </Surface>
-        <Surface padding="md" hoverable>
-          <div class="bg-accent-soft text-brand mb-3 flex h-12 w-12 items-center justify-center rounded-2xl">
-            <Icon name="lucide:users" class="h-6 w-6" aria-hidden="true" />
-          </div>
-          <h3 class="text-text-main mb-2 text-lg font-semibold">Доступность</h3>
-          <p class="text-text-muted text-sm">Чистая семантика и WCAG-дружелюбность: зайдёт и с телефона, и с экранными читалками, и с бабушкиного планшета.</p>
-        </Surface>
-        <Surface padding="md" hoverable>
-          <div class="bg-accent-soft text-brand mb-3 flex h-12 w-12 items-center justify-center rounded-2xl">
-            <Icon name="lucide:soup" class="h-6 w-6" aria-hidden="true" />
-          </div>
-          <h3 class="text-text-main mb-2 text-lg font-semibold">Масштаб</h3>
-          <p class="text-text-muted text-sm">База из 31 000+ рецептов с мгновенным поиском и фильтрами..</p>
-        </Surface>
+        {
+          checks.map((c) => (
+            <Surface padding="md">
+              <div class="bg-accent-soft text-brand mb-3 flex h-12 w-12 items-center justify-center rounded-2xl">
+                <Icon name={c.icon} class="h-6 w-6" aria-hidden="true" />
+              </div>
+              <h3 class="text-text-main mb-2 text-lg font-semibold">{c.title}</h3>
+              <p class="text-text-muted text-sm">{c.text}</p>
+            </Surface>
+          ))
+        }
       </div>
     </section>
 
-    <!-- "Чем мы НЕ являемся" -->
     <section class="mb-14">
       <Surface padding="lg" class="bg-accent-soft/50">
-        <h2 class="text-text-main mb-5 flex items-center gap-2 text-2xl font-bold">
-          <Icon name="lucide:crown" class="text-brand h-6 w-6" aria-hidden="true" />
-          А чем мы НЕ являемся
+        <h2 class="text-text-main mb-4 flex items-center gap-2 text-2xl font-bold">
+          <Icon name="lucide:message-square-warning" class="text-brand h-6 w-6" aria-hidden="true" />
+          Нашли ошибку в рецепте?
         </h2>
-        <ul class="text-text-muted space-y-3">
-          <li class="flex items-start gap-3">
-            <Icon name="lucide:x" class="text-brand mt-1 h-5 w-5 shrink-0" aria-hidden="true" />
-            <span>Не глянцевым журналом с «изысканными» блюдами из трюфелей и золотых ложек.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <Icon name="lucide:x" class="text-brand mt-1 h-5 w-5 shrink-0" aria-hidden="true" />
-            <span>Не платформой, где за каждый клик просят email и подписку на рассылку «только лучшее».</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <Icon name="lucide:x" class="text-brand mt-1 h-5 w-5 shrink-0" aria-hidden="true" />
-            <span>Не ИИ-генератором текстов про «раскрытие вкуса» — рецепты реальные, проверенные жизнью.</span>
-          </li>
-        </ul>
+        <div class="text-text-muted space-y-4 leading-relaxed">
+          <p>
+            Опечатка в граммовке, перепутанный шаг или неточное время — напишите нам на
+            <a href="mailto:support@swageda.ru" class="text-brand font-semibold hover:underline">support@swageda.ru</a> и приложите ссылку на рецепт. Мы проверим и исправим рецепт, а дата обновления появится
+            на его странице.
+          </p>
+          <p>Предложения по разделам, новым подборкам и удобству сайта тоже присылайте на этот адрес — мы читаем все письма.</p>
+        </div>
       </Surface>
     </section>
 
-    <!-- Creators -->
-    <section class="border-border-light text-text-muted mb-14 flex flex-col items-center justify-center gap-4 border-t pt-8 text-sm sm:flex-row sm:gap-8">
-      <div class="flex items-center gap-3">
-        <span>Фронтенд:</span>
-        <a href="https://github.com/KbrYbk" target="_blank" rel="noopener noreferrer" class="hover:text-brand flex items-center gap-1 transition-colors" title="GitHub">
-          <Icon name="lucide:github" class="h-4 w-4" />
-        </a>
-        <a href="https://t.me/kbrybk" target="_blank" rel="noopener noreferrer" class="hover:text-brand flex items-center gap-1 transition-colors" title="Telegram">
-          <Icon name="tg" class="h-4 w-4" />
-        </a>
-      </div>
-      <div class="text-border-light hidden sm:block">•</div>
-      <div class="flex items-center gap-3">
-        <span>Бэкенд:</span>
-        <a href="https://github.com/nievon" target="_blank" rel="noopener noreferrer" class="hover:text-brand flex items-center gap-1 transition-colors" title="GitHub">
-          <Icon name="lucide:github" class="h-4 w-4" />
-        </a>
-        <a href="tg://user?id=5049617152" target="_blank" rel="noopener noreferrer" class="hover:text-brand flex items-center gap-1 transition-colors" title="Telegram">
-          <Icon name="tg" class="h-4 w-4" />
-        </a>
+    <section class="mb-14">
+      <h2 class="text-text-main mb-6 text-center text-2xl font-bold">Что помогает на кухне</h2>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        {
+          features.map((f) => (
+            <Surface padding="md" hoverable>
+              <div class="bg-accent-soft text-brand mb-3 flex h-12 w-12 items-center justify-center rounded-2xl">
+                <Icon name={f.icon} class="h-6 w-6" aria-hidden="true" />
+              </div>
+              <h3 class="text-text-main mb-2 text-lg font-semibold">{f.title}</h3>
+              <p class="text-text-muted text-sm">{f.text}</p>
+            </Surface>
+          ))
+        }
       </div>
     </section>
 
-    <!-- CTA -->
     <section class="text-center">
-      <p class="text-text-muted mb-5 text-lg">Довольно читать про себя любимых — пора что-то приготовить.</p>
-      <a href="/recipes" class="btn-primary inline-flex items-center gap-2 text-lg">
-        <Icon name="lucide:utensils-crossed" class="h-5 w-5" aria-hidden="true" />
-        Листать рецепты
-      </a>
+      <p class="text-text-muted mb-5 text-lg">Выберите раздел или просто посмотрите, что готовят другие.</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="/recipes" class="btn-primary inline-flex items-center gap-2 text-lg">
+          <Icon name="lucide:utensils-crossed" class="h-5 w-5" aria-hidden="true" />
+          Все рецепты
+        </a>
+        <a href="/categories" class="text-brand inline-flex items-center gap-2 px-4 py-2 text-lg font-semibold hover:underline">Категории рецептов &rarr;</a>
+      </div>
     </section>
-  </main>
+  </div>
 </Layout>
