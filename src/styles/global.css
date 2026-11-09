@@ -451,6 +451,19 @@
   pointer-events: none;
 }
 
+/* Плавное появление фото карточек рецептов (глобально: карточки приходят и HTML-фрагментом, см. /partials/recipe-cards) */
+@keyframes card-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: card-fade-in 0.5s ease-in forwards;
+}
+
 /* =========================
    Header hide-on-scroll
    ========================= */

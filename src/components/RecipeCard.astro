@@ -10,9 +10,11 @@ interface Props {
   priority?: boolean;
   /** Уровень заголовка карточки. */
   headingLevel?: "h2" | "h3";
+  /** Кнопка «Убрать из избранного» поверх фото (страница избранного). */
+  removable?: boolean;
 }
 
-const { recipe, priority = false, headingLevel = "h2" } = Astro.props;
+const { recipe, priority = false, headingLevel = "h2", removable = false } = Astro.props;
 const { id, title, description, main_image, url: recipeUrl } = recipe;
 const cooking_time = recipe.cooking_time;
 const Heading = headingLevel;
@@ -22,6 +24,7 @@ const imageAlt = `Фото блюда: ${title}`;
 ---
 
 <article
+  data-recipe-card={id}
   class="group bg-card-bg/60 glass-border-3d focus-within:ring-brand relative flex h-full flex-col overflow-hidden rounded-4xl shadow-lg shadow-black/15 backdrop-blur-md transition-all focus-within:ring-2 focus-within:ring-offset-2 hover:shadow-xl hover:shadow-black/20"
 >
   <div class="bg-page-bg relative flex h-48 w-full items-center justify-center overflow-hidden">
@@ -44,20 +47,32 @@ const imageAlt = `Фото блюда: ${title}`;
     <div class={`fallback ${hasImage ? "hidden" : "flex"} items-center justify-center`} aria-hidden="true">
       <Icon name="lucide:utensils-crossed" class="text-text-muted h-16 w-16 opacity-20" />
     </div>
+
+    {
+      removable && (
+        <button
+          type="button"
+          class="bg-card-bg/90 text-text-main absolute top-3 right-3 z-10 flex h-10 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-md shadow-black/20 backdrop-blur-sm transition-colors hover:bg-rose-500 hover:text-white"
+          data-favorite-remove={id}
+          aria-label={`Убрать из избранного: ${title}`}
+        >
+          <Icon name="lucide:heart-off" class="h-4 w-4" aria-hidden="true" />
+          <span>Убрать</span>
+        </button>
+      )
+    }
   </div>
 
   <div class="flex grow flex-col p-6">
-    <Heading class="text-text-main group-hover:text-brand mb-3 line-clamp-2 text-xl font-bold transition-colors md:text-2xl">
+    <Heading class="text-text-main group-hover:text-brand mb-3 line-clamp-3 text-xl leading-snug font-bold transition-colors md:text-2xl">
       <a href={recipeUrl} class="after:absolute after:inset-0 focus:outline-none">
         {title}
       </a>
     </Heading>
 
-    <p class="text-text-muted mb-6 line-clamp-3 grow text-sm leading-relaxed">
-      {description}
-    </p>
+    {description && <p class="text-text-muted mb-5 line-clamp-3 text-sm leading-relaxed text-pretty break-words">{description}</p>}
 
-    <div class="text-text-muted mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+    <div class="text-text-muted mt-auto mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
       {
         recipe.author ? (
           <div class="flex shrink-0 items-center gap-1.5 font-medium">
@@ -95,45 +110,26 @@ const imageAlt = `Фото блюда: ${title}`;
       </div>
     </div>
 
-    <div class="border-line mt-auto flex items-center justify-between border-t pt-4 text-sm">
-      <div class="flex items-center gap-3">
-        {
-          recipe.average_rating > 0 && (
-            <div class="flex items-center gap-1.5 font-bold text-amber-500" aria-label={`Рейтинг: ${recipe.average_rating}`}>
-              <Icon name="lucide:star" class="h-5 w-5 fill-current" aria-hidden="true" />
-              <span class="text-base tabular-nums">{recipe.average_rating.toFixed(1)}</span>
-            </div>
-          )
-        }
+    {
+      (recipe.average_rating > 0 || recipe.likes_count > 0) && (
+        <div class="border-line flex items-center border-t pt-4 text-sm">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {recipe.average_rating > 0 && (
+              <div class="flex items-center gap-1.5 font-bold text-amber-500" aria-label={`Рейтинг: ${recipe.average_rating}`}>
+                <Icon name="lucide:star" class="h-5 w-5 fill-current" aria-hidden="true" />
+                <span class="text-base tabular-nums">{recipe.average_rating.toFixed(1)}</span>
+              </div>
+            )}
 
-        {
-          recipe.likes_count > 0 && (
-            <div class="flex items-center gap-1.5 font-bold text-rose-500" aria-label={`Лайков: ${recipe.likes_count}`}>
-              <Icon name="lucide:heart" class="h-5 w-5 fill-current" aria-hidden="true" />
-              <span class="text-base tabular-nums">{recipe.likes_count}</span>
-            </div>
-          )
-        }
-      </div>
-
-      <div class="text-brand bg-brand/10 group-hover:bg-brand flex shrink-0 items-center gap-1 rounded-xl px-3 py-1.5 font-bold transition-colors group-hover:text-white">
-        <span class="leading-none">Рецепт</span>
-        <Icon name="lucide:arrow-right" class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
-      </div>
-    </div>
+            {recipe.likes_count > 0 && (
+              <div class="flex items-center gap-1.5 font-bold text-rose-500" aria-label={`Лайков: ${recipe.likes_count}`}>
+                <Icon name="lucide:heart" class="h-5 w-5 fill-current" aria-hidden="true" />
+                <span class="text-base tabular-nums">{recipe.likes_count}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
   </div>
 </article>
-
-<style>
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-in forwards;
-  }
-</style>
