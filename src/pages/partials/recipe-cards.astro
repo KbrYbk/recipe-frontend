@@ -1,0 +1,31 @@
+---
+/**
+ * HTML-фрагмент с карточками рецептов по `?ids=1,2,3` — тот же RecipeCard, что и в каталоге.
+ * Используется страницей избранного (список id хранится только в браузере).
+ * `?removable=1` — с кнопкой «Убрать из избранного».
+ */
+import RecipeCard from "../../components/RecipeCard.astro";
+import { fetchRecipeCardsByIds, parseIdList } from "../../lib/api/recipes";
+
+export const partial = true;
+
+const ids = parseIdList(Astro.url.searchParams.get("ids"));
+const removable = Astro.url.searchParams.get("removable") === "1";
+const cards = await fetchRecipeCardsByIds(ids);
+
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+if (cards === null) {
+  Astro.response.status = 503;
+  Astro.response.headers.set("Cache-Control", "no-store");
+} else {
+  Astro.response.headers.set("Cache-Control", "public, max-age=0, s-maxage=60");
+}
+---
+
+{
+  (cards ?? []).map((recipe) => (
+    <div role="listitem" class="h-full" data-card-item={recipe.id}>
+      <RecipeCard recipe={recipe} removable={removable} />
+    </div>
+  ))
+}

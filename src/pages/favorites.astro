@@ -4,80 +4,82 @@ import { Icon } from "astro-icon/components";
 ---
 
 <Layout title="Избранные рецепты — SwagEda" description="Ваши избранные рецепты на SwagEda." noindex>
-  <div class="mx-auto max-w-7xl px-4">
+  <div class="mx-auto max-w-6xl md:px-4">
     <header class="mb-8 text-center">
       <h1 class="text-text-main text-3xl font-bold md:text-4xl">Избранные рецепты</h1>
       <p class="text-text-muted mt-2">Ваша личная кулинарная книга</p>
     </header>
 
     <p id="favorites-loading" class="text-text-muted hidden py-10 text-center" role="status">Загружаем избранное…</p>
-    <div id="favorites-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Список избранных рецептов">
-      <!-- Сюда клиентский JS вставит карточки избранного -->
-    </div>
+    <p id="favorites-error" class="text-text-muted hidden py-10 text-center" role="alert">Не удалось загрузить избранное. Попробуйте обновить страницу чуть позже.</p>
+    <!-- Сюда клиентский JS вставит карточки (тот же RecipeCard, что и в каталоге: /partials/recipe-cards) -->
+    <div id="favorites-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Список избранных рецептов"></div>
 
     <div id="empty-favorites" class="hidden flex-col items-center justify-center py-20 text-center" role="status">
       <div class="bg-accent-soft mb-4 rounded-full p-6">
         <Icon name="lucide:book-heart" class="text-brand h-12 w-12" aria-hidden="true" />
       </div>
       <h2 class="text-text-main text-xl font-semibold">Тут пока пусто</h2>
-      <p class="text-text-muted mt-2">Добавьте рецепты в избранное, чтобы они появились здесь</p>
-      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-block rounded-xl px-6 py-3 font-bold text-white transition-all"> Найти рецепты </a>
+      <p class="text-text-muted mt-2">Нажмите «В избранное» на странице рецепта — и он появится здесь.</p>
+      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white transition-all">
+        <Icon name="lucide:cooking-pot" class="h-5 w-5" aria-hidden="true" />
+        Перейти в каталог рецептов
+      </a>
     </div>
   </div>
 </Layout>
 
 <script>
-  import { formatTime } from "../lib/formatTime";
-  import { fetchRecipeCards } from "../lib/client/api";
-  import { FAVORITES_KEY, readIdList, writeJson } from "../lib/client/storage";
+  import { FAVORITES_KEY, readIdList, toggleId, writeJson } from "../lib/client/storage";
+  import { showToast } from "../lib/client/toast";
 
-  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const grid = document.getElementById("favorites-grid");
+  const empty = document.getElementById("empty-favorites");
+  const loading = document.getElementById("favorites-loading");
+  const errorBox = document.getElementById("favorites-error");
+
+  function showEmpty() {
+    if (!grid || !empty) return;
+    grid.innerHTML = "";
+    grid.classList.add("hidden");
+    empty.classList.remove("hidden");
+    empty.classList.add("flex");
+  }
 
   async function renderFavorites() {
-    const grid = document.getElementById("favorites-grid");
-    const empty = document.getElementById("empty-favorites");
-    const loading = document.getElementById("favorites-loading");
     if (!grid || !empty) return;
 
     // Старый формат "db-123" нормализуется и сохраняется обратно как "123".
     const ids = readIdList(FAVORITES_KEY);
     writeJson(FAVORITES_KEY, ids);
-
-    const showEmpty = () => {
-      grid.innerHTML = "";
-      grid.classList.add("hidden");
-      empty.classList.remove("hidden");
-      empty.classList.add("flex");
-    };
     if (ids.length === 0) return showEmpty();
 
+    // Сначала — добавленные последними.
+    const ordered = [...ids].reverse().slice(0, 50);
     loading?.classList.remove("hidden");
-    const recipes = await fetchRecipeCards(ids.map(Number));
-    loading?.classList.add("hidden");
-    if (recipes.length === 0) return showEmpty();
-
-    grid.innerHTML = recipes
-      .map((recipe) => {
-        const time = recipe.cooking_time ? formatTime(recipe.cooking_time) : "";
-        const img = recipe.main_image
-          ? `<img src="${esc(recipe.main_image)}" alt="${esc(recipe.title)}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" width="600" height="338" />`
-          : "";
-        return `<article role="listitem" class="group glass-border-3d relative overflow-hidden rounded-2xl bg-card-bg shadow-md shadow-black/15 transition-all hover:shadow-xl hover:shadow-black/20">
-          <a href="${esc(recipe.url)}" class="block">
-            <div class="bg-page-bg aspect-video overflow-hidden">${img}</div>
-            <div class="p-4">
-              <h2 class="text-text-main group-hover:text-brand mb-2 line-clamp-2 text-lg font-bold transition-colors">${esc(recipe.title)}</h2>
-              ${recipe.description ? `<p class="text-text-muted mb-3 line-clamp-2 text-sm">${esc(recipe.description)}</p>` : ""}
-              <div class="flex items-center justify-between">
-                ${time ? `<span class="text-text-muted text-xs">${esc(time)}</span>` : "<span></span>"}
-                <span class="text-brand text-xs font-semibold">Смотреть →</span>
-              </div>
-            </div>
-          </a>
-        </article>`;
-      })
-      .join("");
+    try {
+      const res = await fetch(`/partials/recipe-cards?removable=1&ids=${ordered.join(",")}`, { headers: { Accept: "text/html" } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html = (await res.text()).trim();
+      if (!html) return showEmpty();
+      grid.innerHTML = html;
+    } catch {
+      errorBox?.classList.remove("hidden");
+    } finally {
+      loading?.classList.add("hidden");
+    }
   }
+
+  grid?.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-favorite-remove]");
+    if (!btn) return;
+    e.preventDefault();
+    const id = btn.dataset.favoriteRemove ?? "";
+    toggleId(FAVORITES_KEY, id, false);
+    btn.closest("[data-card-item]")?.remove();
+    showToast("Рецепт убран из избранного", "info");
+    if (!grid.querySelector("[data-card-item]")) showEmpty();
+  });
 
   renderFavorites();
 </script>

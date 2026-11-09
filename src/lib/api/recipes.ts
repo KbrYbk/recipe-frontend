@@ -83,3 +83,35 @@ export async function fetchRecipesTotal(): Promise<number> {
   if (!res.ok) return 0;
   return parseRecipeList(res.data, 1).total;
 }
+
+/** До 50 id из строки «1,2,3» (порядок сохраняется, дубли и мусор отбрасываются). */
+export function parseIdList(raw: string | null, max = 50): number[] {
+  if (!raw) return [];
+  const ids = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => /^\d{1,12}$/.test(s))
+    .map(Number)
+    .filter((n) => Number.isSafeInteger(n) && n > 0);
+  return [...new Set(ids)].slice(0, max);
+}
+
+/**
+ * Карточки по id (`/getRecipes/batch`; на старом API без batch — поштучно), порядок как в ids.
+ * null — API недоступен.
+ */
+export async function fetchRecipeCardsByIds(ids: number[]): Promise<RecipeCard[] | null> {
+  if (ids.length === 0) return [];
+  const res = await apiGet(`/getRecipes/batch?ids=${ids.join(",")}`);
+  let cards: RecipeCard[];
+  if (res.ok) {
+    cards = parseRecipeArray(res.data);
+  } else if (res.status !== 404) {
+    return null;
+  } else {
+    const single = await Promise.all(ids.map((id) => fetchRecipe(id)));
+    cards = single.flatMap((r) => (r.ok ? [r.data] : []));
+  }
+  const order = new Map(ids.map((id, i) => [id, i]));
+  return cards.filter((c) => order.has(c.id)).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+}
