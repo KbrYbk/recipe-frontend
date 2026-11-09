@@ -7,6 +7,7 @@ import NotFoundPage from "../../components/errors/NotFoundPage.astro";
 import UnavailablePage from "../../components/errors/UnavailablePage.astro";
 import { COLLECTION_TYPES, fetchCollection, isCollectionType } from "../../lib/api/recipes";
 import { catalogCanonical, formatCount, parseCatalogQuery, pluralRecipes } from "../../lib/catalog";
+import { listingNoindex } from "../../lib/seo";
 
 const { type } = Astro.params;
 const page = parseCatalogQuery(Astro.url.searchParams).page;
@@ -28,6 +29,8 @@ const basePath = `/collection/${type}`;
 const data = res?.ok ? res.data : null;
 const total = data?.total ?? 0;
 const pageSuffix = page > 1 ? ` — страница ${page}` : "";
+// Страницы 2+ подборки повторяют карточки категорий — noindex,follow.
+const noindex = listingNoindex("collection", Astro.url.searchParams, page);
 const description = `${title}: ${formatCount(total)} ${pluralRecipes(total)} с фото и пошаговыми инструкциями на SwagEda.${page > 1 ? ` Страница ${page}.` : ""}`;
 ---
 
@@ -35,7 +38,7 @@ const description = `${title}: ${formatCount(total)} ${pluralRecipes(total)} с 
 {state === "unavailable" && <UnavailablePage />}
 {
   state === "ok" && data && (
-    <Layout title={`${title} — рецепты с фото${pageSuffix} | SwagEda`} description={description} canonical={catalogCanonical(basePath, page)}>
+    <Layout title={`${title} — рецепты с фото${pageSuffix} | SwagEda`} description={description} canonical={catalogCanonical(basePath, page)} noindex={noindex}>
       <div class="mx-auto max-w-6xl md:px-4">
         <header class="border-line mb-8 border-b pb-6 md:mb-12 md:py-10">
           <Breadcrumbs

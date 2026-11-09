@@ -28,6 +28,7 @@ import {
 } from "../../lib/catalog";
 import { categoryDescription, type Category } from "../../lib/categories";
 import { CATEGORY_PROMOS } from "../../lib/promos";
+import { listingNoindex } from "../../lib/seo";
 import type { RecipeList } from "../../types/recipe";
 
 interface Props {
@@ -65,6 +66,8 @@ if (query.q) {
 if (page > 1) description = `${description} Страница ${page}.`;
 
 const canonical = catalogCanonical(basePath, page);
+// Фильтры/сортировка/поиск и страницы 2+ общего каталога — noindex,follow; пагинация категорий индексируется.
+const noindex = listingNoindex(category ? "category" : "recipes", Astro.url.searchParams, page);
 const prevHref = page > 1 ? catalogCanonical(basePath, page - 1) : null;
 const nextHref = page < totalPages ? catalogCanonical(basePath, page + 1) : null;
 
@@ -101,7 +104,7 @@ const searchParams: Record<string, string> = {
 };
 ---
 
-<Layout title={title} description={description} canonical={canonical} noindex={!!query.q}>
+<Layout title={title} description={description} canonical={canonical} noindex={noindex}>
   <Fragment slot="head">
     {prevHref && !query.q && <link rel="prev" href={prevHref} />}
     {nextHref && !query.q && <link rel="next" href={nextHref} />}
