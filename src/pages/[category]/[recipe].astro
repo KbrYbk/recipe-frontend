@@ -88,7 +88,7 @@ const breadcrumbs = recipe
 {state === "unavailable" && <UnavailablePage />}
 {
   recipe && (
-    <Layout title={pageTitle} description={metaDescription} image={recipe.main_image} canonical={canonical} ogType="article" recipeData={recipeMeta}>
+    <Layout title={pageTitle} description={metaDescription} image={recipe.main_image} imageAlt={`Фото готового блюда: ${recipe.title}`} canonical={canonical} ogType="article" recipeData={recipeMeta}>
       <ReadingProgress />
 
       {/* Ширина: 6xl; на 1480–1559px — 5xl, чтобы не заходить под боковые sticky-баннеры (fixed, 160px + 16px от края) */}

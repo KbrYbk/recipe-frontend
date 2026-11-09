@@ -11,6 +11,8 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  /** Подпись к og:image (по умолчанию — для картинки сайта). */
+  imageAlt?: string;
   canonical?: string;
   noindex?: boolean;
   ogType?: "website" | "article";
@@ -22,7 +24,10 @@ interface Props {
   };
 }
 
-const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/android-chrome-512x512.png", canonical, noindex = false, ogType = "website", recipeData } = Astro.props;
+/** Картинка для соцсетей по умолчанию: 1200×630 (размеры заявляем только для неё — у фото рецептов они разные). */
+const DEFAULT_OG_IMAGE = "/og-default.png";
+
+const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image, imageAlt, canonical, noindex = false, ogType = "website", recipeData } = Astro.props;
 
 // 1. Сначала определяем базовый URL сайта (из конфига или текущего окружения)
 const siteURL = Astro.site ? Astro.site.origin : Astro.url.origin;
@@ -37,31 +42,44 @@ if (canonicalHref.endsWith("/") && canonicalURL.pathname !== "/") {
 }
 
 // 4. Формируем абсолютный путь к картинке
-const shareImage = image.startsWith("http") ? image : new URL(image, siteURL).href;
+const isDefaultImage = !image;
+const shareImageSrc = image ?? DEFAULT_OG_IMAGE;
+const shareImage = shareImageSrc.startsWith("http") ? shareImageSrc : new URL(shareImageSrc, siteURL).href;
+const shareImageAlt = imageAlt ?? (isDefaultImage ? "SwagEda — рецепты с фото пошагово" : title);
 
 // 5. Единый JSON-LD граф: WebSite + Organization рендерим одной разметкой.
 // За счёт @graph это один <script>, а сущности остаются логически разделены.
+const siteRoot = `${siteURL}/`;
+const ALT_NAMES = ["СвэгЕда", "Свагеда", "swageda"];
 const jsonLdGraph = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "WebSite",
+      "@id": `${siteRoot}#website`,
+      url: siteRoot,
       name: "SwagEda",
-      alternateName: ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
-      url: siteURL,
+      alternateName: ALT_NAMES,
+      inLanguage: "ru-RU",
+      publisher: { "@id": `${siteRoot}#organization` },
       potentialAction: {
         "@type": "SearchAction",
-        target: `${siteURL}/recipes?q={search_term_string}`,
+        target: { "@type": "EntryPoint", urlTemplate: `${siteURL}/recipes?q={search_term_string}` },
         "query-input": "required name=search_term_string",
       },
     },
     {
       "@type": "Organization",
+      "@id": `${siteRoot}#organization`,
       name: "SwagEda",
-      alternateName: ["СвэгЕда", "СвегЕда", "Свагеда", "свегеда", "свагеда", "swageda", "swag eda", "сваг еда"],
-      url: siteURL,
-      logo: `${siteURL}/android-chrome-512x512.png`,
-      description: "SwagEda — агрегатор кулинарных рецептов. Быстрая загрузка, доступный интерфейс, пошаговые инструкции.",
+      alternateName: ALT_NAMES,
+      url: siteRoot,
+      logo: { "@type": "ImageObject", url: `${siteURL}/android-chrome-512x512.png`, width: 512, height: 512 },
+      description: "Кулинарный сайт SwagEda: пошаговые рецепты с фото, видео и режимом готовки.",
+      contactPoint: [
+        { "@type": "ContactPoint", contactType: "customer support", email: "support@swageda.ru", availableLanguage: "ru" },
+        { "@type": "ContactPoint", contactType: "advertising", email: "ads@swageda.ru", availableLanguage: "ru" },
+      ],
     },
   ],
 };
@@ -82,10 +100,18 @@ const jsonLdGraph = {
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalHref} />
-    <meta property="og:site_name" content="SwagEda — Рецепты" />
+    <meta property="og:site_name" content="SwagEda" />
     <meta property="og:image" content={shareImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    {
+      isDefaultImage && (
+        <>
+          <meta property="og:image:type" content="image/png" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+        </>
+      )
+    }
+    <meta property="og:image:alt" content={shareImageAlt} />
     <meta property="og:locale" content="ru_RU" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
