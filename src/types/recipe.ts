@@ -20,10 +20,21 @@ export interface User {
 }
 
 /** Категория, как её отдаёт `GET /getCategories` (поле slug может отсутствовать на старом API). */
-export interface ApiCategory {
+export interface ApiCategory extends ApiSeoFields {
   id: number;
   title: string;
   slug?: string | null;
+}
+
+/** SEO-поля раздела (категория, лендинг) — все необязательны: старый API их не отдаёт. */
+export interface ApiSeoFields {
+  seo_title?: string | null;
+  seo_description?: string | null;
+  h1?: string | null;
+  /** Абзацы через пустую строку, без HTML. */
+  intro?: string | null;
+  faq?: Array<{ q?: string | null; a?: string | null }> | null;
+  featured_recipe_ids?: Array<number | string> | null;
 }
 
 /** Рецепт или карточка рецепта, как их отдаёт API. Все поля, кроме id/title, необязательны. */

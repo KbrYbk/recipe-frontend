@@ -29,6 +29,7 @@ import { isCanonicalRecipePath, isValidRecipeSlug } from "../../lib/recipeUrl";
 import { buildRecipeJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
 import { AEROGRIL_PROMO, isAerogrilRecipe } from "../../lib/promos";
 import { BUILD_TIME_MS, isNotModified, lastModifiedOf, toHttpDate } from "../../lib/httpCache";
+import { recipeDescription, recipeTitle } from "../../lib/seo";
 
 // Сегменты приводим к нижнему регистру: /Supy/Borsch → 301 на /supy/borsch.
 const slugParam = String(Astro.params.recipe ?? "").toLowerCase();
@@ -71,12 +72,9 @@ if (state === "unavailable") {
 const origin = Astro.site?.origin ?? Astro.url.origin;
 const canonical = recipe?.url ?? "/";
 
-let metaDescription = recipe?.description ?? "";
-if (metaDescription.length > 155) metaDescription = `${metaDescription.slice(0, 152).trim()}...`;
-if (recipe && metaDescription.length < 70) metaDescription = `${metaDescription} Пошаговый рецепт с фото и списком ингредиентов.`.trim();
-
-let pageTitle = recipe ? `${recipe.title} — SwagEda` : "";
-if (recipe && pageTitle.length > 60) pageTitle = recipe.title.length > 60 ? `${recipe.title.slice(0, 57).trim()}...` : recipe.title;
+// «{Название} — рецепт с фото пошагово | SwagEda» с урезанием; описание — своё или собранное из данных рецепта.
+const metaDescription = recipe ? recipeDescription(recipe) : "";
+const pageTitle = recipe ? recipeTitle(recipe.title) : "";
 
 const jsonLd = recipe ? serializeJsonLd(buildRecipeJsonLd(recipe, origin, canonical)) : "";
 const recipeMeta = recipe ? { publishDate: recipe.created_at, category: recipe.category?.title, author: recipe.author } : undefined;

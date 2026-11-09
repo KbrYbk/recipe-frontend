@@ -26,9 +26,9 @@ import {
   TIME_OPTIONS,
   type CatalogQuery,
 } from "../../lib/catalog";
-import { categoryDescription, type Category } from "../../lib/categories";
+import type { Category } from "../../lib/categories";
 import { CATEGORY_PROMOS } from "../../lib/promos";
-import { listingNoindex } from "../../lib/seo";
+import { listingNoindex, recipesSeo, sectionSeo } from "../../lib/seo";
 import type { RecipeList } from "../../types/recipe";
 
 interface Props {
@@ -54,16 +54,11 @@ if (query.q) {
   h1 = category ? `Поиск «${query.q}» в разделе «${category.title}»` : `Поиск: «${query.q}»`;
   title = `${h1}${pageSuffix} — SwagEda`;
   description = `Результаты поиска рецептов по запросу «${query.q}» на SwagEda.`;
-} else if (category) {
-  h1 = category.title;
-  title = `${category.title} — рецепты с фото${pageSuffix} | SwagEda`;
-  description = categoryDescription(category.title, total);
+  if (page > 1) description = `${description} Страница ${page}.`;
 } else {
-  h1 = "Все рецепты";
-  title = `Все рецепты с фото и пошаговыми инструкциями${pageSuffix} | SwagEda`;
-  description = `Каталог SwagEda: ${countText} с фото и пошаговыми инструкциями. Фильтры по времени, сложности и рейтингу — от завтраков до ужинов.`;
+  // Категория: seo_title/seo_description/h1 из API, при их отсутствии — шаблоны (src/lib/seo.ts).
+  ({ h1, title, description } = category ? sectionSeo(category, total, page) : recipesSeo(total, page));
 }
-if (page > 1) description = `${description} Страница ${page}.`;
 
 const canonical = catalogCanonical(basePath, page);
 // Фильтры/сортировка/поиск и страницы 2+ общего каталога — noindex,follow; пагинация категорий индексируется.

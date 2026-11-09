@@ -8,6 +8,7 @@ import UnavailablePage from "../components/errors/UnavailablePage.astro";
 import { Icon } from "astro-icon/components";
 import { fetchCollection, fetchRecipeList, type CollectionType } from "../lib/api/recipes";
 import { DEFAULT_QUERY } from "../lib/catalog";
+import { homeSeo } from "../lib/seo";
 
 const COLLECTION_CONFIG: { id: CollectionType; title: string; icon: string }[] = [
   { id: "breakfast", title: "Завтраки", icon: "lucide:coffee" },
@@ -35,20 +36,17 @@ if (!res.ok) {
 const latestRecipes = res.ok ? res.data.list.slice(0, 3) : [];
 const total = res.ok ? res.data.total : 0;
 // «Более 39 000» — округление вниз до тысяч; без числа, если оно неизвестно или мало.
-const roundedTotal = total >= 2000 ? Math.floor(total / 1000) * 1000 : 0;
-const description = roundedTotal
-  ? `SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Более ${new Intl.NumberFormat("ru-RU").format(roundedTotal)} рецептов с фото: от завтраков до ужинов. Готовим просто, вкусно и с любовью.`
-  : "SwagEda (СвэгЕда) — ваш гид в мире кулинарии. Тысячи рецептов с фото и пошаговыми инструкциями: от завтраков до ужинов. Готовим просто, вкусно и с любовью.";
+const seo = homeSeo(total);
 ---
 
 {!res.ok && <UnavailablePage />}
 {
   res.ok && (
-    <Layout title="SwagEda — Твоя уютная кухня" description={description}>
+    <Layout title={seo.title} description={seo.description}>
       <div class="mx-auto max-w-6xl px-4">
         <section class="py-12 text-center md:py-16">
           <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-            Что <span class="text-brand">приготовим</span> сегодня?
+            Рецепты с фото пошагово: что <span class="text-brand">приготовить</span> сегодня?
           </h1>
           <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">
             Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.
