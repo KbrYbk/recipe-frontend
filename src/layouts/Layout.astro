@@ -13,7 +13,6 @@ interface Props {
   image?: string;
   canonical?: string;
   noindex?: boolean;
-  keywords?: string;
   ogType?: "website" | "article";
   // Добавляем пропс для данных рецепта
   recipeData?: {
@@ -23,26 +22,12 @@ interface Props {
   };
 }
 
-const {
-  title,
-  description = "Лучшие рецепты для каждого: просто, вкусно и понятно.",
-  image = "/default-share.jpg",
-  canonical,
-  noindex = false,
-  ogType = "website",
-  keywords,
-  recipeData,
-} = Astro.props;
-
-// Глобальные fallback-keywords при отсутствии персонализированных
-const globalKeywords =
-  "рецепты, кулинария, свэгеда, СвэгЕда, свегеда, СвегЕда, свагеда, Свагеда, SwagEda, swageda, swag eda, сваг еда, рецепты дома, пошаговые рецепты, вкусные рецепты, быстрые рецепты, домашняя кухня, готовим дома, что приготовить";
-const finalKeywords = keywords ?? globalKeywords;
+const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image = "/android-chrome-512x512.png", canonical, noindex = false, ogType = "website", recipeData } = Astro.props;
 
 // 1. Сначала определяем базовый URL сайта (из конфига или текущего окружения)
 const siteURL = Astro.site ? Astro.site.origin : Astro.url.origin;
 
-// 2. Создаем объект URL для канонической ссылки (ЭТОЙ СТРОКИ У ТЕБЯ НЕ ХВАТАЛО)
+// 2. Каноническая ссылка (по умолчанию — путь без query)
 const canonicalURL = new URL(canonical ?? Astro.url.pathname, siteURL);
 
 // 3. Формируем строку и чистим её
@@ -90,7 +75,6 @@ const jsonLdGraph = {
 
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content={finalKeywords} />
     <link rel="canonical" href={canonicalHref} />
     {noindex && <meta name="robots" content="noindex,follow" />}
 
@@ -143,26 +127,25 @@ const jsonLdGraph = {
   </head>
 
   <body class="flex min-h-screen flex-col antialiased">
-    <noscript><div><img src="https://mc.yandex.ru/watch/108404580" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- Боковые липкие баннеры для больших мониторов (экраны шире 1560px) -->
     <!-- Они зафиксированы по бокам экрана и не перекрывают основной контент -->
     <div class="hidden min-[1480px]:block">
       <div class="fixed top-28 bottom-4 left-4 z-40 w-40 overflow-hidden print:hidden">
-        <AdSlot id="R-A-19056160-22" className="!my-0 flex h-full flex-col [&>div[id]]:grow" />
+        <AdSlot id="R-A-19056160-22" className="!my-0 flex h-full flex-col [&>div[id]]:grow" reserve="none" />
       </div>
       <div class="fixed top-28 right-4 bottom-4 z-40 w-40 overflow-hidden print:hidden">
-        <AdSlot id="R-A-19056160-23" className="!my-0 flex h-full flex-col [&>div[id]]:grow" />
+        <AdSlot id="R-A-19056160-23" className="!my-0 flex h-full flex-col [&>div[id]]:grow" reserve="none" />
       </div>
     </div>
     <PageProgress />
     <Header />
     <!-- Баннер 15 — над контентом, виден на всех страницах -->
-    <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" />
-    <main id="main-content" tabindex="-1" class="main-content-transition grow px-4 py-8 pb-24 md:px-8 md:pb-8 lg:px-12">
+    <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" reserve="banner" />
+    <main id="main-content" tabindex="-1" class="main-content-transition grow px-4 pt-4 pb-24 md:px-8 md:pt-8 md:pb-8 lg:px-12">
       <slot />
     </main>
     <!-- Баннер 16 — после контента, перед футером -->
-    <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" />
+    <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" reserve="banner" />
     <Footer />
     <BottomNav />
     <BackToTop />
@@ -170,9 +153,9 @@ const jsonLdGraph = {
     <!-- Скрытый контейнер для ID глобальной рекламы (Fullscreen и FloorAd) -->
     <div id="ya-global-ads" data-fullscreen="R-A-19056160-20" data-floor="R-A-19056160-21" class="hidden" aria-hidden="true"></div>
     <script>
-      import "../scripts/metrics.js";
+      import "../scripts/consent";
       import "../scripts/ads.js";
-      import "../scripts/copy-protection.js";
+      import "../scripts/copy-signature";
     </script>
   </body>
 </html>

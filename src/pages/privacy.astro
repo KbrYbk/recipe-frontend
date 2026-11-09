@@ -2,12 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import { Icon } from "astro-icon/components";
 import Surface from "../components/ui/Surface.astro";
-const lastUpdated = "15 июля 2026";
+const lastUpdated = "9 ноября 2026";
 ---
 
 <Layout
   title="Политика конфиденциальности — SwagEda"
-  description="Политика конфиденциальности SwagEda. Мы за анонимность: используем только базовые cookies и Метрику, передаём данные по HTTPS и не продаём их."
+  description="Политика конфиденциальности SwagEda: какие cookie мы используем, как работает Яндекс Метрика и как дать или отозвать согласие на аналитику."
 >
   <main class="mx-auto max-w-3xl px-4 py-12 md:py-16">
     <header class="mb-10 text-center">
@@ -32,17 +32,24 @@ const lastUpdated = "15 июля 2026";
         </p>
       </Surface>
 
-      <Surface as="section">
+      <Surface as="section" id="analytics">
         <div class="mb-3 flex items-center gap-3">
           <div class="bg-accent-soft text-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
             <Icon name="lucide:bell" class="h-5 w-5" aria-hidden="true" />
           </div>
-          <h2 class="text-text-main text-xl font-bold">2. Cookies и аналитика</h2>
+          <h2 class="text-text-main text-xl font-bold">2. Cookies и Яндекс Метрика</h2>
         </div>
-        <p class="text-text-muted leading-relaxed">
-          Чтобы лайки не терялись и мы понимали, не «положил» ли опять наш ультраменьший бэкендер сервер в очередной раз, мы используем технические Cookie и Яндекс.Метрику. Это про цифры и удобство, а
-          не про слежку за вами.
+        <p class="text-text-muted leading-relaxed">Избранное, оценки, отметки шагов и список покупок хранятся только в вашем браузере (localStorage) и никуда не передаются.</p>
+        <p class="text-text-muted mt-3 leading-relaxed">
+          Для статистики посещаемости мы используем сервис Яндекс Метрика (включая Вебвизор). Он загружается только после того, как вы нажмёте «Принять» в баннере о cookie. Если вы нажали «Отклонить»,
+          Метрика не загружается. Метрика собирает обезличенные данные о посещении: просмотренные страницы, источник перехода, тип устройства и браузера, действия на странице. Эти данные
+          обрабатываются ООО «Яндекс» в соответствии с его условиями использования.
         </p>
+        <p class="text-text-muted mt-3 leading-relaxed">
+          Изменить решение можно в любой момент через ссылку «Настройки cookie» внизу страницы. Отзыв согласия действует для последующих посещений; чтобы удалить уже сохранённые cookie, очистите
+          данные сайта в настройках браузера.
+        </p>
+        <p class="text-text-muted mt-3 leading-relaxed">На сайте также показывается реклама Рекламной сети Яндекса, которая может использовать собственные cookie.</p>
       </Surface>
 
       <Surface as="section">
@@ -62,13 +69,11 @@ const lastUpdated = "15 июля 2026";
           </div>
           <h2 class="text-text-main text-xl font-bold">4. Ваши права</h2>
         </div>
-        <p class="text-text-muted leading-relaxed">
-          Хотите узнать, что мы о вас знаем, или вообще всё стереть? Напишите нам — и мы разберёмся, без бюрократии и бесконечных форм.
-        </p>
+        <p class="text-text-muted leading-relaxed">Хотите узнать, что мы о вас знаем, или вообще всё стереть? Напишите нам — и мы разберёмся, без бюрократии и бесконечных форм.</p>
       </Surface>
     </div>
 
-    <Surface class="mt-10 bg-accent-soft text-center">
+    <Surface class="bg-accent-soft mt-10 text-center">
       <p class="text-text-main">Остались вопросы или паранойя не отпускает?</p>
       <a href="mailto:privacy@swageda.ru" class="btn-primary mt-3 inline-flex items-center gap-2">
         <Icon name="lucide:mail" class="h-5 w-5" aria-hidden="true" />
