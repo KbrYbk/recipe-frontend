@@ -127,6 +127,7 @@ const jsonLdGraph = {
   </head>
 
   <body class="flex min-h-screen flex-col antialiased">
+    <noscript><div><img src="https://mc.yandex.ru/watch/108404580" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- Боковые липкие баннеры для больших мониторов (экраны шире 1560px) -->
     <!-- Они зафиксированы по бокам экрана и не перекрывают основной контент -->
     <div class="hidden min-[1480px]:block">
@@ -153,6 +154,7 @@ const jsonLdGraph = {
     <!-- Скрытый контейнер для ID глобальной рекламы (Fullscreen и FloorAd) -->
     <div id="ya-global-ads" data-fullscreen="R-A-19056160-20" data-floor="R-A-19056160-21" class="hidden" aria-hidden="true"></div>
     <script>
+      import "../scripts/metrics";
       import "../scripts/consent";
       import "../scripts/ads.js";
       import "../scripts/copy-signature";

@@ -1,7 +1,7 @@
 ---
 /**
- * Баннер согласия на cookie и аналитику (дизайн как в исходной версии сайта).
- * Логика — src/scripts/consent.ts: Метрика загружается только после «Принято!».
+ * Баннер о cookie (дизайн как в исходной версии сайта), только кнопка «Принято!».
+ * Логика — src/scripts/consent.ts. Метрика от баннера не зависит.
  */
 import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
@@ -22,7 +22,7 @@ import Button from "../ui/Button.astro";
       <div class="flex flex-col gap-1">
         <h3 class="text-text-main text-lg font-bold">Рецепты и Cookie</h3>
         <p class="text-text-muted text-sm leading-relaxed">
-          Мы используем cookie, чтобы сайт стал вкуснее. <a href="/privacy#analytics" class="text-brand underline underline-offset-2">Подробнее</a>
+          Мы используем cookie, чтобы сайт стал вкуснее. Оставаясь с нами, вы соглашаетесь с нашей <a href="/privacy" class="text-brand underline underline-offset-2">политикой</a>.
         </p>
       </div>
 
@@ -30,7 +30,6 @@ import Button from "../ui/Button.astro";
         <Icon name="lucide:check" slot="icon-left" class="h-4 w-4 shrink-0" />
         Принято!
       </Button>
-      <button type="button" data-consent-reject class="text-text-muted hover:text-brand -mt-2 cursor-pointer text-xs font-medium transition-colors"> Отклонить </button>
     </div>
   </div>
 </div>
