@@ -1,44 +1,43 @@
 import type { APIRoute } from "astro";
+import { getImageBaseUrl } from "../../lib/server/env";
 
-function originBase(): string {
-  const raw = import.meta.env.IMAGE_ORIGIN ?? import.meta.env.IMAGE_BASE_URL;
-  return raw ? String(raw).replace(/\/$/, "") : "";
+const DEFAULT_CACHE = "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800";
+
+function plain(status: number, body: string): Response {
+  return new Response(body, { status, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
 }
 
+/** Прокси картинок: `/api-images/<path>` → `${IMAGE_BASE_URL}/<path>`. Адрес апстрима наружу не раскрывается. */
 export const GET: APIRoute = async ({ params }) => {
-  const base = originBase();
-  if (!base) {
-    return new Response("Image proxy is not configured: set IMAGE_ORIGIN or IMAGE_BASE_URL", { status: 500 });
-  }
-
   const slug = Array.isArray(params.slug) ? params.slug.join("/") : params.slug;
   const safeSlug = String(slug ?? "").replace(/^\/+/, "");
-  if (!safeSlug) return new Response("Not found", { status: 404 });
+  if (!safeSlug || safeSlug.split("/").some((part) => part === ".." || part === ".")) return plain(404, "Not found");
 
-  const target = `${base}/${safeSlug}`;
+  const target = `${getImageBaseUrl()}/${safeSlug}`;
 
   try {
-    const upstream = await fetch(target, {
-      // SSR fetch: пусть платформа сама переиспользует keep-alive, где возможно
-      headers: { Accept: "image/*" },
-    });
-
+    const upstream = await fetch(target, { headers: { Accept: "image/*" }, signal: AbortSignal.timeout(15_000) });
     if (!upstream.ok) {
-      return new Response("Not found", { status: upstream.status });
+      await upstream.body?.cancel().catch(() => {});
+      return plain(upstream.status === 404 ? 404 : 502, upstream.status === 404 ? "Not found" : "Bad gateway");
     }
 
     const contentType = upstream.headers.get("content-type") ?? "application/octet-stream";
-    const cache = upstream.headers.get("cache-control") ?? "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800";
+    if (contentType.includes("text/html")) {
+      await upstream.body?.cancel().catch(() => {});
+      return plain(404, "Not found");
+    }
 
     return new Response(upstream.body, {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": cache,
+        "Cache-Control": upstream.headers.get("cache-control") ?? DEFAULT_CACHE,
       },
     });
-  } catch {
-    return new Response(`Upstream image fetch failed: ${target}`, { status: 502 });
+  } catch (error) {
+    const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    console.error(`[api-images] /${safeSlug} failed: ${reason}`);
+    return plain(502, "Bad gateway");
   }
 };
-
