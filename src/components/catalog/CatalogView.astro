@@ -351,16 +351,5 @@ const searchParams: Record<string, string> = {
   }
   initCatalog();
 
-  // Скрыть обёртку in-feed рекламы, если она не отрисовалась (adblock / нет рекламодателя) — как в main.
-  function initEmptyAdCleanup() {
-    document.querySelectorAll("[data-ad-wrapper]").forEach((wrapper) => {
-      setTimeout(() => {
-        if (wrapper.querySelector("a[rel='sponsored']")) return; // промо-карточка
-        const adSlot = wrapper.querySelector(".ad-slot");
-        const yandexDiv = adSlot?.querySelector("div[id^='yandex_rtb_']");
-        if (!adSlot || !yandexDiv || yandexDiv.children.length === 0) wrapper.remove();
-      }, 4000);
-    });
-  }
-  initEmptyAdCleanup();
+  // Рекламой управляет только Яндекс (RULES.md п.7): сайт не скрывает и не удаляет рекламные блоки.
 </script>

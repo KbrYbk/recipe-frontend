@@ -1,6 +1,6 @@
 /**
  * Баннер о cookie (src/components/shared/CookieConsent.astro): показывается, пока не нажато «Принято!».
- * На загрузку Яндекс Метрики не влияет — она подключается сразу (src/scripts/metrics.ts).
+ * На загрузку Яндекс Метрики не влияет — она подключается сразу inline-скриптом в <head> (src/layouts/Layout.astro).
  */
 import { readString, writeString } from "../lib/client/storage";
 import { COOKIE_ACCEPTED_KEY, isCookieBannerAccepted } from "../lib/cookieBanner";

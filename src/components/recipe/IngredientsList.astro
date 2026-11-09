@@ -18,9 +18,11 @@ const { ingredients = [], recipeId, recipeTitle, recipeUrl, servings } = Astro.p
 const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, amount: formatIngredientAmount(i) })));
 ---
 
-<div class="group" data-ingredients data-recipe-id={recipeId} data-no-copy-signature>
+<!-- lg: карточка — flex-колонка внутри липкого сайдбара с max-h; список (flex-1, min-h-0) скроллится внутри,
+     заголовок, множитель и кнопки всегда видны -->
+<div class="group lg:flex lg:min-h-0 lg:flex-col" data-ingredients data-recipe-id={recipeId} data-no-copy-signature>
   <div
-    class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-all hover:shadow-2xl hover:shadow-black/20 print:border-0 print:bg-transparent print:p-0 print:shadow-none"
+    class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-all hover:shadow-2xl hover:shadow-black/20 lg:flex lg:min-h-0 lg:flex-col print:border-0 print:bg-transparent print:p-0 print:shadow-none"
   >
     <div class="mb-4 flex w-full flex-wrap items-baseline justify-between gap-y-2">
       <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
@@ -40,9 +42,9 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
 
     {ingredients.some((i) => formatIngredientAmount(i)) && <ScaleControl recipeId={recipeId} servings={servings} class="mb-5" />}
 
-    <div class="relative">
+    <div class="relative lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
       <div
-        class="ingredients-scroll-area lg:overflow-y-auto lg:overscroll-contain print:max-h-none print:overflow-visible"
+        class="ingredients-scroll-area lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain print:max-h-none print:overflow-visible"
         data-ingredients-scroll
         tabindex="0"
         role="region"
