@@ -4,15 +4,17 @@ import Checkbox from "../ui/Checkbox.astro";
 import Button from "../ui/Button.astro";
 import type { Ingredient } from "../../types/recipe";
 import { formatIngredientAmount } from "../../lib/normalizeIngredients";
+import ScaleControl from "./ScaleControl.astro";
 
 interface Props {
   ingredients: Ingredient[];
   recipeId: number;
   recipeTitle: string;
   recipeUrl: string;
+  servings?: number;
 }
 
-const { ingredients = [], recipeId, recipeTitle, recipeUrl } = Astro.props;
+const { ingredients = [], recipeId, recipeTitle, recipeUrl, servings } = Astro.props;
 const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, amount: formatIngredientAmount(i) })));
 ---
 
@@ -20,13 +22,23 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
   <div
     class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-all hover:shadow-2xl hover:shadow-black/20 print:border-0 print:bg-transparent print:p-0 print:shadow-none"
   >
-    <div class="mb-6 flex w-full flex-wrap items-baseline justify-between gap-y-2">
+    <div class="mb-4 flex w-full flex-wrap items-baseline justify-between gap-y-2">
       <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
         <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" aria-hidden="true" />
         Ингредиенты
       </h2>
-      <button type="button" data-reset-ingredients class="text-text-muted hover:text-brand cursor-pointer text-xs font-medium transition-colors print:hidden">Сбросить</button>
+      <button
+        type="button"
+        data-reset-ingredients
+        hidden
+        class="text-text-muted hover:text-brand -my-2 cursor-pointer rounded-lg px-2 py-2 text-xs font-medium transition-colors print:hidden"
+        aria-label="Снять все отметки с ингредиентов"
+      >
+        Сбросить
+      </button>
     </div>
+
+    {ingredients.some((i) => formatIngredientAmount(i)) && <ScaleControl recipeId={recipeId} servings={servings} class="mb-5" />}
 
     <div class="relative">
       <div
@@ -48,7 +60,11 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
                   </div>
                   <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all">
                     <span class="ingredient-name text-text-main leading-tight font-medium print:text-[10pt]">{item.name}</span>
-                    {amount && <span class="ingredient-amount text-text-muted text-xs font-bold italic opacity-80">{amount}</span>}
+                    {amount && (
+                      <span class="ingredient-amount text-text-muted text-xs font-bold italic opacity-80" data-amount-base={amount}>
+                        {amount}
+                      </span>
+                    )}
                   </label>
                 </li>
               );
@@ -88,6 +104,8 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
   import { readJson, readString, writeJson, writeString } from "../../lib/client/storage";
   import { showToast } from "../../lib/client/toast";
   import { addItems, sanitizeShoppingList, SHOPPING_LIST_KEY, type NewShoppingItem } from "../../lib/shoppingList";
+  import { scaleAmountText } from "../../lib/scaleAmount";
+  import { currentScale } from "../../scripts/scale";
 
   function initIngredients() {
     const root = document.querySelector<HTMLElement>("[data-ingredients]");
@@ -95,7 +113,14 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
     const recipeId = Number(root.dataset.recipeId);
     const checkboxes = root.querySelectorAll<HTMLInputElement>("[data-ingredient-checkbox]");
 
-    const sync = (input: HTMLInputElement) => input.closest("li")?.querySelector(".ingredient-label")?.classList.toggle("is-checked", input.checked);
+    const resetBtn = root.querySelector<HTMLButtonElement>("[data-reset-ingredients]");
+    const updateReset = () => {
+      if (resetBtn) resetBtn.hidden = !Array.from(checkboxes).some((c) => c.checked);
+    };
+    const sync = (input: HTMLInputElement) => {
+      input.closest("li")?.querySelector(".ingredient-label")?.classList.toggle("is-checked", input.checked);
+      updateReset();
+    };
 
     checkboxes.forEach((input) => {
       const key = ingredientKey(recipeId, Number(input.dataset.ingredientIndex));
@@ -116,7 +141,7 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
       });
     });
 
-    root.querySelector("[data-reset-ingredients]")?.addEventListener("click", () => {
+    resetBtn?.addEventListener("click", () => {
       checkboxes.forEach((input) => {
         input.checked = false;
         writeString(ingredientKey(recipeId, Number(input.dataset.ingredientIndex)), null);
@@ -153,9 +178,10 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
       } catch {
         items = [];
       }
+      const factor = currentScale();
       const toAdd: NewShoppingItem[] = items.map((i) => ({
         name: i.name,
-        amount: i.amount,
+        amount: i.amount ? scaleAmountText(i.amount, factor) : i.amount,
         recipeId,
         recipeTitle: addBtn.dataset.recipeTitle,
         recipeUrl: addBtn.dataset.recipeUrl,

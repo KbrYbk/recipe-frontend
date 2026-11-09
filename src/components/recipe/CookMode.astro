@@ -8,15 +8,18 @@
 import { Icon } from "astro-icon/components";
 import type { Ingredient, Step } from "../../types/recipe";
 import { formatIngredientAmount } from "../../lib/normalizeIngredients";
+import ScaleControl from "./ScaleControl.astro";
+import Checkbox from "../ui/Checkbox.astro";
 
 interface Props {
   recipeId: number;
   title: string;
   steps: Step[];
   ingredients: Ingredient[];
+  servings?: number;
 }
 
-const { recipeId, title, steps, ingredients } = Astro.props;
+const { recipeId, title, steps, ingredients, servings } = Astro.props;
 const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n/g, "\n");
 ---
 
@@ -66,8 +69,8 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
                   <p class="text-brand mb-4 text-sm font-bold tracking-wider uppercase">Шаг {index + 1}</p>
                   <p class="text-2xl leading-relaxed font-medium whitespace-pre-line md:text-4xl md:leading-snug">{plain(step.text)}</p>
                   {step.image && <img src={step.image} alt="" loading="lazy" decoding="async" class="mt-6 max-h-[40vh] w-auto rounded-2xl object-contain" width="800" height="450" />}
-                  <label class="glass-border-3d mt-8 inline-flex cursor-pointer items-center gap-3 rounded-2xl px-5 py-3 text-lg font-semibold">
-                    <input type="checkbox" class="accent-brand h-6 w-6" data-cook-step-done={index} />
+                  <label class="border-line hover:border-brand mt-8 inline-flex cursor-pointer items-center gap-3 rounded-2xl border px-5 py-3 text-lg font-semibold transition-colors has-checked:border-emerald-600/60 has-checked:bg-emerald-600/10">
+                    <Checkbox data-cook-step-done={index} />
                     Шаг выполнен
                   </label>
                 </section>
@@ -103,16 +106,21 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
                 data-cook-ingredients
               >
                 <h2 class="mb-4 text-xl font-bold">Ингредиенты</h2>
+                {ingredients.some((i) => formatIngredientAmount(i)) && <ScaleControl recipeId={recipeId} servings={servings} class="mb-4" />}
                 <ul class="space-y-2">
                   {ingredients.map((item, i) => {
                     const amount = formatIngredientAmount(item);
                     return (
                       <li>
                         <label class="hover:bg-page-bg/60 flex cursor-pointer items-start gap-3 rounded-xl p-2 text-lg">
-                          <input type="checkbox" class="accent-brand mt-1 h-5 w-5 shrink-0" data-cook-ingredient={i} />
+                          <Checkbox class="mt-0.5" data-cook-ingredient={i} />
                           <span>
                             {item.name}
-                            {amount && <span class="text-text-muted block text-sm">{amount}</span>}
+                            {amount && (
+                              <span class="text-text-muted block text-sm" data-amount-base={amount}>
+                                {amount}
+                              </span>
+                            )}
                           </span>
                         </label>
                       </li>
@@ -142,9 +150,6 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
 <style>
   .cook-dialog[open] {
     display: block;
-  }
-  .accent-brand {
-    accent-color: var(--brand-primary);
   }
 </style>
 
