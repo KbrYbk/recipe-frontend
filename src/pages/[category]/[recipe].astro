@@ -29,7 +29,7 @@ import { isCanonicalRecipePath, isValidRecipeSlug } from "../../lib/recipeUrl";
 import { buildRecipeJsonLd, isoDate, serializeJsonLd } from "../../lib/recipeSchema";
 import { AEROGRIL_PROMO, isAerogrilRecipe } from "../../lib/promos";
 import { BUILD_TIME_MS, isNotModified, lastModifiedOf, toHttpDate } from "../../lib/httpCache";
-import { recipeDescription, recipeTitle } from "../../lib/seo";
+import { isDescriptionRedundant, recipeDescription, recipeTitle } from "../../lib/seo";
 
 // Сегменты приводим к нижнему регистру: /Supy/Borsch → 301 на /supy/borsch.
 const slugParam = String(Astro.params.recipe ?? "").toLowerCase();
@@ -132,7 +132,7 @@ const breadcrumbs = recipe
           </aside>
 
           <div class="min-w-0">
-            {recipe.description && (
+            {!isDescriptionRedundant(recipe) && (
               <section aria-labelledby="about-heading" class="mb-12">
                 <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
                   О рецепте
@@ -155,10 +155,13 @@ const breadcrumbs = recipe
             )}
 
             <div id="textSteps" role={recipe.video_url ? "tabpanel" : undefined} aria-labelledby={recipe.video_url ? "tab-recipe-text" : "steps-heading"}>
-              <h2 id="steps-heading" class="text-text-main mt-12 mb-8 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
+              <h2
+                id="steps-heading"
+                class="text-text-main mt-12 mb-8 scroll-mt-24 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase"
+              >
                 Приготовление
               </h2>
-              <RecipeSteps steps={recipe.steps} recipeId={recipe.id} />
+              <RecipeSteps steps={recipe.steps} recipeId={recipe.id} recipeTitle={recipe.title} />
             </div>
 
             <div class="mt-10">
@@ -167,7 +170,7 @@ const breadcrumbs = recipe
           </div>
         </div>
 
-        {similar && <SimilarRecipes recipes={similar} categoryHref={recipe.category?.href} />}
+        {similar && <SimilarRecipes recipes={similar} categoryHref={recipe.category?.href} categoryTitle={recipe.category?.title} />}
 
         <Divider>
           <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>

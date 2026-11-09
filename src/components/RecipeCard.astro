@@ -3,6 +3,7 @@ import { Icon } from "astro-icon/components";
 import { Image } from "astro:assets";
 import { formatTime } from "../lib/formatTime";
 import type { RecipeCard } from "../types/recipe";
+import { isDescriptionRedundant } from "../lib/seo";
 
 interface Props {
   recipe: RecipeCard;
@@ -69,7 +70,7 @@ const imageAlt = `Фото блюда: ${title}`;
       </a>
     </Heading>
 
-    {description && <p class="text-text-muted mb-5 line-clamp-3 text-sm leading-relaxed text-pretty break-words">{description}</p>}
+    {!isDescriptionRedundant({ title, description }) && <p class="text-text-muted mb-5 line-clamp-3 text-sm leading-relaxed text-pretty break-words">{description}</p>}
 
     <div class="text-text-muted mt-auto mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
       {

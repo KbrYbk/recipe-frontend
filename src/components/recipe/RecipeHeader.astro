@@ -13,6 +13,7 @@ import ShareButton from "./ShareButton.astro";
 import { formatTime } from "../../lib/formatTime";
 import { ACTION_BUTTON_CLASS, ACTION_LABEL_CLASS } from "./actionStyles";
 import type { Recipe } from "../../types/recipe";
+import { isoDate } from "../../lib/recipeSchema";
 
 interface Props {
   recipe: Recipe;
@@ -23,6 +24,11 @@ const { id, title, cooking_time, difficulty } = recipe;
 const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
 const difficultyClass =
   difficulty === "hard" ? "bg-red-500/15 text-red-500" : difficulty === "medium" ? "bg-amber-500/15 text-amber-600 dark:text-amber-500" : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-500";
+// Автор и даты видимы на странице (E-E-A-T): то же, что в разметке Recipe.
+const dateFormat = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Moscow" });
+const published = isoDate(recipe.created_at);
+const updated = isoDate(recipe.updated_at);
+const showUpdated = !!published && !!updated && updated.slice(0, 10) !== published.slice(0, 10);
 const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rounded-2xl px-3 text-sm shadow-sm shadow-black/15 print:border-none print:px-0";
 ---
 
@@ -32,6 +38,38 @@ const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rou
   >
     {title}
   </h1>
+
+  <p class="text-text-muted mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm md:mb-6 md:text-base print:mb-2" data-recipe-byline>
+    <span>Пошаговый рецепт с фото</span>
+    <span aria-hidden="true">·</span>
+    <span>Автор: <span class="text-text-main font-medium">{recipe.author || "Редакция SwagEda"}</span></span>
+    {
+      published && (
+        <>
+          <span aria-hidden="true">·</span>
+          <span>
+            Опубликовано: <time datetime={published}>{dateFormat.format(new Date(published))}</time>
+          </span>
+        </>
+      )
+    }
+    {
+      showUpdated && updated && (
+        <>
+          <span aria-hidden="true">·</span>
+          <span>
+            Обновлено: <time datetime={updated}>{dateFormat.format(new Date(updated))}</time>
+          </span>
+        </>
+      )
+    }
+  </p>
+
+  <nav class="mb-4 flex flex-wrap gap-2 text-sm font-semibold md:mb-6 print:hidden" aria-label="Разделы рецепта">
+    <a href="#ingredients" class="text-brand hover:underline">Ингредиенты</a>
+    <span class="text-text-muted" aria-hidden="true">·</span>
+    <a href="#steps-heading" class="text-brand hover:underline">К рецепту</a>
+  </nav>
 
   <div class="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-3 print:mb-4">
     <!-- Чипы: на мобильном одна строка (при нехватке места — горизонтальная прокрутка без полосы) -->

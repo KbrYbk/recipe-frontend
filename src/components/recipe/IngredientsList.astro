@@ -20,7 +20,7 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
 
 <!-- lg: карточка — flex-колонка внутри липкого сайдбара с max-h; список (flex-1, min-h-0) скроллится внутри,
      заголовок, множитель и кнопки всегда видны -->
-<div class="group lg:flex lg:min-h-0 lg:flex-col" data-ingredients data-recipe-id={recipeId} data-no-copy-signature>
+<div id="ingredients" class="group scroll-mt-24 lg:flex lg:min-h-0 lg:flex-col" data-ingredients data-recipe-id={recipeId} data-no-copy-signature>
   <div
     class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-all hover:shadow-2xl hover:shadow-black/20 lg:flex lg:min-h-0 lg:flex-col print:border-0 print:bg-transparent print:p-0 print:shadow-none"
   >

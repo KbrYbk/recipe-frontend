@@ -5,8 +5,9 @@ import type { RecipeCard as Card } from "../../types/recipe";
 interface Props {
   recipes: Card[];
   categoryHref?: string;
+  categoryTitle?: string;
 }
-const { recipes, categoryHref } = Astro.props;
+const { recipes, categoryHref, categoryTitle } = Astro.props;
 ---
 
 {
@@ -18,7 +19,7 @@ const { recipes, categoryHref } = Astro.props;
         </h2>
         {categoryHref && (
           <a href={categoryHref} class="text-brand shrink-0 text-sm font-semibold hover:underline">
-            Все в категории &rarr;
+            {categoryTitle ? `Все рецепты: ${categoryTitle}` : "Все в категории"} &rarr;
           </a>
         )}
       </div>

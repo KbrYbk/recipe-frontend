@@ -8,9 +8,11 @@ import type { Step } from "../../types/recipe";
 interface Props {
   steps: Step[];
   recipeId: number;
+  /** Название рецепта — для alt фото шагов. */
+  recipeTitle?: string;
 }
 
-const { steps, recipeId } = Astro.props;
+const { steps, recipeId, recipeTitle } = Astro.props;
 ---
 
 <ol class="space-y-10 md:space-y-12">
@@ -49,7 +51,7 @@ const { steps, recipeId } = Astro.props;
                     role="button"
                     aria-label={`Увеличить изображение: Шаг ${step.order ?? index + 1}`}
                     src={step.image}
-                    alt={`Шаг ${step.order ?? index + 1}: иллюстрация`}
+                    alt={recipeTitle ? `${recipeTitle} — шаг ${step.order ?? index + 1}` : `Шаг ${step.order ?? index + 1}`}
                     width={1200}
                     height={675}
                     loading="lazy"
