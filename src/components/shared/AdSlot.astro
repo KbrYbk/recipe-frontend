@@ -3,25 +3,31 @@ interface Props {
   id: string; // ID блока из личного кабинета РСЯ
   className?: string;
   style?: string;
-  isFeed?: boolean; // Установите true, если это "Виджет рекомендаций" или "Лента"
+  isFeed?: boolean; // true — «Виджет рекомендаций» / «Лента»
+  /**
+   * Резерв высоты под креатив (против CLS):
+   * banner — сквозные баннеры, content — блок внутри контента, feed — лента рекомендаций, none — без резерва.
+   */
+  reserve?: "banner" | "content" | "feed" | "none";
+  /** Авто-обновление блока, сек (поведение как в main). */
   refreshInterval?: number;
 }
 
-const { id, className, style, isFeed = false, refreshInterval = 0 } = Astro.props;
+const { id, className, style, isFeed = false, reserve = "content", refreshInterval = 0 } = Astro.props;
 
-// Формируем уникальный ID контейнера
+const reserveClass = {
+  banner: "min-h-[100px] md:min-h-[120px]",
+  content: "min-h-[250px]",
+  feed: "min-h-[320px]",
+  none: "",
+}[reserve];
+
+// Уникальный id контейнера (блок может встречаться на странице несколько раз)
 const uniqueSuffix = Math.random().toString(36).substring(2, 7);
 const containerId = `yandex_rtb_${id.replace(/-/g, "_")}_${uniqueSuffix}`;
 ---
 
-<div class={["ad-slot print:hidden my-4 mx-auto text-center", className].filter(Boolean).join(" ")} style={style}>
+<div class={["ad-slot mx-auto my-4 w-full max-w-full text-center print:hidden", className].filter(Boolean).join(" ")} style={style}>
   <div class="text-text-muted mb-1 text-[10px] tracking-widest uppercase opacity-50">Реклама</div>
-  <div id={containerId} data-ad-slot={id} data-ad-feed={String(isFeed)} data-ad-refresh={String(refreshInterval)} class="min-h-25"></div>
+  <div id={containerId} data-ad-slot={id} data-ad-feed={String(isFeed)} data-ad-refresh={String(refreshInterval)} class={reserveClass}></div>
 </div>
-
-<style>
-  .ad-slot {
-    width: 100%;
-    max-width: 100%;
-  }
-</style>
