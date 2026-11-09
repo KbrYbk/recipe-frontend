@@ -33,6 +33,7 @@ import { CATEGORY_PROMOS } from "../../lib/promos";
 import { listingNoindex, recipesSeo, sectionSeo } from "../../lib/seo";
 import { serializeJsonLd } from "../../lib/recipeSchema";
 import type { RecipeList } from "../../types/recipe";
+import type { Landing } from "../../lib/landings";
 
 interface Props {
   basePath: string;
@@ -40,9 +41,13 @@ interface Props {
   result: RecipeList;
   categories: Category[];
   category: Category | null;
+  /** Лендинг `/{slug}` (страница-подборка под запрос); category при этом null. */
+  landing?: Landing | null;
 }
 
-const { basePath, query, result, categories, category } = Astro.props;
+const { basePath, query, result, categories, category, landing = null } = Astro.props;
+// Раздел со своим SEO-контентом: категория или лендинг.
+const section = category ?? landing;
 const { list, total, totalPages } = result;
 const page = query.page;
 const href = (o: Parameters<typeof buildCatalogHref>[2]) => buildCatalogHref(basePath, query, o);
@@ -60,12 +65,12 @@ if (query.q) {
   if (page > 1) description = `${description} Страница ${page}.`;
 } else {
   // Категория: seo_title/seo_description/h1 из API, при их отсутствии — шаблоны (src/lib/seo.ts).
-  ({ h1, title, description } = category ? sectionSeo(category, total, page) : recipesSeo(total, page));
+  ({ h1, title, description } = section ? sectionSeo(section, total, page) : recipesSeo(total, page));
 }
 
 const canonical = catalogCanonical(basePath, page);
 // Фильтры/сортировка/поиск и страницы 2+ общего каталога — noindex,follow; пагинация категорий индексируется.
-const noindex = listingNoindex(category ? "category" : "recipes", Astro.url.searchParams, page);
+const noindex = listingNoindex(category ? "category" : landing ? "landing" : "recipes", Astro.url.searchParams, page);
 const prevHref = page > 1 ? catalogCanonical(basePath, page - 1) : null;
 const nextHref = page < totalPages ? catalogCanonical(basePath, page + 1) : null;
 
@@ -74,7 +79,9 @@ const breadcrumbs = category
       { name: "Категории", href: "/categories" },
       { name: category.title, href: canonical },
     ]
-  : [{ name: "Все рецепты", href: "/recipes" }];
+  : landing
+    ? [{ name: landing.title, href: canonical }]
+    : [{ name: "Все рецепты", href: "/recipes" }];
 
 const VISIBLE_CATEGORIES = 6;
 const activeIndex = category ? categories.findIndex((c) => c.id === category.id) : -1;
@@ -93,10 +100,10 @@ const categoryHref = (c: Category | null) => buildCatalogHref(c ? `/${c.path}` :
 const promo = category ? CATEGORY_PROMOS[category.path] : undefined;
 
 // Текст раздела (интро, FAQ) из API — только на чистой первой странице, чтобы не дублировать его на пагинации.
-const showSectionText = !!category && isPristineFirstPage(query);
-const intro = showSectionText ? (category?.intro ?? []) : [];
-const faq = showSectionText ? (category?.faq ?? []) : [];
-const sectionName = category?.title ?? "";
+const showSectionText = !!section && isPristineFirstPage(query);
+const intro = showSectionText ? (section?.intro ?? []) : [];
+const faq = showSectionText ? (section?.faq ?? []) : [];
+const sectionName = section?.title ?? "";
 const faqJsonLd =
   faq.length > 0
     ? serializeJsonLd({
@@ -144,7 +151,13 @@ const searchParams: Record<string, string> = {
           </p>
         </div>
         <div class="w-full md:w-120 lg:w-xl">
-          <SearchBar compact action={basePath} initialQuery={query.q} preserveParams={searchParams} placeholder={category ? `Искать в «${category.title}»` : undefined} />
+          <SearchBar
+            compact
+            action={landing ? "/recipes" : basePath}
+            initialQuery={query.q}
+            preserveParams={landing ? {} : searchParams}
+            placeholder={category ? `Искать в «${category.title}»` : undefined}
+          />
         </div>
       </div>
     </header>
@@ -263,7 +276,7 @@ const searchParams: Record<string, string> = {
               <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
               <ul class="space-y-1" role="list">
                 <li>
-                  <Button href={categoryHref(null)} variant="ghost" class={`w-full justify-start text-left ${!category ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}>Все</Button>
+                  <Button href={categoryHref(null)} variant="ghost" class={`w-full justify-start text-left ${!section ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}>Все</Button>
                 </li>
                 {
                   visibleCategories.map((c) => (

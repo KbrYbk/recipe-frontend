@@ -1,4 +1,5 @@
 ---
+/** Корневой раздел `/{сегмент}`: категория, иначе лендинг (страница-подборка), иначе 404. */
 import CatalogView from "../../components/catalog/CatalogView.astro";
 import NotFoundPage from "../../components/errors/NotFoundPage.astro";
 import UnavailablePage from "../../components/errors/UnavailablePage.astro";
@@ -15,7 +16,7 @@ if (state.kind === "unavailable") {
 
 {
   state.kind === "ok" ? (
-    <CatalogView basePath={state.basePath} query={state.query} result={state.result} categories={state.categories} category={state.category} />
+    <CatalogView basePath={state.basePath} query={state.query} result={state.result} categories={state.categories} category={state.category} landing={state.landing} />
   ) : state.kind === "not_found" ? (
     <NotFoundPage />
   ) : (
