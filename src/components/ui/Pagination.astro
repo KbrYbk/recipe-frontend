@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import { paginationItems } from "../../lib/pagination";
 
 interface Props {
   currentPage: number;
@@ -9,23 +10,15 @@ interface Props {
 
 const { currentPage, totalPages, baseUrlFunc } = Astro.props;
 
-// Логика отображения соседних страниц (например: 1 ... 4 [5] 6 ... 10)
-const range = 2;
-const pages = [];
-for (let i = 1; i <= totalPages; i++) {
-  if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
-    pages.push(i);
-  } else if (pages[pages.length - 1] !== "...") {
-    pages.push("...");
-  }
-}
+// Например, 83 из 137: 1 … 33 … 73 … 81 82 [83] 84 85 … 93 … 133 … 137 — соседние страницы и «скачки» ±10/±50/±100.
+const pages = paginationItems(currentPage, totalPages);
 ---
 
 <nav class="flex items-center justify-center gap-2" aria-label="Пагинация">
   <a
     href={currentPage > 1 ? baseUrlFunc(currentPage - 1) : "#"}
     class:list={[
-      "glass-border-3d shadow-sm shadow-black/15 flex h-12 w-12 items-center justify-center rounded-xl transition-all",
+      "glass-border-3d flex h-12 w-12 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all",
       currentPage <= 1 ? "pointer-events-none opacity-30" : "hover:border-brand hover:text-brand bg-card-bg shadow-sm",
     ]}
     aria-disabled={currentPage <= 1}
@@ -33,7 +26,7 @@ for (let i = 1; i <= totalPages; i++) {
     <Icon name="lucide:chevron-left" class="h-5 w-5" />
   </a>
 
-  <div class="flex items-center gap-2">
+  <div class="flex flex-wrap items-center justify-center gap-2">
     {
       pages.map((p) =>
         p === "..." ? (
@@ -43,7 +36,7 @@ for (let i = 1; i <= totalPages; i++) {
             href={baseUrlFunc(p as number)}
             class:list={[
               "glass-border-3d flex h-12 min-w-12 items-center justify-center rounded-xl px-4 font-bold transition-all",
-              currentPage === p ? "bg-brand text-white shadow-md shadow-brand/30" : "bg-card-bg text-text-muted shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20 hover:text-brand",
+              currentPage === p ? "bg-brand shadow-brand/30 text-white shadow-md" : "bg-card-bg text-text-muted hover:text-brand shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20",
             ]}
             aria-current={currentPage === p ? "page" : undefined}
           >
@@ -57,7 +50,7 @@ for (let i = 1; i <= totalPages; i++) {
   <a
     href={currentPage < totalPages ? baseUrlFunc(currentPage + 1) : "#"}
     class:list={[
-      "glass-border-3d shadow-sm shadow-black/15 flex h-12 w-12 items-center justify-center rounded-xl transition-all",
+      "glass-border-3d flex h-12 w-12 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all",
       currentPage >= totalPages ? "pointer-events-none opacity-30" : "hover:border-brand hover:text-brand bg-card-bg shadow-sm",
     ]}
     aria-disabled={currentPage >= totalPages}
