@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { clampStep, swipeDirection } from "../src/lib/cookState";
+import { clampStep, firstUndoneStep, swipeDirection } from "../src/lib/cookState";
 import { mapRecipe } from "../src/lib/api/map";
 import { buildRecipeJsonLd, serializeJsonLd } from "../src/lib/recipeSchema";
 
 describe("cookState", () => {
+  it("firstUndoneStep", () => {
+    expect(firstUndoneStep([])).toBe(0);
+    expect(firstUndoneStep([false, false])).toBe(0);
+    expect(firstUndoneStep([true, true, false, true])).toBe(2);
+    expect(firstUndoneStep([true, true, true])).toBe(0);
+  });
+
   it("clampStep", () => {
     expect(clampStep(-1, 5)).toBe(0);
     expect(clampStep(9, 5)).toBe(4);

@@ -1,7 +1,8 @@
 ---
 /**
  * «Режим готовки»: полноэкранный пошаговый просмотр крупным шрифтом.
- * Навигация: кнопки, ←/→ (и Space/PageDown), свайп; экран не гаснет (Screen Wake Lock API, если поддерживается);
+ * Открывается на первом невыполненном шаге; после последнего шага — экран «Готово!».
+ * Навигация: кнопки, ←/→ (и PageDown/PageUp), свайп; экран не гаснет (Screen Wake Lock API, если поддерживается);
  * отметки шагов и ингредиентов — общие с основной страницей (localStorage).
  */
 import { Icon } from "astro-icon/components";
@@ -71,6 +72,27 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
                   </label>
                 </section>
               ))}
+              <section class="mx-auto hidden max-w-3xl py-10 text-center" data-cook-finish aria-label="Готово" tabindex="-1">
+                <div class="bg-accent-soft text-brand mx-auto flex h-20 w-20 items-center justify-center rounded-full">
+                  <Icon name="lucide:party-popper" class="h-10 w-10" aria-hidden="true" />
+                </div>
+                <p class="mt-6 text-3xl font-extrabold md:text-5xl">Готово!</p>
+                <p class="text-text-muted mt-3 text-xl md:text-2xl">Приятного аппетита</p>
+                <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    class="bg-brand hover:bg-brand-hover flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl px-8 text-lg font-bold text-white"
+                    data-cook-finish-close
+                  >
+                    <Icon name="lucide:check" class="h-5 w-5" aria-hidden="true" />
+                    Закрыть
+                  </button>
+                  <button type="button" class="glass-border-3d hover:text-brand flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl px-8 text-lg font-bold" data-cook-restart>
+                    <Icon name="lucide:rotate-ccw" class="h-5 w-5" aria-hidden="true" />
+                    Начать сначала
+                  </button>
+                </div>
+              </section>
             </div>
 
             {ingredients.length > 0 && (
@@ -101,7 +123,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
             )}
           </div>
 
-          <footer class="border-line flex items-center gap-3 border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <footer data-cook-footer class="border-line flex items-center gap-3 border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <button type="button" class="glass-border-3d flex h-14 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl text-lg font-bold disabled:opacity-40" data-cook-prev>
               <Icon name="lucide:arrow-left" class="h-5 w-5" aria-hidden="true" />
               Назад
@@ -127,7 +149,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
 </style>
 
 <script>
-  import { clampStep, cookPositionKey, ingredientKey, stepKey, swipeDirection } from "../../lib/cookState";
+  import { clampStep, firstUndoneStep, ingredientKey, stepKey, swipeDirection } from "../../lib/cookState";
   import { readString, writeString } from "../../lib/client/storage";
 
   type WakeLockSentinelLike = { release: () => Promise<void>; addEventListener: (t: "release", cb: () => void) => void };
@@ -135,6 +157,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
 
   class CookMode extends HTMLElement {
     private index = 0;
+    private finished = false;
     private wakeLock: WakeLockSentinelLike | null = null;
 
     connectedCallback() {
@@ -153,6 +176,8 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
       const ingPanel = this.querySelector<HTMLElement>("[data-cook-ingredients]");
       const ingToggle = this.querySelector<HTMLElement>("[data-cook-ingredients-toggle]");
       const wakeHint = this.querySelector<HTMLElement>("[data-cook-wakelock]");
+      const finishScreen = this.querySelector<HTMLElement>("[data-cook-finish]");
+      const footer = this.querySelector<HTMLElement>("[data-cook-footer]");
 
       const stepBoxes = Array.from(this.querySelectorAll<HTMLInputElement>("[data-cook-step-done]"));
       const ingBoxes = Array.from(this.querySelectorAll<HTMLInputElement>("[data-cook-ingredient]"));
@@ -176,30 +201,52 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
       );
 
       const show = (i: number) => {
+        this.finished = false;
         this.index = clampStep(i, total);
         sections.forEach((s, n) => s.classList.toggle("hidden", n !== this.index));
+        finishScreen?.classList.add("hidden");
+        footer?.classList.remove("hidden");
         if (current) current.textContent = String(this.index + 1);
         if (progress) progress.style.width = `${((this.index + 1) / total) * 100}%`;
         if (prevBtn) prevBtn.disabled = this.index === 0;
         if (nextLabel) nextLabel.textContent = this.index === total - 1 ? "Готово" : "Далее";
         stage?.scrollTo({ top: 0 });
-        writeString(cookPositionKey(recipeId), String(this.index));
+      };
+
+      const showFinish = () => {
+        this.finished = true;
+        sections.forEach((s) => s.classList.add("hidden"));
+        finishScreen?.classList.remove("hidden");
+        footer?.classList.add("hidden");
+        if (progress) progress.style.width = "100%";
+        stage?.scrollTo({ top: 0 });
+        finishScreen?.querySelector<HTMLElement>("[data-cook-finish-close]")?.focus();
       };
 
       const next = () => {
+        if (this.finished) return;
         if (this.index >= total - 1) {
-          // последний шаг: отметить выполненным и закрыть
+          // последний шаг: отметить выполненным и показать экран «Готово!»
           const last = stepBoxes[this.index];
           if (last && !last.checked) {
             last.checked = true;
             last.dispatchEvent(new Event("change"));
           }
-          dialog.close();
+          showFinish();
           return;
         }
         show(this.index + 1);
       };
-      const prev = () => show(this.index - 1);
+      const prev = () => show(this.finished ? total - 1 : this.index - 1);
+
+      const restart = () => {
+        stepBoxes.forEach((cb) => {
+          cb.checked = false;
+          writeString(stepKey(recipeId, Number(cb.dataset.cookStepDone)), null);
+        });
+        document.dispatchEvent(new CustomEvent("recipe:cook-steps-changed"));
+        show(0);
+      };
 
       const requestWakeLock = async () => {
         const nav = navigator as NavigatorWithWakeLock;
@@ -220,10 +267,9 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         if (dialog.open && document.visibilityState === "visible") requestWakeLock();
       };
 
-      const open = (startAt?: number) => {
+      const open = () => {
         loadChecks();
-        const saved = Number(readString(cookPositionKey(recipeId)) ?? 0);
-        show(startAt ?? saved);
+        show(firstUndoneStep(stepBoxes.map((cb) => cb.checked)));
         dialog.showModal();
         document.documentElement.style.overflow = "hidden";
         requestWakeLock();
@@ -238,6 +284,8 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
 
       document.querySelectorAll("[data-cook-open]").forEach((btn) => btn.addEventListener("click", () => open()));
       this.querySelector("[data-cook-close]")?.addEventListener("click", () => dialog.close());
+      this.querySelector("[data-cook-finish-close]")?.addEventListener("click", () => dialog.close());
+      this.querySelector("[data-cook-restart]")?.addEventListener("click", restart);
       prevBtn?.addEventListener("click", prev);
       nextBtn?.addEventListener("click", next);
 
@@ -272,8 +320,8 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         "touchend",
         (e) => {
           const dir = swipeDirection(e.changedTouches[0].clientX - startX, e.changedTouches[0].clientY - startY);
-          if (dir === "next" && this.index < total - 1) show(this.index + 1);
-          else if (dir === "prev") prev();
+          if (dir === "next") next();
+          else if (dir === "prev" && (this.finished || this.index > 0)) prev();
         },
         { passive: true },
       );

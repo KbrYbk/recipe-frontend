@@ -8,8 +8,10 @@ export function stepKey(recipeId: number, index: number): string {
   return `recipe:step:${recipeId}:${index}`;
 }
 
-export function cookPositionKey(recipeId: number): string {
-  return `recipe:cook:${recipeId}`;
+/** Шаг, с которого открывается «Режим готовки»: первый невыполненный, а если выполнены все — первый. */
+export function firstUndoneStep(done: readonly boolean[]): number {
+  const i = done.findIndex((d) => !d);
+  return i === -1 ? 0 : i;
 }
 
 /** Ограничение индекса шага диапазоном [0, total-1]. */
