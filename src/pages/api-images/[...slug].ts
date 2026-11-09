@@ -16,7 +16,7 @@ export const GET: APIRoute = async ({ params }) => {
   const target = `${getImageBaseUrl()}/${safeSlug}`;
 
   try {
-    const upstream = await fetch(target, { headers: { Accept: "image/*" }, signal: AbortSignal.timeout(15_000) });
+    const upstream = await fetch(target, { headers: { Accept: "image/*" }, signal: AbortSignal.timeout(10_000) });
     if (!upstream.ok) {
       await upstream.body?.cancel().catch(() => {});
       return plain(upstream.status === 404 ? 404 : 502, upstream.status === 404 ? "Not found" : "Bad gateway");
