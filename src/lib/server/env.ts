@@ -46,3 +46,8 @@ export function getProjectKey(): string {
   }
   return key;
 }
+
+/** Ключ IndexNow (необязателен): пусто — файл `/{ключ}.txt` не отдаётся. */
+export function getIndexNowKey(): string {
+  return String(getSecret("INDEXNOW_KEY") ?? "").trim();
+}

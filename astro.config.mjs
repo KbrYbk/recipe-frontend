@@ -22,6 +22,8 @@ export default defineConfig({
       API_BASE_URL: envField.string({ context: "server", access: "secret", optional: true, default: "http://127.0.0.1:8000" }),
       IMAGE_BASE_URL: envField.string({ context: "server", access: "secret", optional: true }),
       PROJECT_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+      // Ключ IndexNow: фронт отдаёт /{ключ}.txt. Необязателен — без него файл отвечает 404.
+      INDEXNOW_KEY: envField.string({ context: "server", access: "secret", optional: true }),
     },
     validateSecrets: false,
   },
