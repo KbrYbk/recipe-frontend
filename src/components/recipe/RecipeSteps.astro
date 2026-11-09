@@ -1,45 +1,35 @@
 ---
-
 import AdSlot from "../shared/AdSlot.astro";
 import FormattedText from "./FormattedText.astro";
 import Checkbox from "../ui/Checkbox.astro";
 import Button from "../ui/Button.astro";
 
-interface Step {
-  order?: number;
-  text?: string;
-  image?: string;
-}
+import type { Step } from "../../types/recipe";
 
 interface Props {
   steps: Step[];
-  recipeSlug?: string;
+  recipeId: number;
 }
 
-const { steps, recipeSlug = "recipe" } = Astro.props;
+const { steps, recipeId } = Astro.props;
 ---
 
 <ol class="space-y-12">
   {
     steps.map((step, index) => {
-
-
       return (
         <>
-          <li class="group relative scroll-mt-24 transition-all duration-500 ease-in-out has-checked:opacity-50 has-checked:grayscale print:mb-3 print:break-inside-avoid print:border-b print:border-gray-200">
-            {index !== steps.length - 1 && (
-              <div 
-                class="absolute left-3.5 top-8 -bottom-6 hidden w-3 bg-brand/40 sm:block dark:bg-brand/30 print:hidden" 
-                style="mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24'%3E%3Cpath d='M6,0 Q0,6 6,12 T6,24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E&quot;); mask-size: 100% 24px; mask-repeat: repeat-y; -webkit-mask-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24'%3E%3Cpath d='M6,0 Q0,6 6,12 T6,24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E&quot;); -webkit-mask-size: 100% 24px; -webkit-mask-repeat: repeat-y;"
-                aria-hidden="true"
-              ></div>
-            )}
+          <li
+            id={`step-${step.order ?? index + 1}`}
+            class="group relative scroll-mt-24 transition-all duration-500 ease-in-out has-checked:opacity-50 has-checked:grayscale print:mb-3 print:break-inside-avoid print:border-b print:border-gray-200"
+          >
+            {index !== steps.length - 1 && <div class="step-connector bg-brand/40 dark:bg-brand/30 absolute top-8 -bottom-6 left-3.5 hidden w-3 sm:block print:hidden" aria-hidden="true" />}
             <div class="mb-4 flex flex-col sm:flex-row sm:gap-6 print:mb-2 print:flex-row print:gap-2">
               {/* ЛЕВАЯ КОЛОНКА */}
               <div class="mb-3 flex items-center justify-between sm:mb-0 sm:w-10 sm:shrink-0 sm:flex-col sm:items-start sm:gap-0">
                 <div class="flex items-center gap-3 sm:block">
                   <div
-                    class="bg-brand relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white shadow-md shadow-brand/30 print:h-6 print:w-6 print:min-w-6 print:border print:border-black print:bg-transparent print:text-[9pt] print:text-black"
+                    class="bg-brand shadow-brand/30 relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white shadow-md print:h-6 print:w-6 print:min-w-6 print:border print:border-black print:bg-transparent print:text-[9pt] print:text-black"
                     aria-hidden="true"
                   >
                     {step.order ?? index + 1}
@@ -57,7 +47,7 @@ const { steps, recipeSlug = "recipe" } = Astro.props;
                   {/* Используем data-step-index для связи с десктопной кнопкой */}
                   <Checkbox
                     data-step-checkbox
-                    data-recipe-slug={recipeSlug}
+                    data-recipe-id={recipeId}
                     data-step-index={index}
                     class="pointer-events-none h-6 w-6 transition-transform group-active/btn:scale-95"
                     aria-label={`Отметить шаг ${step.order ?? index + 1} как выполненный`}
@@ -99,7 +89,7 @@ const { steps, recipeSlug = "recipe" } = Astro.props;
                   >
                     <Checkbox
                       data-step-checkbox
-                      data-recipe-slug={recipeSlug}
+                      data-recipe-id={recipeId}
                       data-step-index={index}
                       class="pointer-events-none h-6 w-6 transition-transform group-active/btn:scale-95"
                       aria-label={`Отметить шаг ${step.order ?? index + 1} как выполненный`}
@@ -123,52 +113,57 @@ const { steps, recipeSlug = "recipe" } = Astro.props;
   }
 </ol>
 
+<style>
+  /* Волнистая линия между шагами */
+  .step-connector {
+    --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24'%3E%3Cpath d='M6,0 Q0,6 6,12 T6,24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-image: var(--wave);
+    mask-size: 100% 24px;
+    mask-repeat: repeat-y;
+    -webkit-mask-image: var(--wave);
+    -webkit-mask-size: 100% 24px;
+    -webkit-mask-repeat: repeat-y;
+  }
+</style>
+
 <script>
+  import { stepKey } from "../../lib/cookState";
+  import { readString, writeString } from "../../lib/client/storage";
+
+  function updateStepStyle(checkbox: HTMLInputElement, isChecked: boolean) {
+    const label = checkbox.closest("label");
+    if (!label) return;
+    const on = ["bg-brand", "text-white", "shadow-brand/20", "hover:bg-brand-hover", "border-brand"];
+    const off = ["text-text-main", "bg-card-bg/60", "backdrop-blur-md", "glass-border-3d", "hover:text-brand"];
+    label.classList.remove(...(isChecked ? off : on));
+    label.classList.add(...(isChecked ? on : off));
+  }
+
+  function syncFromStorage() {
+    document.querySelectorAll<HTMLInputElement>("[data-step-checkbox]").forEach((input) => {
+      const checked = readString(stepKey(Number(input.dataset.recipeId), Number(input.dataset.stepIndex))) === "1";
+      input.checked = checked;
+      updateStepStyle(input, checked);
+    });
+  }
+
   function initSteps() {
-    const checkboxes = document.querySelectorAll<HTMLInputElement>("[data-step-checkbox]");
-
-    checkboxes.forEach((input) => {
-      const slug = input.getAttribute("data-recipe-slug") || "recipe";
-      const stepIndex = input.getAttribute("data-step-index");
-      const key = `recipe:step:${slug}:${stepIndex}`;
-
-      // 1. При загрузке страницы проверяем состояние
-      const isInitiallyChecked = localStorage.getItem(key) === "1";
-      input.checked = isInitiallyChecked;
-      updateStepStyle(input, isInitiallyChecked);
-
-      // 2. Слушаем клики
+    syncFromStorage();
+    document.querySelectorAll<HTMLInputElement>("[data-step-checkbox]").forEach((input) => {
       input.addEventListener("change", () => {
-        const isChecked = input.checked;
-
-        // Если кликнули на мобильную кнопку, десктопная тоже отмечается (и наоборот)
-        const siblings = document.querySelectorAll<HTMLInputElement>(`[data-step-checkbox][data-step-index="${stepIndex}"]`);
-        siblings.forEach((cb) => {
-          cb.checked = isChecked;
-          updateStepStyle(cb, isChecked);
+        const recipeId = Number(input.dataset.recipeId);
+        const index = input.dataset.stepIndex;
+        // мобильная и десктопная кнопки одного шага отмечаются вместе
+        document.querySelectorAll<HTMLInputElement>(`[data-step-checkbox][data-step-index="${index}"]`).forEach((cb) => {
+          cb.checked = input.checked;
+          updateStepStyle(cb, input.checked);
         });
-
-        // Сохраняем стейт
-        if (isChecked) {
-          localStorage.setItem(key, "1");
-        } else {
-          localStorage.removeItem(key);
-        }
+        writeString(stepKey(recipeId, Number(index)), input.checked ? "1" : null);
+        document.dispatchEvent(new CustomEvent("recipe:steps-changed"));
       });
     });
-
-    function updateStepStyle(checkbox: HTMLInputElement, isChecked: boolean) {
-      const label = checkbox.closest("label");
-      if (!label) return;
-      
-      if (isChecked) {
-        label.classList.remove("text-text-main", "bg-card-bg/60", "backdrop-blur-md", "glass-border-3d", "hover:text-brand");
-        label.classList.add("bg-brand", "text-white", "shadow-brand/20", "hover:bg-brand-hover", "border-brand");
-      } else {
-        label.classList.add("text-text-main", "bg-card-bg/60", "backdrop-blur-md", "glass-border-3d", "hover:text-brand");
-        label.classList.remove("bg-brand", "text-white", "shadow-brand/20", "hover:bg-brand-hover", "border-brand");
-      }
-    }
+    // Синхронизация с «Режимом готовки»
+    document.addEventListener("recipe:cook-steps-changed", syncFromStorage);
   }
 
   initSteps();

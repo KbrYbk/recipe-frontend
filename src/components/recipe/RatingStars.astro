@@ -1,6 +1,6 @@
 ---
 interface Props {
-  recipeId: string;
+  recipeId: number;
   averageRating: number;
 }
 const { recipeId, averageRating } = Astro.props;
@@ -44,6 +44,12 @@ const { recipeId, averageRating } = Astro.props;
 </style>
 
 <script>
+  import { setRating } from "../../lib/client/api";
+  import { getMyRating, setMyRating } from "../../lib/client/storage";
+  import { showToast } from "../../lib/client/toast";
+
+  const MESSAGES = ["Ваш голос учтён. Спасибо!", "Оценка в базе! Теперь вы официально ресторанный критик.", "Спасибо за отзыв! Приятного аппетита.", "Оценка сохранена. Готовьте с удовольствием!"];
+
   class RatingStars extends HTMLElement {
     connectedCallback() {
       const container = this.querySelector(".rating-container");
@@ -52,58 +58,34 @@ const { recipeId, averageRating } = Astro.props;
       const userValContainer = this.querySelector(".user-val");
       const userValSpan = this.querySelector(".val");
 
-      const recipeId = this.dataset.id;
-      const avgNum = parseFloat(this.dataset.avg || "0");
-      // Ровно по средней оценке (без округления вверх): 5 -> 5 звёзд, 3 -> 3 звёзд
-      const baseVal = Math.floor(avgNum);
-
+      const recipeId = Number(this.dataset.id);
+      // Звёзды по средней оценке без округления вверх
+      const baseVal = Math.floor(parseFloat(this.dataset.avg || "0"));
       if (!recipeId || !container) return;
 
-      const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
-        const toast = document.createElement("div");
-        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-xl shadow-black/20 text-white z-[100] transition-opacity duration-300 font-medium flex items-center gap-2 ${
-          type === "success" ? "bg-green-500" : type === "error" ? "bg-rose-500" : "bg-blue-500"
-        }`;
-
-        let iconSvg = "";
-        if (type === "success") {
-          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
-        } else if (type === "error") {
-          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`;
-        } else {
-          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
-        }
-        toast.innerHTML = `${iconSvg}<span>${msg}</span>`;
-        document.body.appendChild(toast);
-        setTimeout(() => {
-          toast.style.opacity = "0";
-          setTimeout(() => toast.remove(), 300);
-        }, 3000);
-      };
-
-      const myRatings = JSON.parse(localStorage.getItem("my_ratings") || "{}");
-      const userRating = myRatings[recipeId];
       let isProcessing = false;
       let locked = false;
 
       const renderStars = (val: number) => {
         stars.forEach((s) => {
-          const starNum = parseInt(s.dataset.star || "0");
-          const filled = starNum <= val;
-          const svg = s.querySelector("svg");
-          // lucide-иконка рендерит <path fill="none"> внутри <symbol>;
-          // inline-атрибут бьёт Tailwind fill-current, поэтому ставим fill напрямую
-          svg?.querySelectorAll("path").forEach((p) => p.setAttribute("fill", filled ? "currentColor" : "none"));
+          const filled = parseInt(s.dataset.star || "0") <= val;
+          s.querySelector("svg")
+            ?.querySelectorAll("path")
+            .forEach((p) => p.setAttribute("fill", filled ? "currentColor" : "none"));
           s.setAttribute("aria-pressed", String(filled));
           s.classList.toggle("scale-110", filled && !locked);
         });
       };
 
       const showUserValue = (val: number) => {
-        if (userValContainer && userValSpan) {
-          userValContainer.classList.remove("hidden");
-          userValSpan.textContent = String(val);
-        }
+        userValContainer?.classList.remove("hidden");
+        if (userValSpan) userValSpan.textContent = String(val);
+      };
+
+      const reset = () => {
+        isProcessing = false;
+        userValContainer?.classList.add("hidden");
+        renderStars(baseVal);
       };
 
       const lockRating = (val: number) => {
@@ -118,20 +100,15 @@ const { recipeId, averageRating } = Astro.props;
         container.classList.add("opacity-90");
       };
 
-      // Уже голосовал — сразу фиксируем сохранённую оценку
-      if (userRating) {
-        lockRating(userRating);
+      const saved = getMyRating(recipeId);
+      if (saved) {
+        lockRating(saved);
         return;
       }
 
-      // Стартовый вид: звёзды заполнены по средней оценке, активны
       renderStars(baseVal);
 
-      const cleanId = String(recipeId).replace(/^(db-|local-)/, "");
-
       stars.forEach((btn) => {
-        // При наведении — неактивные звёзды, заполненные по наведённой оценке,
-        // и сразу «Ваша оценка: N»
         btn.addEventListener("mouseenter", () => {
           if (isProcessing || locked) return;
           const val = parseInt(btn.dataset.star || "0");
@@ -143,118 +120,37 @@ const { recipeId, averageRating } = Astro.props;
           if (isProcessing || locked) return;
           isProcessing = true;
           const rating = parseInt(btn.dataset.star || "0");
-
-          const logGroup = `⭐ Рейтинг [recipeId=${recipeId}, cleanId=${cleanId}]`;
-          console.log(
-            `%c${logGroup}%c\n→ Клик по звезде: ${rating}\n→ Средняя ДО голосования: ${baseVal} (avgNum=${avgNum})\n→ URL: POST /api-proxy/setRating/${cleanId}`,
-            "color:#ff6900;font-weight:bold",
-            "color:inherit",
-          );
-
           try {
-            console.log(
-              `%c${logGroup} — Отправка данных%c\n→ Payload: ${JSON.stringify({ rating })}\n→ Ожидаем, что бэкенд сам определит IP из заголовка X-Forwarded-For (как и должно быть в нормальной архитектуре).`,
-              "color:#3b82f6;font-weight:bold",
-              "color:inherit",
-            );
-
-            const res = await fetch(`/api-proxy/setRating/${encodeURIComponent(cleanId)}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ rating }),
-            });
-
-            const responseText = await res.text();
-            let responseJson: any = null;
+            const res = await setRating(recipeId, rating);
+            let body: { data?: { average_rating?: number }; average_rating?: number } | null = null;
             try {
-              responseJson = responseText ? JSON.parse(responseText) : null;
+              body = await res.json();
             } catch {
-              /* тело не JSON — оставляем как текст */
+              body = null;
             }
-
-            console.log(
-              `%c${logGroup} — ответ сервера%c\n→ HTTP ${res.status} ${res.statusText}\n→ ok: ${res.ok}\n→ тело: ${responseText.slice(0, 300)}${responseText.length > 300 ? "…" : ""}`,
-              res.ok ? "color:#16a34a;font-weight:bold" : "color:#dc2626;font-weight:bold",
-              "color:inherit",
-            );
 
             if (res.ok) {
-              // Успех — сохраняем локально, блокируем звёзды, благодарим
-              const newAvg = responseJson?.data?.average_rating || responseJson?.average_rating;
+              const newAvg = body?.data?.average_rating ?? body?.average_rating;
               if (avgValSpan && newAvg) avgValSpan.textContent = Number(newAvg).toFixed(1);
-
-              myRatings[recipeId] = rating;
-              localStorage.setItem("my_ratings", JSON.stringify(myRatings));
+              setMyRating(recipeId, rating);
               lockRating(rating);
-              container.classList.add("ring-2", "ring-amber-500", "ring-offset-2");
-              setTimeout(() => container.classList.remove("ring-2", "ring-amber-500", "ring-offset-2"), 2000);
-
-              const successMessages = [
-                "Ваш голос учтён. Надеемся, вы реально это готовили!",
-                "Ваш отзыв важен. Даже если вы просто смотрели на картинки.",
-                "Оценка в базе! Теперь вы официально ресторанный критик.",
-                "Голос принят! Если не получилось — скажем, что так и задумано.",
-                "Отличный выбор! Мы поверим вам на слово, что было вкусно.",
-                "Спасибо за отзыв! Теперь можно со спокойной душой заказать пиццу.",
-                "Оценка сохранена! Ещё пара таких, и можно открывать доставку.",
-                "Спасибо! Главное, чтобы результат совпадал с фото (мы никому не скажем).",
-                "Голос учтён. Надеемся, вы хотя бы дочитали рецепт до конца!",
-                "Оценка принята! Вы только что повысили виртуальную калорийность сайта.",
-              ];
-              const randomMessage = successMessages[Math.floor(Math.random() * successMessages.length)];
-              showToast(randomMessage, "success");
-
-              console.log(
-                `%c${logGroup} — [ОТПРАВЛЕНО]%c\n→ Оценка ${rating} успешно отправлена на сервер\n→ Средняя ПОСЛЕ голосования: ${newAvg ?? "нет в ответе"} (было ${baseVal})\n→ Сохранено в localStorage[${recipeId}] = ${rating}`,
-                "color:#16a34a;font-weight:bold",
-                "color:inherit",
-              );
-            } else if (res.status === 403) {
-              // Сервер вернул 403 "already voted". Если у нас в localStorage нет оценки, значит это баг бэкенда с IP = null
-              isProcessing = false;
-              userValContainer?.classList.add("hidden");
-              renderStars(baseVal);
-              showToast("Ошибка на стороне сервера (подробности в консоли)", "error");
-
-              console.error(
-                `%c${logGroup} — [ОШИБКА 403: ВЫ УЖЕ ГОЛОСОВАЛИ]%c\n` +
-                  `❗ ПРИЧИНА (для бэкендера):\n` +
-                  `Бэкенд берет IP из JSON-тела ($request->input('ip')), а не из заголовков HTTP.\n` +
-                  `Т.к. фронтенд не передает IP (это небезопасно и глупо делать на клиенте), бэкенд подставляет ip=null.\n` +
-                  `Следовательно, БД считает, что ВСЕ пользователи без IP — это один и тот же человек, и блокирует все голоса, кроме самого первого!\n\n` +
-                  `🛠 РЕШЕНИЕ ДЛЯ БЭКЕНДЕРА:\n` +
-                  `В LikesController.php замените: \n` +
-                  `$ip = $request->input('ip'); \n` +
-                  `НА: \n` +
-                  `$ip = $request->input('ip') ?? $request->ip();`,
-                "color:#dc2626;font-size:14px;font-weight:bold;background:#fee2e2;padding:4px;border-radius:4px;",
-                "color:inherit",
-              );
+              showToast(MESSAGES[Math.floor(Math.random() * MESSAGES.length)], "success");
+            } else if (res.status === 409 || res.status === 403) {
+              // Голос с этого адреса уже есть (409 — новый API, 403 — старый).
+              setMyRating(recipeId, rating);
+              lockRating(rating);
+              showToast("Вы уже оценивали этот рецепт", "info");
             } else {
-              // Сервер ответил ошибкой — оценку НЕ сохраняем, звёзды активны
-              isProcessing = false;
-              userValContainer?.classList.add("hidden");
-              renderStars(baseVal);
-              showToast("Ой, не получилось. Попробуйте позже", "error");
-              console.error(`%c${logGroup} — [ОШИБКА ОТПРАВКИ]%c\n→ Сервер вернул ${res.status}, оценка НЕ сохранена (ни на сервере, ни локально)`, "color:#dc2626;font-weight:bold", "color:inherit");
+              reset();
+              showToast("Не получилось сохранить оценку. Попробуйте позже", "error");
             }
-          } catch (err) {
-            console.error(err);
-            // Бэкенд недоступен — оценку НЕ сохраняем, звёзды остаются активными
-            isProcessing = false;
-            userValContainer?.classList.add("hidden");
-            renderStars(baseVal);
-            showToast("Ой, не получилось. Попробуйте позже", "error");
-            console.error(
-              `%c${logGroup} — [СЕРВЕР НЕДОСТУПЕН]%c\n→ Запрос к /api-proxy/setRating/${cleanId} упал (сеть/CORS/502)\n→ Оценка ${rating} НЕ отправлена и НЕ сохранена локально\n→ Звёзды остаются активными — можно попробовать позже`,
-              "color:#dc2626;font-weight:bold",
-              "color:inherit",
-            );
+          } catch {
+            reset();
+            showToast("Нет соединения. Попробуйте позже", "error");
           }
         });
       });
 
-      // Уход курсора — возврат к средней оценке и активному состоянию
       container.addEventListener("mouseleave", () => {
         if (isProcessing || locked) return;
         userValContainer?.classList.add("hidden");
@@ -263,7 +159,5 @@ const { recipeId, averageRating } = Astro.props;
     }
   }
 
-  if (!customElements.get("rating-stars")) {
-    customElements.define("rating-stars", RatingStars);
-  }
+  if (!customElements.get("rating-stars")) customElements.define("rating-stars", RatingStars);
 </script>

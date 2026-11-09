@@ -1,6 +1,10 @@
 ---
 import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
+
+interface Props {
+  recipeId: number;
+}
 const { recipeId } = Astro.props;
 ---
 
@@ -12,134 +16,60 @@ const { recipeId } = Astro.props;
 </like-button>
 
 <script>
+  import { incrementLike } from "../../lib/client/api";
+  import { hasId, LIKES_KEY, toggleId } from "../../lib/client/storage";
+  import { showToast } from "../../lib/client/toast";
+
+  const MESSAGES = [
+    "Рады, что вам понравилось!",
+    "Спасибо, что оценили рецепт!",
+    "Ваш лайк греет нам душу!",
+    "Отличный выбор! Приятного аппетита",
+    "Вкусно и просто? Рады угодить!",
+    "Готовьте с удовольствием!",
+  ];
+
   class LikeButton extends HTMLElement {
     connectedCallback() {
-      const btn = this.querySelector(".like-btn") as HTMLButtonElement;
+      const btn = this.querySelector<HTMLButtonElement>(".like-btn");
       const icon = this.querySelector(".heart-icon");
-      const label = this.querySelector(".button-label");
-      const recipeId = this.dataset.id;
-      const key = "liked_recipes";
-
+      const recipeId = Number(this.dataset.id);
       if (!btn || !recipeId) return;
 
-      const getLikes = () => {
-        try {
-          return JSON.parse(localStorage.getItem(key) || "[]");
-        } catch {
-          return [];
-        }
-      };
-
-      const showToast = (msg: string, type: "success" | "error" | "info" = "success") => {
-        const toast = document.createElement("div");
-        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-xl shadow-black/20 text-white z-[100] transition-opacity duration-300 font-medium flex items-center gap-2 ${
-          type === "success" ? "bg-green-500" : type === "error" ? "bg-rose-500" : "bg-blue-500"
-        }`;
-
-        let iconSvg = "";
-        if (type === "success") {
-          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-        } else if (type === "error") {
-          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`;
-        } else {
-          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
-        }
-        toast.innerHTML = `${iconSvg}<span>${msg}</span>`;
-        document.body.appendChild(toast);
-        setTimeout(() => {
-          toast.style.opacity = "0";
-          setTimeout(() => toast.remove(), 300);
-        }, 3000);
-      };
-
-      const applyLikeState = (active: boolean) => {
+      const apply = (active: boolean) => {
         btn.classList.toggle("text-rose-500", active);
         btn.classList.toggle("border-rose-500", active);
         btn.classList.toggle("bg-rose-500/10", active);
         btn.setAttribute("aria-pressed", String(active));
-        if (icon) icon.classList.toggle("fill-rose-500", active);
-        if (icon) icon.classList.toggle("text-rose-500", active);
-        if (label) label.textContent = active ? "Лайк" : "Лайк";
-        if (active) {
-          btn.classList.remove("hover:text-brand", "hover:border-brand", "hover:bg-card-bg/40");
-        }
+        icon?.classList.toggle("fill-rose-500", active);
+        icon?.classList.toggle("text-rose-500", active);
       };
 
-      // Проверяем, лайкали ли уже
-      const hasLiked = getLikes().includes(recipeId);
-      applyLikeState(hasLiked);
-
-      let isProcessing = false;
+      apply(hasId(LIKES_KEY, recipeId));
+      let busy = false;
 
       btn.addEventListener("click", async () => {
-        if (isProcessing || getLikes().includes(recipeId)) return;
-
-        isProcessing = true;
+        if (busy || hasId(LIKES_KEY, recipeId)) return;
+        busy = true;
         btn.classList.add("opacity-70");
-
-        const cleanId = recipeId.replace(/^(db-|local-)/, "");
-        const logGroup = `Лайк [recipeId=${recipeId}, cleanId=${cleanId}]`;
-
-        console.log(`%c${logGroup}%c\n→ Отправка PATCH-запроса на /api-proxy/incrementLike/${cleanId}`, "color:#ec4899;font-weight:bold", "color:inherit");
-
         try {
-          const res = await fetch(`/api-proxy/incrementLike/${encodeURIComponent(cleanId)}`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          const responseText = await res.text();
-          console.log(
-            `%c${logGroup} — ответ сервера%c\n→ HTTP ${res.status} ${res.statusText}\n→ ok: ${res.ok}\n→ тело: ${responseText}`,
-            res.ok ? "color:#16a34a;font-weight:bold" : "color:#dc2626;font-weight:bold",
-            "color:inherit",
-          );
-
+          const res = await incrementLike(recipeId);
           if (res.ok) {
-            // Сохраняем в localStorage
-            const list = getLikes();
-            if (!list.includes(recipeId)) {
-              list.push(recipeId);
-              localStorage.setItem(key, JSON.stringify(list));
-            }
-            // Визуально фиксируем
-            applyLikeState(true);
-            btn.classList.remove("opacity-70");
-            isProcessing = false;
-
-            const successMessages = [
-              "Рады, что вам понравилось!",
-              "Спасибо, что оценили рецепт!",
-              "Ваш лайк греет нам душу!",
-              "Отличный выбор! Приятного аппетита",
-              "Вам понравилось, и нам приятно!",
-              "Вкусно и просто? Рады угодить!",
-              "Этот рецепт и правда хорош!",
-              "Спасибо! Сохранили в вашу копилку",
-              "Ммм... отличный выбор для готовки!",
-              "Готовьте с удовольствием!",
-            ];
-            const randomMessage = successMessages[Math.floor(Math.random() * successMessages.length)];
-            showToast(randomMessage, "success");
-            console.log(`%c${logGroup} — [УСПЕХ]%c\nЛайк сохранен локально и на сервере!`, "color:#16a34a;font-weight:bold", "color:inherit");
+            toggleId(LIKES_KEY, recipeId, true);
+            apply(true);
+            showToast(MESSAGES[Math.floor(Math.random() * MESSAGES.length)], "success");
           } else {
-            // Если ошибка
-            btn.classList.remove("opacity-70");
-            isProcessing = false;
-            console.error(`%c${logGroup} — [ОШИБКА БЭКЕНДА]%c\nСервер вернул статус ${res.status}. Жалуйтесь бэкендеру!`, "color:#dc2626;font-weight:bold", "color:inherit");
-            showToast("Не удалось поставить лайк. Ошибка сервера.", "error");
+            showToast("Не удалось поставить лайк. Попробуйте позже.", "error");
           }
-        } catch (err) {
+        } catch {
+          showToast("Нет соединения. Проверьте интернет.", "error");
+        } finally {
+          busy = false;
           btn.classList.remove("opacity-70");
-          isProcessing = false;
-          console.error(`%c${logGroup} — [СЕТЕВАЯ ОШИБКА]%c\nБэкенд недоступен или CORS блокирует запрос.`, "color:#dc2626;font-weight:bold", "color:inherit", err);
-          showToast("Сетевая ошибка. Проверьте подключение.", "error");
         }
       });
     }
   }
 
-  customElements.define("like-button", LikeButton);
+  if (!customElements.get("like-button")) customElements.define("like-button", LikeButton);
 </script>

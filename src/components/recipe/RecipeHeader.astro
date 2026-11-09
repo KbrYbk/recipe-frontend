@@ -1,0 +1,70 @@
+---
+/** Шапка рецепта: заголовок, время/сложность, действия (оценка, избранное, лайк, печать, поделиться, режим готовки). */
+import { Icon } from "astro-icon/components";
+import Button from "../ui/Button.astro";
+import RatingStars from "./RatingStars.astro";
+import FavoriteButton from "./FavoriteButton.astro";
+import LikeButton from "./LikeButton.astro";
+import ShareButton from "./ShareButton.astro";
+import { formatTime } from "../../lib/formatTime";
+import type { Recipe } from "../../types/recipe";
+
+interface Props {
+  recipe: Recipe;
+}
+const { recipe } = Astro.props;
+const { id, title, cooking_time, difficulty } = recipe;
+
+const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
+const difficultyClass = difficulty === "hard" ? "bg-red-500/15 text-red-500" : difficulty === "medium" ? "bg-amber-500/15 text-amber-500" : "bg-emerald-500/15 text-emerald-500";
+const chip = "glass-border-3d flex h-11 items-center justify-center gap-2 rounded-2xl px-2 text-sm shadow-sm shadow-black/15 sm:inline-flex sm:w-auto sm:px-4 print:border-none print:px-0";
+---
+
+<header class="mb-10 md:mb-12">
+  <h1 class="text-text-main mb-4 text-3xl font-bold md:text-5xl lg:text-7xl print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-extrabold">{title}</h1>
+
+  <div class="mb-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center print:mb-4">
+    {
+      cooking_time > 0 && (
+        <span class={`${chip} bg-card-bg/20 text-text-main font-medium backdrop-blur-md`} aria-label={`Время приготовления: ${formatTime(cooking_time)}`}>
+          <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
+          <span class="tabular-nums">{formatTime(cooking_time)}</span>
+        </span>
+      )
+    }
+    {
+      difficulty && (
+        <span class={`${chip} ${difficultyClass} text-xs font-bold tracking-wide uppercase print:bg-transparent print:text-black`} aria-label={`Сложность: ${difficultyLabel}`}>
+          <Icon name="lucide:flame" class="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{difficultyLabel}</span>
+        </span>
+      )
+    }
+
+    <div class="bg-line mx-1 hidden h-6 w-px sm:block print:hidden" aria-hidden="true"></div>
+
+    <div class="col-span-2 sm:col-span-1">
+      <RatingStars recipeId={id} averageRating={recipe.average_rating} />
+    </div>
+    <FavoriteButton recipeId={id} />
+    <LikeButton recipeId={id} />
+    <Button variant="outline" id="printRecipeBtn" class="h-11 w-full px-2 text-sm sm:w-auto sm:px-4 print:hidden" aria-label="Печать рецепта">
+      <Icon name="lucide:printer" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span class="button-label">Печать</span>
+    </Button>
+    <ShareButton />
+  </div>
+
+  {
+    recipe.steps.length > 0 && (
+      <Button variant="primary" class="h-12 w-full text-base sm:w-auto print:hidden" data-cook-open>
+        <Icon name="lucide:chef-hat" slot="icon-left" class="h-5 w-5 shrink-0" aria-hidden="true" />
+        Режим готовки
+      </Button>
+    )
+  }
+</header>
+
+<script>
+  import "../../scripts/recipe-page";
+</script>

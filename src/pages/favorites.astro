@@ -3,13 +3,14 @@ import Layout from "../layouts/Layout.astro";
 import { Icon } from "astro-icon/components";
 ---
 
-<Layout title="Избранные рецепты — SwagEda">
+<Layout title="Избранные рецепты — SwagEda" description="Ваши избранные рецепты на SwagEda." noindex>
   <div class="mx-auto max-w-7xl px-4">
     <header class="mb-8 text-center">
       <h1 class="text-text-main text-3xl font-bold md:text-4xl">Избранные рецепты</h1>
       <p class="text-text-muted mt-2">Ваша личная кулинарная книга</p>
     </header>
 
+    <p id="favorites-loading" class="text-text-muted hidden py-10 text-center" role="status">Загружаем избранное…</p>
     <div id="favorites-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Список избранных рецептов">
       <!-- Сюда клиентский JS вставит карточки избранного -->
     </div>
@@ -27,89 +28,56 @@ import { Icon } from "astro-icon/components";
 
 <script>
   import { formatTime } from "../lib/formatTime";
-  // Рендер избранного: читаем id из localStorage, грузим каждый рецепт по отдельности
+  import { fetchRecipeCards } from "../lib/client/api";
+  import { FAVORITES_KEY, readIdList, writeJson } from "../lib/client/storage";
+
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
   async function renderFavorites() {
     const grid = document.getElementById("favorites-grid");
     const empty = document.getElementById("empty-favorites");
-    const favorites = JSON.parse(localStorage.getItem("swageda_favorites") || "[]");
-
+    const loading = document.getElementById("favorites-loading");
     if (!grid || !empty) return;
 
-    if (favorites.length === 0) {
+    // Старый формат "db-123" нормализуется и сохраняется обратно как "123".
+    const ids = readIdList(FAVORITES_KEY);
+    writeJson(FAVORITES_KEY, ids);
+
+    const showEmpty = () => {
       grid.innerHTML = "";
       grid.classList.add("hidden");
       empty.classList.remove("hidden");
       empty.classList.add("flex");
-      return;
-    }
+    };
+    if (ids.length === 0) return showEmpty();
 
-    empty.classList.add("hidden");
-    empty.classList.remove("flex");
-    grid.classList.remove("hidden");
+    loading?.classList.remove("hidden");
+    const recipes = await fetchRecipeCards(ids.map(Number));
+    loading?.classList.add("hidden");
+    if (recipes.length === 0) return showEmpty();
 
-    // Загружаем каждый избранный рецепт по отдельности (параллельно) через наш API endpoint
-    // id в localStorage хранится с префиксом ("db-123"), API endpoint сам стрипнет и найдёт рецепт
-    const recipes = (
-      await Promise.all(
-        favorites.map(async (id: any) => {
-          try {
-            const url = `/api/recipe/${encodeURIComponent(id)}`;
-            const res = await fetch(url);
-            if (!res.ok) return null;
-            return await res.json();
-          } catch (e) {
-            console.error("[favorites] fetch error for", id, e);
-            return null;
-          }
-        }),
-      )
-    ).filter(Boolean);
-
-    const fragment = document.createDocumentFragment();
-
-    recipes.forEach((recipe) => {
-      const card = document.createElement("article");
-      card.className = "group glass-border-3d relative overflow-hidden rounded-2xl bg-card-bg transition-all shadow-md shadow-black/15 hover:shadow-xl hover:shadow-black/20";
-      card.setAttribute("role", "listitem");
-
-      const timeDisplay = recipe.cooking_time ? formatTime(recipe.cooking_time) : "";
-      const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-      const safeTitle = esc(recipe.title || "");
-      const safeDesc = esc(recipe.description || "");
-      const safeImg = esc(recipe.main_image || "/default-share.jpg");
-      const safeId = encodeURIComponent(recipe.id || "");
-
-      card.innerHTML = `
-        <a href="/recipe/${safeId}" class="block">
-          <div class="aspect-video overflow-hidden">
-            <img
-              src="${safeImg}"
-              alt="${safeTitle}"
-              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <div class="p-4">
-            <h3 class="text-text-main mb-2 text-lg font-bold transition-colors group-hover:text-brand line-clamp-2">${safeTitle}</h3>
-            ${recipe.description ? `<p class="text-text-muted mb-3 line-clamp-2 text-sm">${safeDesc}</p>` : ""}
-            <div class="flex items-center justify-between">
-              ${timeDisplay ? `<span class="text-text-muted flex items-center gap-1 text-xs" aria-label="Время приготовления: ${timeDisplay}"><svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> ${timeDisplay}</span>` : ""}
-              <span class="text-brand text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100">Смотреть →</span>
+    grid.innerHTML = recipes
+      .map((recipe) => {
+        const time = recipe.cooking_time ? formatTime(recipe.cooking_time) : "";
+        const img = recipe.main_image
+          ? `<img src="${esc(recipe.main_image)}" alt="${esc(recipe.title)}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" width="600" height="338" />`
+          : "";
+        return `<article role="listitem" class="group glass-border-3d relative overflow-hidden rounded-2xl bg-card-bg shadow-md shadow-black/15 transition-all hover:shadow-xl hover:shadow-black/20">
+          <a href="${esc(recipe.url)}" class="block">
+            <div class="bg-page-bg aspect-video overflow-hidden">${img}</div>
+            <div class="p-4">
+              <h2 class="text-text-main group-hover:text-brand mb-2 line-clamp-2 text-lg font-bold transition-colors">${esc(recipe.title)}</h2>
+              ${recipe.description ? `<p class="text-text-muted mb-3 line-clamp-2 text-sm">${esc(recipe.description)}</p>` : ""}
+              <div class="flex items-center justify-between">
+                ${time ? `<span class="text-text-muted text-xs">${esc(time)}</span>` : "<span></span>"}
+                <span class="text-brand text-xs font-semibold">Смотреть →</span>
+              </div>
             </div>
-          </div>
-        </a>
-      `;
-      fragment.appendChild(card);
-    });
-
-    grid.innerHTML = "";
-    grid.appendChild(fragment);
+          </a>
+        </article>`;
+      })
+      .join("");
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", renderFavorites);
-  } else {
-    renderFavorites();
-  }
+  renderFavorites();
 </script>

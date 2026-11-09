@@ -8,7 +8,7 @@ const { text, class: className = "" } = Astro.props;
 
 const normalizedText = text
   ? String(text)
-      .replace(/<br\s*[\/]?>/gi, "\n") // Перевариваем HTML-переносы из админки
+      .replace(/<br\s*\/?>/gi, "\n") // Перевариваем HTML-переносы из админки
       .replace(/\\r\\n|\\n/g, "\n") // Защита от двойного экранирования
   : "";
 

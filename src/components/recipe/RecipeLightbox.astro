@@ -16,6 +16,8 @@ import { Icon } from "astro-icon/components";
 
 <script>
   class RecipeLightbox extends HTMLElement {
+    private cleanup?: () => void;
+
     connectedCallback() {
       const dialog = this.querySelector("dialog");
       const img = this.querySelector(".modal-img") as HTMLImageElement;
@@ -53,14 +55,14 @@ import { Icon } from "astro-icon/components";
       });
 
       // Очистка при View Transitions
-      (this as any)._cleanup = () => {
+      this.cleanup = () => {
         triggers.forEach((t) => t.removeEventListener("click", openModal));
         document.body.style.overflow = "";
       };
     }
 
     disconnectedCallback() {
-      if ((this as any)._cleanup) (this as any)._cleanup();
+      this.cleanup?.();
     }
   }
 
