@@ -1,58 +1,46 @@
 ---
 import { Icon } from "astro-icon/components";
+import { navSection, type NavSection } from "../../lib/nav";
 
-const pathname = Astro.url.pathname;
-const isActive = (path: string) => {
-  if (path === "/") return pathname === "/";
-  return pathname.startsWith(path);
-};
+const section = navSection(Astro.url.pathname, Astro.url.searchParams);
+const items: { href: string; label: string; icon: string; key: NavSection; short?: string; extra?: Record<string, string> }[] = [
+  { href: "/", label: "Главная", icon: "lucide:home", key: "home" },
+  { href: "/recipes", label: "Рецепты", icon: "lucide:cooking-pot", key: "recipes" },
+  { href: "/recipes?action=search", label: "Поиск", icon: "lucide:search", key: "search", extra: { "data-bottom-search": "" } },
+  { href: "/random", label: "Удиви меня", short: "Удиви", icon: "lucide:dices", key: "random" },
+  { href: "/favorites", label: "Избранное", icon: "lucide:heart", key: "favorites" },
+];
 ---
 
-<nav class="fixed bottom-4 left-4 right-4 z-50 flex h-16 items-center justify-around rounded-3xl glass-border-3d bg-card-bg/70 px-2 shadow-xl shadow-black/15 backdrop-blur-md md:hidden print:hidden">
-  <a 
-    href="/" 
-    class={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive("/") ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
-    aria-label="Главная"
-  >
-    <Icon name="lucide:home" class="h-6 w-6" />
-    <span class="text-[10px] font-medium">Главная</span>
-  </a>
-
-  <a 
-    href="/recipes" 
-    class={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive("/recipes") ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
-    aria-label="Рецепты"
-  >
-    <Icon name="lucide:cooking-pot" class="h-6 w-6" />
-    <span class="text-[10px] font-medium">Рецепты</span>
-  </a>
-
-  <a 
-    href="/recipes?action=search" 
-    class={`flex flex-col items-center justify-center gap-1 transition-colors ${Astro.url.searchParams.get("action") === "search" ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
-    aria-label="Поиск"
-  >
-    <Icon name="lucide:search" class="h-6 w-6" />
-    <span class="text-[10px] font-medium">Поиск</span>
-  </a>
-
-  <a 
-    href="/random" 
-    class={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive("/random") ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
-    aria-label="Показать случайный рецепт"
-  >
-    <Icon name="lucide:dices" class="h-6 w-6" />
-    <span class="text-[10px] font-medium">Выручай</span>
-  </a>
-
-  <a 
-    href="/favorites" 
-    class={`flex flex-col items-center justify-center gap-1 transition-colors ${isActive("/favorites") ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
-    aria-label="Избранное"
-  >
-    <Icon name="lucide:heart" class="h-6 w-6" />
-    <span class="text-[10px] font-medium">Избранное</span>
-  </a>
+<nav
+  class="glass-border-3d bg-card-bg/70 fixed right-4 bottom-4 left-4 z-50 flex h-16 items-center justify-around rounded-3xl px-1 shadow-xl shadow-black/15 backdrop-blur-md md:hidden print:hidden"
+  aria-label="Нижняя навигация"
+>
+  {
+    items.map((item) => {
+      const active = section === item.key;
+      return (
+        <a
+          href={item.href}
+          class={`flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl transition-colors ${active ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
+          aria-current={active ? "page" : undefined}
+          {...item.extra}
+        >
+          <Icon name={item.icon} class="h-6 w-6" aria-hidden="true" />
+          <span class={`max-w-full truncate px-0.5 text-[10px] ${active ? "font-bold" : "font-medium"}`}>
+            {item.short ? (
+              <>
+                <span class="min-[360px]:hidden">{item.short}</span>
+                <span class="hidden min-[360px]:inline">{item.label}</span>
+              </>
+            ) : (
+              item.label
+            )}
+          </span>
+        </a>
+      );
+    })
+  }
 </nav>
 
 <style>
@@ -61,3 +49,14 @@ const isActive = (path: string) => {
     bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 </style>
+
+<script>
+  // «Поиск»: если на странице уже есть поле поиска — сфокусировать его, а не переходить.
+  document.querySelector<HTMLAnchorElement>("[data-bottom-search]")?.addEventListener("click", (e) => {
+    const input = Array.from(document.querySelectorAll<HTMLInputElement>("input[data-search-input]")).find((el) => el.offsetParent !== null);
+    if (!input) return;
+    e.preventDefault();
+    input.scrollIntoView({ block: "center", behavior: "smooth" });
+    input.focus({ preventScroll: true });
+  });
+</script>

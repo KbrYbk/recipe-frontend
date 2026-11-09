@@ -39,6 +39,8 @@ const autofocus = Astro.url.searchParams.get("action") === "search";
         aria-label="Поиск рецепта"
         autocomplete="off"
         autofocus={autofocus}
+        data-search-suggest
+        data-search-input
       />
     </div>
 

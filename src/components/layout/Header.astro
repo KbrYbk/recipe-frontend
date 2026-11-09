@@ -1,6 +1,20 @@
 ---
 import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
+import { navSection } from "../../lib/nav";
+
+const section = navSection(Astro.url.pathname, Astro.url.searchParams);
+const isHome = section === "home";
+const links = [
+  { href: "/recipes", label: "Все рецепты", key: "recipes" },
+  { href: "/favorites", label: "Избранное", key: "favorites" },
+  { href: "/shopping-list", label: "Покупки", key: "shopping" },
+  { href: "/random", label: "Удиви меня", key: "random" },
+] as const;
+const linkClass = (active: boolean) =>
+  `relative py-1 font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:rounded-full after:transition-colors ${
+    active ? "text-brand after:bg-brand" : "text-text-main hover:text-brand after:bg-transparent"
+  }`;
 ---
 
 <header class="site-header glass-border-3d bg-card-bg/60 sticky top-0 z-50 shadow-sm shadow-black/15 backdrop-blur-md transition-transform duration-300 will-change-transform print:hidden">
@@ -11,13 +25,23 @@ import Button from "../ui/Button.astro";
     </a>
 
     <!-- Desktop Navigation -->
-    <nav class="hidden items-center gap-8 md:flex" aria-label="Основная навигация">
-      <a href="/recipes" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Все рецепты">Все рецепты</a>
-      <a href="/favorites" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Избранное">Избранное</a>
-      <a href="/shopping-list" class="text-text-main hover:text-brand font-medium transition-colors">Покупки</a>
-      <a href="/random" class="text-text-main hover:text-brand font-medium transition-colors" aria-label="Показать случайный рецепт">Удиви меня</a>
+    <nav class="hidden items-center gap-6 md:flex lg:gap-8" aria-label="Основная навигация">
+      {
+        links.map((l) => (
+          <a href={l.href} class={linkClass(section === l.key || (l.key === "recipes" && section === "search"))} aria-current={section === l.key ? "page" : undefined}>
+            {l.label}
+          </a>
+        ))
+      }
       <div class="bg-line h-6 w-px"></div>
 
+      {
+        !isHome && (
+          <Button variant="outline" size="icon" class="bg-page-bg shrink-0" aria-label="Поиск рецептов" aria-expanded="false" aria-controls="header-search" data-header-search-toggle>
+            <Icon name="lucide:search" class="h-5 w-5" aria-hidden="true" />
+          </Button>
+        )
+      }
       <Button variant="outline" size="icon" id="themeToggle" class="bg-page-bg shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-5 w-5" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-5 w-5" aria-hidden="true" />
@@ -35,6 +59,31 @@ import Button from "../ui/Button.astro";
       </Button>
     </div>
   </div>
+
+  {
+    !isHome && (
+      <div id="header-search" class="border-line hidden border-t px-4 py-3 sm:px-6 lg:px-8" data-header-search>
+        <form action="/recipes" method="GET" role="search" class="mx-auto flex max-w-2xl gap-2">
+          <div class="relative flex-1">
+            <Icon name="lucide:search" class="text-text-muted pointer-events-none absolute top-1/2 left-4 z-10 h-5 w-5 -translate-y-1/2 opacity-70" aria-hidden="true" />
+            <input
+              type="search"
+              name="q"
+              maxlength="100"
+              placeholder="Курица, картошка, суп..."
+              aria-label="Поиск рецепта"
+              autocomplete="off"
+              class="bg-page-bg text-text-main placeholder:text-text-muted focus:ring-brand/30 border-line w-full rounded-2xl border py-2.5 pr-4 pl-11 text-base focus:ring-4 focus:outline-none"
+              data-search-suggest
+            />
+          </div>
+          <Button type="submit" class="h-11 shrink-0 px-5">
+            Найти
+          </Button>
+        </form>
+      </div>
+    )
+  }
 </header>
 
 <script>
@@ -49,6 +98,23 @@ import Button from "../ui/Button.astro";
 
     themeBtns.forEach((btn) => btn.addEventListener("click", toggleTheme));
 
+    // Поиск в шапке (десктоп, внутренние страницы)
+    const searchToggle = document.querySelector<HTMLElement>("[data-header-search-toggle]");
+    const searchPanel = document.querySelector<HTMLElement>("[data-header-search]");
+    const searchInput = searchPanel?.querySelector<HTMLInputElement>("input[name=q]");
+    const setSearchOpen = (open: boolean) => {
+      if (!searchToggle || !searchPanel) return;
+      searchPanel.classList.toggle("hidden", !open);
+      searchToggle.setAttribute("aria-expanded", String(open));
+      if (open) searchInput?.focus();
+      else searchToggle.focus();
+    };
+    searchToggle?.addEventListener("click", () => setSearchOpen(searchPanel?.classList.contains("hidden") ?? false));
+    searchPanel?.addEventListener("keydown", (e) => {
+      // Esc в открытом списке подсказок закрывает только список (stopPropagation в search-suggest)
+      if (e.key === "Escape") setSearchOpen(false);
+    });
+
     // Hide on scroll down, show on scroll up
     const header = document.querySelector(".site-header");
     if (header) {
@@ -61,7 +127,7 @@ import Button from "../ui/Button.astro";
           header.classList.remove("header-hidden");
         } else {
           const delta = currentScrollY - lastScrollY;
-          if (delta > 6) {
+          if (delta > 6 && !header.contains(document.activeElement)) {
             header.classList.add("header-hidden");
           } else if (delta < -6) {
             header.classList.remove("header-hidden");
@@ -87,4 +153,7 @@ import Button from "../ui/Button.astro";
   }
 
   setupHeader();
+</script>
+<script>
+  import "../../scripts/search-suggest";
 </script>
