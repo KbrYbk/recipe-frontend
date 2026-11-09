@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatIngredientLine, normalizeIngredients, normalizeSteps } from "../src/lib/normalizeIngredients";
+import { cleanIngredientAmount, formatIngredientAmount, formatIngredientLine, normalizeIngredients, normalizeSteps } from "../src/lib/normalizeIngredients";
 
 describe("normalizeIngredients", () => {
   it("строки и объекты", () => {
@@ -27,5 +27,25 @@ describe("normalizeSteps", () => {
       { order: 1, text: "Нарезать" },
       { order: 2, text: "Жарить", image: "/api-images/storage/a.jpg" },
     ]);
+  });
+});
+
+describe("formatIngredientAmount (отображение битых данных)", () => {
+  it("«вкусу» → «по вкусу»", () => {
+    expect(formatIngredientAmount({ name: "Соль", unit: "вкусу" })).toBe("по вкусу");
+    expect(formatIngredientAmount({ name: "Соль", amount: "вкусу" })).toBe("по вкусу");
+    expect(formatIngredientAmount({ name: "Соль", amount: "по", unit: "вкусу" })).toBe("по вкусу");
+    expect(formatIngredientAmount({ name: "Соль", unit: "по вкусу" })).toBe("по вкусу");
+    expect(formatIngredientLine({ name: "Соль и перец", unit: "вкусу" })).toBe("Соль и перец — по вкусу");
+  });
+  it("убирает ведущие тире и дефисы", () => {
+    expect(formatIngredientAmount({ name: "Хмели-сунели", amount: "- 0,5", unit: "ч.л." })).toBe("0,5 ч.л.");
+    expect(formatIngredientAmount({ name: "x", amount: "—", unit: "– 2 шт." })).toBe("2 шт.");
+    expect(formatIngredientAmount({ name: "x", amount: " -", unit: "" })).toBe("");
+    expect(cleanIngredientAmount("-  1 ст.")).toBe("1 ст.");
+  });
+  it("не трогает нормальные значения", () => {
+    expect(formatIngredientAmount({ name: "Мука", amount: 200, unit: "г" })).toBe("200 г");
+    expect(cleanIngredientAmount("1-2 шт.")).toBe("1-2 шт.");
   });
 });

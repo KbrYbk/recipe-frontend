@@ -32,12 +32,33 @@ export function normalizeIngredients(raw: unknown): IngredientRow[] {
   return rows;
 }
 
-/** «200 г», «1 шт.» или пустая строка. */
+/** Ведущие тире/дефисы и пробелы в количестве и единице («- 0,5», «— 2») — артефакты данных. */
+function stripLeadingDashes(v: string): string {
+  return v.replace(/^[\s\-\u2010-\u2015\u2212]+/u, "").trim();
+}
+
+/**
+ * Только для отображения: «вкусу» → «по вкусу», без ведущих тире. Данные не меняются.
+ * Пример: { amount: "- 0,5", unit: "ч.л." } → «0,5 ч.л.»; { unit: "вкусу" } → «по вкусу».
+ */
+export function cleanIngredientAmount(raw: string): string {
+  const tokens = stripLeadingDashes(raw).split(/\s+/).filter(Boolean);
+  const out: string[] = [];
+  tokens.forEach((t) => {
+    if (t.toLocaleLowerCase("ru-RU") === "вкусу" && out[out.length - 1]?.toLocaleLowerCase("ru-RU") !== "по") out.push("по");
+    out.push(t);
+  });
+  return out.join(" ");
+}
+
+/** «200 г», «1 шт.», «по вкусу» или пустая строка. */
 export function formatIngredientAmount(row: IngredientRow): string {
-  return [row.amount, row.unit]
-    .map((v) => str(v))
-    .filter(Boolean)
-    .join(" ");
+  return cleanIngredientAmount(
+    [row.amount, row.unit]
+      .map((v) => stripLeadingDashes(str(v)))
+      .filter(Boolean)
+      .join(" "),
+  );
 }
 
 /** «Мука — 200 г» — одна строка для копирования, schema.org и списка покупок. */
