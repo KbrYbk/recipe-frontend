@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { getApiRoot, getProjectKey, PROJECT_HEADER } from "./lib/server/env";
+import { canonicalPathRedirect } from "./lib/urlNormalize";
 
 /**
  * Белый список маршрутов, которые браузер может вызывать через /api-proxy.
@@ -148,6 +149,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
     const clientIp = getClientIp(request, context.clientAddress);
     return applySecurityHeaders(await proxyRequest(request, clientIp, `${getApiRoot()}${path}${search}`));
+  }
+
+  // Слэш на конце, повторные слэши и верхний регистр → один 301 на канонический путь (query сохраняется).
+  if (request.method === "GET" || request.method === "HEAD") {
+    const target = canonicalPathRedirect(url.pathname);
+    if (target) {
+      return applySecurityHeaders(new Response(null, { status: 301, headers: { Location: `${target}${url.search}`, "Cache-Control": "public, max-age=3600" } }));
+    }
   }
 
   if (SITEMAP_PATTERN.test(url.pathname)) {
