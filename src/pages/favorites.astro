@@ -11,7 +11,7 @@ import { Icon } from "astro-icon/components";
     </header>
 
     <p id="favorites-loading" class="text-text-muted hidden py-10 text-center" role="status">Загружаем избранное…</p>
-    <p id="favorites-error" class="text-text-muted hidden py-10 text-center" role="alert">Не удалось загрузить избранное. Попробуйте обновить страницу чуть позже.</p>
+    <p id="favorites-error" class="text-text-muted hidden py-10 text-center" role="alert">Не удалось загрузить избранное — попробуйте обновить страницу чуть позже</p>
     <!-- Сюда клиентский JS вставит карточки (тот же RecipeCard, что и в каталоге: /partials/recipe-cards) -->
     <div id="favorites-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Список избранных рецептов"></div>
 
@@ -20,8 +20,8 @@ import { Icon } from "astro-icon/components";
         <Icon name="lucide:book-heart" class="text-brand h-12 w-12" aria-hidden="true" />
       </div>
       <h2 class="text-text-main text-xl font-semibold">Тут пока пусто</h2>
-      <p class="text-text-muted mt-2">Нажмите «В избранное» на странице рецепта — и он появится здесь.</p>
-      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white transition-all">
+      <p class="text-text-muted mt-2">Нажмите «Избранное» на странице рецепта — и он появится здесь</p>
+      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white transition-colors">
         <Icon name="lucide:cooking-pot" class="h-5 w-5" aria-hidden="true" />
         Перейти в каталог рецептов
       </a>

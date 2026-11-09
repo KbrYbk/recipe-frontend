@@ -61,7 +61,7 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
                   <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all">
                     <span class="ingredient-name text-text-main leading-tight font-medium print:text-[10pt]">{item.name}</span>
                     {amount && (
-                      <span class="ingredient-amount text-text-muted text-xs font-bold italic opacity-80" data-amount-base={amount}>
+                      <span class="ingredient-amount text-text-muted text-xs font-semibold tabular-nums" data-amount-base={amount}>
                         {amount}
                       </span>
                     )}
