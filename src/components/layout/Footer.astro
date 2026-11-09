@@ -1,39 +1,95 @@
 ---
 import Divider from "../ui/Divider.astro";
+import { getCategories } from "../../lib/api/categories";
+
 const currentYear = new Date().getFullYear();
+// Топ-8 категорий (порядок API); если справочник недоступен — колонка не показывается.
+const categories = ((await getCategories()) ?? []).slice(0, 8);
+
+const siteLinks = [
+  { href: "/", label: "Главная" },
+  { href: "/recipes", label: "Все рецепты" },
+  { href: "/categories", label: "Категории" },
+  { href: "/shopping-list", label: "Список покупок" },
+];
+const infoLinks = [
+  { href: "/about", label: "О проекте" },
+  { href: "/contacts", label: "Контакты" },
+  { href: "/privacy", label: "Политика конфиденциальности" },
+];
+const linkClass = "text-text-muted hover:text-brand inline-block py-1 font-medium transition-colors";
 ---
 
 <footer class="border-line bg-card-bg mt-20 border-t transition-colors print:hidden">
   <div class="mx-auto max-w-6xl px-4 py-12 md:px-8 lg:px-12">
-    <div class="grid grid-cols-1 gap-12 md:grid-cols-4">
-      <!-- Колонки 1-2: Описание проекта -->
-      <div class="md:col-span-2">
+    <div
+      class:list={[
+        "grid grid-cols-1 gap-10 sm:grid-cols-2",
+        categories.length > 0 ? "lg:grid-cols-[minmax(0,1.4fr)_repeat(2,minmax(0,1fr))_max-content]" : "lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_max-content]",
+      ]}
+    >
+      <div class="sm:col-span-2 lg:col-span-1">
         <a href="/" class="text-brand mb-4 flex items-center gap-2 text-2xl font-bold" aria-label="SwagEda — на главную">
           <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
           SwagEda
         </a>
-        <p class="text-text-muted max-w-md leading-relaxed">
+        <p class="text-text-muted max-w-sm leading-relaxed">
           Твой уютный уголок с проверенными рецептами. Готовим просто, едим вкусно, делимся с любовью. Присоединяйся к нашему кулинарному сообществу!
         </p>
       </div>
 
-      <!-- Колонка 3: Навигация -->
+      {
+        categories.length > 0 && (
+          <nav aria-labelledby="footer-categories-heading">
+            <h2 id="footer-categories-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">
+              Категории
+            </h2>
+            <ul class="space-y-1">
+              {categories.map((c) => (
+                <li>
+                  <a href={`/${c.path}`} class={linkClass}>
+                    {c.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+
       <nav aria-labelledby="footer-nav-heading">
-        <h2 id="footer-nav-heading" class="text-text-main mb-4 text-sm font-bold tracking-wider uppercase">Карта сайта</h2>
-        <ul class="space-y-2">
-          <li><a href="/" class="text-text-muted hover:text-brand font-medium transition-colors">Главная</a></li>
-          <li><a href="/recipes" class="text-text-muted hover:text-brand font-medium transition-colors">Все рецепты</a></li>
-          <li><a href="/categories" class="text-text-muted hover:text-brand font-medium transition-colors">Категории</a></li>
-          <li><a href="/shopping-list" class="text-text-muted hover:text-brand font-medium transition-colors">Список покупок</a></li>
-          <li><a href="/privacy" class="text-text-muted hover:text-brand font-medium transition-colors">Политика конфиденциальности</a></li>
-          <li><a href="/about" class="text-text-muted hover:text-brand font-medium transition-colors">О проекте</a></li>
-          <li><a href="/contacts" class="text-text-muted hover:text-brand font-medium transition-colors">Контакты</a></li>
+        <h2 id="footer-nav-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">Карта сайта</h2>
+        <ul class="space-y-1">
+          {
+            siteLinks.map((l) => (
+              <li>
+                <a href={l.href} class={linkClass}>
+                  {l.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <nav aria-labelledby="footer-info-heading">
+        <h2 id="footer-info-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">О сайте</h2>
+        <ul class="space-y-1">
+          {
+            infoLinks.map((l) => (
+              <li>
+                <a href={l.href} class={`${linkClass} lg:whitespace-nowrap`}>
+                  {l.label}
+                </a>
+              </li>
+            ))
+          }
         </ul>
       </nav>
     </div>
 
     <!-- Нижняя полоса футера -->
-    <Divider class="text-center md:flex md:items-center md:justify-between md:text-left">
+    <Divider class="text-center md:flex md:items-center md:justify-between md:gap-6 md:text-left">
       <p class="text-text-muted text-sm">
         &copy; {currentYear} SwagEda. Сделано с душой для любителей вкусно поесть.
       </p>
