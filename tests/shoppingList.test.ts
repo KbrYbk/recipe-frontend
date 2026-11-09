@@ -1,5 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { addItems, formatShoppingList, groupByRecipe, removeDone, removeItem, removeRecipe, sanitizeShoppingList, toggleItem } from "../src/lib/shoppingList";
+import {
+  addItems,
+  combineAmounts,
+  formatMergedShoppingList,
+  formatShoppingList,
+  groupByRecipe,
+  mergeShoppingItems,
+  normalizeItemName,
+  removeDone,
+  removeItem,
+  removeItems,
+  removeRecipe,
+  sanitizeShoppingList,
+  setItemsDone,
+  toggleItem,
+} from "../src/lib/shoppingList";
 
 describe("shoppingList", () => {
   const base = addItems(
@@ -40,5 +55,49 @@ describe("shoppingList", () => {
     expect(list[0].recipeUrl).toBeUndefined();
     expect(list[0].recipeId).toBeUndefined();
     expect(sanitizeShoppingList("nope")).toEqual([]);
+  });
+});
+
+describe("общий список (объединение одинаковых ингредиентов)", () => {
+  const list = addItems(
+    [],
+    [
+      { name: "Молоко", amount: "50 мл", recipeId: 1, recipeTitle: "Блины" },
+      { name: "молоко ", amount: "200 мл", recipeId: 2, recipeTitle: "Каша" },
+      { name: "Сахар", amount: "0,5 ст.", recipeId: 1, recipeTitle: "Блины" },
+      { name: "Сахар", amount: "1 ст", recipeId: 2, recipeTitle: "Каша" },
+      { name: "Мука", amount: "50 мл", recipeId: 1, recipeTitle: "Блины" },
+      { name: "Мука", amount: "1 ст.", recipeId: 2, recipeTitle: "Каша" },
+      { name: "Соль", amount: "по вкусу", recipeId: 1, recipeTitle: "Блины" },
+      { name: "Ёжики", recipeId: 2, recipeTitle: "Каша" },
+    ],
+  ).list;
+
+  it("суммирует одинаковые единицы (в т.ч. «0,5»)", () => {
+    const merged = mergeShoppingItems(list);
+    expect(merged.find((m) => m.key === "молоко")).toMatchObject({ name: "Молоко", amount: "250 мл", recipes: ["Блины", "Каша"] });
+    expect(merged.find((m) => m.key === "сахар")?.amount).toBe("1,5 ст.");
+  });
+  it("разные единицы — перечисление", () => {
+    expect(mergeShoppingItems(list).find((m) => m.key === "мука")?.amount).toBe("50 мл + 1 ст.");
+    expect(combineAmounts(["2 шт.", "по вкусу"])).toBe("2 шт. + по вкусу");
+    expect(combineAmounts(["1-2 шт.", "1 шт."])).toBe("1-2 шт. + 1 шт.");
+    expect(combineAmounts(["1/2 стакана", "1 стакана"])).toBe("1,5 стакана");
+    expect(combineAmounts(["2", "3"])).toBe("5");
+    expect(combineAmounts(["", "100 г"])).toBe("100 г");
+  });
+  it("одиночные позиции без изменений, ё = е", () => {
+    const merged = mergeShoppingItems(list);
+    expect(merged.find((m) => m.key === "соль")?.amount).toBe("по вкусу");
+    expect(normalizeItemName(" Ёжики. ")).toBe("ежики");
+    expect(merged).toHaveLength(5);
+  });
+  it("отметка и удаление строки общего списка", () => {
+    const row = mergeShoppingItems(list).find((m) => m.key === "молоко")!;
+    const done = setItemsDone(list, row.ids, true);
+    expect(mergeShoppingItems(done).find((m) => m.key === "молоко")?.done).toBe(true);
+    expect(removeItems(list, row.ids)).toHaveLength(list.length - 2);
+    expect(formatMergedShoppingList(done)).not.toContain("Молоко");
+    expect(formatMergedShoppingList(list)).toContain("• Молоко — 250 мл");
   });
 });

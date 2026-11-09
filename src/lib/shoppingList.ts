@@ -1,4 +1,5 @@
 /** Список покупок: чистые операции над массивом позиций (хранение — localStorage на клиенте). */
+import { formatNumber, parseNumber } from "./scaleAmount";
 
 export const SHOPPING_LIST_KEY = "swageda:shopping-list";
 const MAX_ITEMS = 500;
@@ -125,4 +126,85 @@ export function formatShoppingList(list: ShoppingItem[]): string {
     for (const i of g.items) lines.push(`• ${i.name}${i.amount ? ` — ${i.amount}` : ""}`);
   }
   return lines.length > 1 ? lines.join("\n") : "Список покупок пуст";
+}
+
+/** Ключ для объединения одинаковых ингредиентов: регистр, «ё», лишние пробелы и знаки по краям. */
+export function normalizeItemName(name: string): string {
+  return name
+    .toLocaleLowerCase("ru-RU")
+    .replace(/ё/g, "е")
+    .replace(/\s+/g, " ")
+    .replace(/^[\s\-–—•.,:;]+|[\s.,:;]+$/g, "")
+    .trim();
+}
+
+/** «50 мл» → { value: 50, unit: "мл" }; «0,5 ст.» → { value: 0.5, unit: "ст" }; иначе null. */
+export function parseAmount(amount: string): { value: number; unit: string; unitLabel: string } | null {
+  const m = amount.trim().match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:[.,]\d+)?|[½¼¾⅓⅔⅛])\s*(.*)$/u);
+  if (!m) return null;
+  const value = parseNumber(m[1]);
+  if (value === null) return null;
+  const unitLabel = m[2].trim();
+  if (/\d/.test(unitLabel)) return null; // «1 стакан (200 мл)», «1-2 шт.» — не складываем
+  return { value, unit: unitLabel.toLocaleLowerCase("ru-RU").replace(/\.$/, "").replace(/\s+/g, " "), unitLabel };
+}
+
+/** Сумма количеств, если все числовые и с одной единицей; иначе перечисление через « + ». */
+export function combineAmounts(amounts: string[]): string {
+  const list = amounts.map((a) => a.trim()).filter(Boolean);
+  if (list.length <= 1) return list[0] ?? "";
+  const parsed = list.map(parseAmount);
+  if (parsed.every((p) => p !== null) && parsed.every((p) => p!.unit === parsed[0]!.unit)) {
+    const total = parsed.reduce((sum, p) => sum + p!.value, 0);
+    return [formatNumber(total), parsed[0]!.unitLabel].filter(Boolean).join(" ");
+  }
+  return list.join(" + ");
+}
+
+export interface MergedShoppingItem {
+  key: string;
+  name: string;
+  amount: string;
+  ids: string[];
+  /** Рецепты, из которых пришёл ингредиент (без «Мои покупки»). */
+  recipes: string[];
+  done: boolean;
+}
+
+/** Общий список: одинаковые ингредиенты из разных рецептов — одна строка с суммой количеств. */
+export function mergeShoppingItems(list: ShoppingItem[]): MergedShoppingItem[] {
+  const map = new Map<string, { name: string; items: ShoppingItem[] }>();
+  for (const item of list) {
+    const key = normalizeItemName(item.name);
+    if (!key) continue;
+    const entry = map.get(key);
+    if (entry) entry.items.push(item);
+    else map.set(key, { name: item.name, items: [item] });
+  }
+  return [...map.entries()].map(([key, { name, items }]) => ({
+    key,
+    name,
+    amount: combineAmounts(items.map((i) => i.amount ?? "")),
+    ids: items.map((i) => i.id),
+    recipes: [...new Set(items.map((i) => i.recipeTitle).filter((t): t is string => !!t))],
+    done: items.every((i) => i.done),
+  }));
+}
+
+/** Отметить/снять отметку сразу у нескольких позиций (строка общего списка). */
+export function setItemsDone(list: ShoppingItem[], ids: string[], done: boolean): ShoppingItem[] {
+  const set = new Set(ids);
+  return list.map((i) => (set.has(i.id) ? { ...i, done } : i));
+}
+
+export function removeItems(list: ShoppingItem[], ids: string[]): ShoppingItem[] {
+  const set = new Set(ids);
+  return list.filter((i) => !set.has(i.id));
+}
+
+/** Текст общего списка (некупленное) для копирования/«Поделиться». */
+export function formatMergedShoppingList(list: ShoppingItem[]): string {
+  const rows = mergeShoppingItems(list.filter((i) => !i.done));
+  if (rows.length === 0) return "Список покупок пуст";
+  return ["Список покупок:", "", ...rows.map((r) => `• ${r.name}${r.amount ? ` — ${r.amount}` : ""}`)].join("\n");
 }

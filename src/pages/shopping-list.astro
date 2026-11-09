@@ -46,6 +46,11 @@ import { Icon } from "astro-icon/components";
       </button>
     </div>
 
+    <div class="bg-page-bg/70 border-line mb-4 inline-grid grid-cols-2 gap-1 rounded-2xl border p-1" role="group" aria-label="Вид списка" data-shopping-view hidden>
+      <button type="button" class="h-9 cursor-pointer rounded-xl px-4 text-sm font-bold transition-colors" data-view="merged" aria-pressed="true">Всё вместе</button>
+      <button type="button" class="h-9 cursor-pointer rounded-xl px-4 text-sm font-bold transition-colors" data-view="recipes" aria-pressed="false">По рецептам</button>
+    </div>
+
     <div data-shopping-list class="space-y-6" aria-live="polite"></div>
 
     <div class="hidden flex-col items-center py-16 text-center" data-shopping-empty>
@@ -60,9 +65,29 @@ import { Icon } from "astro-icon/components";
 </Layout>
 
 <script>
-  import { readJson, writeJson } from "../lib/client/storage";
+  import { readJson, readString, writeJson, writeString } from "../lib/client/storage";
   import { showToast } from "../lib/client/toast";
-  import { addItems, formatShoppingList, groupByRecipe, removeDone, removeItem, removeRecipe, sanitizeShoppingList, SHOPPING_LIST_KEY, toggleItem, type ShoppingItem } from "../lib/shoppingList";
+  import { cleanIngredientAmount } from "../lib/normalizeIngredients";
+  import { CHECKBOX_CLASS } from "../lib/ui";
+  import {
+    addItems,
+    formatMergedShoppingList,
+    formatShoppingList,
+    groupByRecipe,
+    mergeShoppingItems,
+    removeDone,
+    removeItems,
+    removeRecipe,
+    sanitizeShoppingList,
+    setItemsDone,
+    SHOPPING_LIST_KEY,
+    type ShoppingItem,
+  } from "../lib/shoppingList";
+
+  const VIEW_KEY = "swageda:shopping-view";
+  type View = "merged" | "recipes";
+  let view: View = readString(VIEW_KEY) === "recipes" ? "recipes" : "merged";
+  const viewEl = document.querySelector<HTMLElement>("[data-shopping-view]");
 
   const listEl = document.querySelector<HTMLElement>("[data-shopping-list]");
   const emptyEl = document.querySelector<HTMLElement>("[data-shopping-empty]");
@@ -81,6 +106,39 @@ import { Icon } from "astro-icon/components";
     return node;
   }
 
+  /** Строка списка: чекбокс, название, количество, (рецепты), удалить. ids — позиции, которые строка объединяет. */
+  function row(name: string, amount: string, done: boolean, ids: string[], sub?: string): HTMLLIElement {
+    const li = el("li", "flex items-center gap-3 rounded-xl p-2 hover:bg-page-bg/50");
+    const label = el("label", "flex min-w-0 flex-1 cursor-pointer items-start gap-3");
+    const cb = el("input", `mt-0.5 h-5 w-5 ${CHECKBOX_CLASS}`);
+    cb.type = "checkbox";
+    cb.checked = done;
+    cb.addEventListener("change", () => save(setItemsDone(load(), ids, cb.checked)));
+    const body = el("span", "min-w-0");
+    const text = el("span", done ? "text-text-muted line-through" : "text-text-main font-medium", name);
+    body.appendChild(text);
+    const shownAmount = cleanIngredientAmount(amount);
+    if (shownAmount) body.appendChild(el("span", "text-text-muted ml-2 text-sm whitespace-nowrap", shownAmount));
+    if (sub) body.appendChild(el("span", "text-text-muted/80 block text-xs", sub));
+    label.append(cb, body);
+    const del = el("button", "text-text-muted hover:text-rose-500 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg", "✕");
+    del.type = "button";
+    del.setAttribute("aria-label", `Удалить «${name}»`);
+    del.addEventListener("click", () => save(removeItems(load(), ids)));
+    li.append(label, del);
+    return li;
+  }
+
+  function renderView() {
+    viewEl?.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => {
+      const on = b.dataset.view === view;
+      b.setAttribute("aria-pressed", String(on));
+      b.classList.toggle("bg-brand", on);
+      b.classList.toggle("text-white", on);
+      b.classList.toggle("text-text-muted", !on);
+    });
+  }
+
   function render() {
     if (!listEl || !emptyEl || !actionsEl) return;
     const list = load();
@@ -89,6 +147,20 @@ import { Icon } from "astro-icon/components";
     emptyEl.classList.toggle("hidden", !isEmpty);
     emptyEl.classList.toggle("flex", isEmpty);
     actionsEl.hidden = isEmpty;
+    if (viewEl) viewEl.hidden = isEmpty;
+    renderView();
+    if (isEmpty) return;
+
+    if (view === "merged") {
+      const section = el("section", "glass-border-3d bg-card-bg/60 rounded-3xl p-4 md:p-6");
+      const ul = el("ul", "space-y-1");
+      for (const item of mergeShoppingItems(list)) {
+        ul.appendChild(row(item.name, item.amount, item.done, item.ids, item.recipes.length > 1 ? item.recipes.join(", ") : undefined));
+      }
+      section.appendChild(ul);
+      listEl.appendChild(section);
+      return;
+    }
 
     for (const group of groupByRecipe(list)) {
       const section = el("section", "glass-border-3d bg-card-bg/60 rounded-3xl p-4 md:p-6");
@@ -97,7 +169,7 @@ import { Icon } from "astro-icon/components";
       if (group.url && title instanceof HTMLAnchorElement) title.href = group.url;
       head.appendChild(title);
       if (group.recipeId) {
-        const rm = el("button", "text-text-muted hover:text-rose-500 shrink-0 cursor-pointer text-xs font-medium", "Убрать рецепт");
+        const rm = el("button", "text-text-muted hover:text-rose-500 shrink-0 cursor-pointer px-2 py-2 text-xs font-medium", "Убрать рецепт");
         rm.type = "button";
         rm.addEventListener("click", () => save(removeRecipe(load(), group.recipeId!)));
         head.appendChild(rm);
@@ -105,28 +177,21 @@ import { Icon } from "astro-icon/components";
       section.appendChild(head);
 
       const ul = el("ul", "space-y-1");
-      for (const item of group.items) {
-        const li = el("li", "flex items-center gap-3 rounded-xl p-2 hover:bg-page-bg/50");
-        const label = el("label", "flex flex-1 cursor-pointer items-start gap-3");
-        const cb = el("input", "mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-primary)]");
-        cb.type = "checkbox";
-        cb.checked = item.done;
-        cb.addEventListener("change", () => save(toggleItem(load(), item.id)));
-        const text = el("span", item.done ? "text-text-muted line-through" : "text-text-main");
-        text.textContent = item.name;
-        if (item.amount) text.appendChild(el("span", "text-text-muted ml-2 text-sm", item.amount));
-        label.append(cb, text);
-        const del = el("button", "text-text-muted hover:text-rose-500 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg", "✕");
-        del.type = "button";
-        del.setAttribute("aria-label", `Удалить «${item.name}»`);
-        del.addEventListener("click", () => save(removeItem(load(), item.id)));
-        li.append(label, del);
-        ul.appendChild(li);
-      }
+      for (const item of group.items) ul.appendChild(row(item.name, item.amount ?? "", item.done, [item.id]));
       section.appendChild(ul);
       listEl.appendChild(section);
     }
   }
+
+  viewEl?.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-view]");
+    if (!btn) return;
+    view = btn.dataset.view === "recipes" ? "recipes" : "merged";
+    writeString(VIEW_KEY, view === "merged" ? null : view);
+    render();
+  });
+
+  const shareText = () => (view === "merged" ? formatMergedShoppingList(load()) : formatShoppingList(load()));
 
   document.querySelector<HTMLFormElement>("[data-shopping-add]")?.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -146,9 +211,9 @@ import { Icon } from "astro-icon/components";
     }
   }
 
-  document.querySelector("[data-shopping-copy]")?.addEventListener("click", () => copyText(formatShoppingList(load())));
+  document.querySelector("[data-shopping-copy]")?.addEventListener("click", () => copyText(shareText()));
   document.querySelector("[data-shopping-share]")?.addEventListener("click", async () => {
-    const text = formatShoppingList(load());
+    const text = shareText();
     if (navigator.share) {
       try {
         await navigator.share({ title: "Список покупок", text });
