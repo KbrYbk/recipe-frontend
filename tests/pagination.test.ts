@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paginationItems } from "../src/lib/pagination";
+import { levelOptions, paginationItems, responsivePaginationItems, visibilityClass } from "../src/lib/pagination";
 
 describe("paginationItems", () => {
   it("мало страниц — все подряд", () => {
@@ -17,5 +17,33 @@ describe("paginationItems", () => {
     const nums = items.filter((x): x is number => x !== "...");
     expect(new Set(nums).size).toBe(nums.length);
     expect(Math.min(...nums)).toBe(1);
+  });
+});
+
+describe("responsivePaginationItems", () => {
+  const at = (level: "base" | "md" | "lg", current: number, total: number) =>
+    responsivePaginationItems(current, total)
+      .filter((i) => i.levels.includes(level))
+      .map((i) => i.page ?? "...");
+  it("на каждом уровне — то же, что paginationItems с опциями уровня", () => {
+    for (const [c, t] of [
+      [11, 1962],
+      [1, 1962],
+      [1000, 1962],
+      [83, 137],
+      [3, 5],
+      [137, 137],
+    ]) {
+      for (const l of ["base", "md", "lg"] as const) expect(at(l, c, t)).toEqual(paginationItems(c, t, levelOptions(l, t)));
+    }
+  });
+  it("телефон: 4-значные — только 1 … текущая … последняя", () => {
+    expect(at("base", 11, 1962)).toEqual([1, "...", 11, "...", 1962]);
+    expect(at("base", 50, 137)).toEqual([1, "...", 49, 50, 51, "...", 137]);
+  });
+  it("классы видимости", () => {
+    expect(visibilityClass(["base", "md", "lg"])).toBe("inline-flex");
+    expect(visibilityClass(["lg"])).toBe("hidden lg:inline-flex");
+    expect(visibilityClass(["md"])).toBe("hidden md:inline-flex lg:hidden");
   });
 });

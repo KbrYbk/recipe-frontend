@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { paginationItems } from "../../lib/pagination";
+import { responsivePaginationItems, visibilityClass } from "../../lib/pagination";
 
 interface Props {
   currentPage: number;
@@ -10,15 +10,16 @@ interface Props {
 
 const { currentPage, totalPages, baseUrlFunc } = Astro.props;
 
-// Например, 83 из 137: 1 … 33 … 73 … 81 82 [83] 84 85 … 93 … 133 … 137 — соседние страницы и «скачки» ±10/±50/±100.
-const pages = paginationItems(currentPage, totalPages);
+// Набор страниц зависит от ширины, чтобы пагинация всегда была в одну строку (одни и те же ссылки, лишние скрыты CSS):
+// телефон — 1 … 49 [50] 51 … 137 (при 1000+ страниц: 1 … [11] … 1962); md — ±2 и скачок ±10; lg — ещё ±100 (при 1000+ страниц соседей ±1).
+const items = responsivePaginationItems(currentPage, totalPages);
 ---
 
-<nav class="flex items-center justify-center gap-2" aria-label="Пагинация">
+<nav class="flex items-center justify-center gap-1 md:gap-2" aria-label="Пагинация">
   <a
     href={currentPage > 1 ? baseUrlFunc(currentPage - 1) : "#"}
     class:list={[
-      "glass-border-3d flex h-12 w-12 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all",
+      "glass-border-3d flex h-10 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all md:h-11 md:w-11",
       currentPage <= 1 ? "pointer-events-none opacity-30" : "hover:border-brand hover:text-brand bg-card-bg shadow-sm",
     ]}
     aria-disabled={currentPage <= 1}
@@ -26,21 +27,24 @@ const pages = paginationItems(currentPage, totalPages);
     <Icon name="lucide:chevron-left" class="h-5 w-5" />
   </a>
 
-  <div class="flex flex-wrap items-center justify-center gap-2">
+  <div class="flex min-w-0 flex-wrap items-center justify-center gap-1 md:gap-1.5">
     {
-      pages.map((p) =>
-        p === "..." ? (
-          <span class="text-text-muted px-2">...</span>
+      items.map((it) =>
+        it.page === null ? (
+          <span class:list={["text-text-muted w-4 justify-center select-none", visibilityClass(it.levels)]} aria-hidden="true">
+            …
+          </span>
         ) : (
           <a
-            href={baseUrlFunc(p as number)}
+            href={baseUrlFunc(it.page)}
             class:list={[
-              "glass-border-3d flex h-12 min-w-12 items-center justify-center rounded-xl px-4 font-bold transition-all",
-              currentPage === p ? "bg-brand shadow-brand/30 text-white shadow-md" : "bg-card-bg text-text-muted hover:text-brand shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20",
+              "glass-border-3d h-10 min-w-9 items-center justify-center rounded-xl px-1.5 text-sm font-bold tabular-nums transition-all md:h-11 md:min-w-11 md:px-3 md:text-base",
+              visibilityClass(it.levels),
+              currentPage === it.page ? "bg-brand shadow-brand/30 text-white shadow-md" : "bg-card-bg text-text-muted hover:text-brand shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20",
             ]}
-            aria-current={currentPage === p ? "page" : undefined}
+            aria-current={currentPage === it.page ? "page" : undefined}
           >
-            {p}
+            {it.page}
           </a>
         ),
       )
@@ -50,7 +54,7 @@ const pages = paginationItems(currentPage, totalPages);
   <a
     href={currentPage < totalPages ? baseUrlFunc(currentPage + 1) : "#"}
     class:list={[
-      "glass-border-3d flex h-12 w-12 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all",
+      "glass-border-3d flex h-10 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all md:h-11 md:w-11",
       currentPage >= totalPages ? "pointer-events-none opacity-30" : "hover:border-brand hover:text-brand bg-card-bg shadow-sm",
     ]}
     aria-disabled={currentPage >= totalPages}
