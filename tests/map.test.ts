@@ -58,6 +58,11 @@ describe("mapRecipeCard / mapRecipe", () => {
     expect(r?.steps).toEqual([{ order: 1, text: "Запечь", image: "/api-images/storage/s1.jpg" }]);
     expect(r?.servings).toBeUndefined();
     expect(mapRecipe({ ...raw, servings: 4 })?.servings).toBe(4);
+    expect(r?.nutrition).toBeUndefined();
+    expect(mapRecipe({ ...raw, calories: 250, proteins: null, fats: null, carbs: null })?.nutrition).toEqual({ calories: 250 });
+    expect(mapRecipe({ ...raw, calories: "187", proteins: "12.54", fats: 0, carbs: "30" })?.nutrition).toEqual({ calories: 187, proteins: 12.5, fats: 0, carbs: 30 });
+    expect(mapRecipe({ ...raw, calories: 5000, proteins: -1, fats: "abc", carbs: 150 })?.nutrition).toBeUndefined();
+    expect(mapRecipe({ ...raw, calories: 0 })?.nutrition).toBeUndefined();
   });
   it("невалидный id → null, неизвестная сложность отбрасывается", () => {
     expect(mapRecipeCard({ ...raw, id: "tmp-1" })).toBeNull();

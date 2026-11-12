@@ -44,6 +44,20 @@ describe("buildRecipeJsonLd", () => {
     expect(ld).not.toHaveProperty("recipeYield");
     expect(buildRecipeJsonLd({ ...recipe, servings: 6 }, "https://swageda.ru", recipe.url).recipeYield).toBe("6 порций");
     expect(buildRecipeJsonLd({ ...recipe, servings: 2 }, "https://swageda.ru", recipe.url).recipeYield).toBe("2 порции");
+    expect(buildRecipeJsonLd(recipe, "https://swageda.ru", recipe.url).nutrition).toBeUndefined();
+    expect(buildRecipeJsonLd({ ...recipe, nutrition: { calories: 250 } }, "https://swageda.ru", recipe.url).nutrition).toEqual({
+      "@type": "NutritionInformation",
+      servingSize: "100 г",
+      calories: "250 ккал",
+    });
+    expect(buildRecipeJsonLd({ ...recipe, nutrition: { calories: 187, proteins: 12.5, fats: 0, carbs: 30 } }, "https://swageda.ru", recipe.url).nutrition).toEqual({
+      "@type": "NutritionInformation",
+      servingSize: "100 г",
+      calories: "187 ккал",
+      proteinContent: "12,5 г",
+      fatContent: "0 г",
+      carbohydrateContent: "30 г",
+    });
   });
   it("aggregateRating/reviewCount — как раньше (решение владельца)", () => {
     expect(ld.aggregateRating).toEqual({ "@type": "AggregateRating", ratingValue: 4.5, reviewCount: 120 });

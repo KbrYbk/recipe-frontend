@@ -20,6 +20,7 @@ import FormattedText from "../../components/recipe/FormattedText.astro";
 import IngredientsList from "../../components/recipe/IngredientsList.astro";
 import ReadingProgress from "../../components/recipe/ReadingProgress.astro";
 import RecipeHeader from "../../components/recipe/RecipeHeader.astro";
+import NutritionFacts from "../../components/recipe/NutritionFacts.astro";
 import RecipeLightbox from "../../components/recipe/RecipeLightbox.astro";
 import RecipeSteps from "../../components/recipe/RecipeSteps.astro";
 import SimilarRecipes from "../../components/recipe/SimilarRecipes.astro";
@@ -145,6 +146,7 @@ const breadcrumbs = recipe
                 </div>
               </section>
             )}
+            <NutritionFacts nutrition={recipe.nutrition} />
             <VideoPlayer videoUrl={recipe.video_url ?? ""} />
             <AdSlot id="R-A-19056160-19" refreshInterval={30} />
 

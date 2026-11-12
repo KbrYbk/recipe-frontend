@@ -1,0 +1,43 @@
+---
+/**
+ * Пищевая ценность на 100 г. Показывается, когда кроме калорийности известны белки, жиры
+ * или углеводы (одна калорийность уже видна чипом в шапке рецепта).
+ */
+import type { Nutrition } from "../../types/recipe";
+import { formatGrams } from "../../lib/recipeSchema";
+
+interface Props {
+  nutrition?: Nutrition;
+}
+const { nutrition } = Astro.props;
+
+const items = nutrition
+  ? [
+      nutrition.calories ? { label: "Калории", value: String(nutrition.calories), unit: "ккал" } : null,
+      nutrition.proteins !== undefined ? { label: "Белки", value: formatGrams(nutrition.proteins), unit: "г" } : null,
+      nutrition.fats !== undefined ? { label: "Жиры", value: formatGrams(nutrition.fats), unit: "г" } : null,
+      nutrition.carbs !== undefined ? { label: "Углеводы", value: formatGrams(nutrition.carbs), unit: "г" } : null,
+    ].filter((item): item is { label: string; value: string; unit: string } => item !== null)
+  : [];
+const hasMacros = !!nutrition && (nutrition.proteins !== undefined || nutrition.fats !== undefined || nutrition.carbs !== undefined);
+---
+
+{
+  hasMacros && (
+    <section aria-labelledby="nutrition-heading" class="mb-12 print:mb-3" data-recipe-nutrition>
+      <h2 id="nutrition-heading" class="text-text-main mb-4 text-xl font-bold print:mb-1 print:text-[11pt]">
+        Пищевая ценность <span class="text-text-muted text-base font-normal">на 100 г</span>
+      </h2>
+      <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4 print:grid-cols-4 print:gap-2">
+        {items.map((item) => (
+          <div class="glass-border-3d bg-card-bg/60 rounded-2xl px-4 py-3 print:border-0 print:bg-transparent print:p-0">
+            <dt class="text-text-muted text-xs font-medium">{item.label}</dt>
+            <dd class="text-text-main mt-1 text-lg font-bold tabular-nums print:text-[10pt]">
+              {item.value} <span class="text-text-muted text-sm font-medium">{item.unit}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}

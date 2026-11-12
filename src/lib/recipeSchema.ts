@@ -37,11 +37,29 @@ function videoUrls(url: string): { contentUrl?: string; embedUrl?: string } {
 }
 
 /** «1 порция», «2 порции», «5 порций». */
-function servingsText(n: number): string {
+export function servingsText(n: number): string {
   const mod10 = n % 10;
   const mod100 = n % 100;
   const word = mod10 === 1 && mod100 !== 11 ? "порция" : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "порции" : "порций";
   return `${n} ${word}`;
+}
+
+/** «12,5» — число для показа и разметки: запятая, без хвостового нуля. */
+export function formatGrams(n: number): string {
+  return String(Math.round(n * 10) / 10).replace(".", ",");
+}
+
+/** schema.org/NutritionInformation на 100 г — только заданные значения. */
+function nutritionJsonLd(nutrition: Recipe["nutrition"]): Record<string, unknown> | undefined {
+  if (!nutrition) return undefined;
+  return {
+    "@type": "NutritionInformation",
+    servingSize: "100 г",
+    calories: nutrition.calories ? `${nutrition.calories} ккал` : undefined,
+    proteinContent: nutrition.proteins !== undefined ? `${formatGrams(nutrition.proteins)} г` : undefined,
+    fatContent: nutrition.fats !== undefined ? `${formatGrams(nutrition.fats)} г` : undefined,
+    carbohydrateContent: nutrition.carbs !== undefined ? `${formatGrams(nutrition.carbs)} г` : undefined,
+  };
 }
 
 export function buildRecipeJsonLd(recipe: Recipe, origin: string, canonicalPath: string): Record<string, unknown> {
@@ -87,6 +105,8 @@ export function buildRecipeJsonLd(recipe: Recipe, origin: string, canonicalPath:
     author: recipe.author ? { "@type": "Person", name: recipe.author } : { "@type": "Organization", name: "SwagEda", url: `${origin.replace(/\/$/, "")}/` },
     // Порции — только если поле реально есть в данных (без выдуманных значений по умолчанию).
     recipeYield: recipe.servings ? servingsText(recipe.servings) : undefined,
+    // КБЖУ — тоже только из данных.
+    nutrition: nutritionJsonLd(recipe.nutrition),
     datePublished: published,
     dateModified: modified,
     video: recipe.video_url

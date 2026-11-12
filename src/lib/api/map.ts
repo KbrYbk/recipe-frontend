@@ -2,7 +2,7 @@
  * Чистые функции преобразования ответов API в модели фронтенда.
  * Без сетевых вызовов и зависимостей от окружения — используются и на сервере, и в браузере, и в тестах.
  */
-import type { ApiPaginator, ApiRecipe, Difficulty, Recipe, RecipeCard, RecipeCategoryRef, RecipeList } from "../../types/recipe";
+import type { ApiPaginator, ApiRecipe, Difficulty, Nutrition, Recipe, RecipeCard, RecipeCategoryRef, RecipeList } from "../../types/recipe";
 import { normalizeIngredients, normalizeSteps } from "../normalizeIngredients";
 import { getRecipeUrl, parseRecipeId, recipeSlug } from "../recipeUrl";
 import { slugify } from "../slugify";
@@ -71,12 +71,35 @@ export function mapRecipeCard(raw: ApiRecipe): RecipeCard | null {
   };
 }
 
+/** КБЖУ на 100 г: берём только заданные значения в разумных пределах (null/мусор — значения нет). */
+export function mapNutrition(raw: Pick<ApiRecipe, "calories" | "proteins" | "fats" | "carbs">): Nutrition | undefined {
+  const value = (v: unknown, max: number, digits: number): number | undefined => {
+    if (v === null || v === undefined || v === "") return undefined;
+    const n = Number(v);
+    if (!Number.isFinite(n) || n < 0 || n > max) return undefined;
+    const k = 10 ** digits;
+    return Math.round(n * k) / k;
+  };
+  const calories = value(raw.calories, 900, 0);
+  const proteins = value(raw.proteins, 100, 1);
+  const fats = value(raw.fats, 100, 1);
+  const carbs = value(raw.carbs, 100, 1);
+  const nutrition: Nutrition = {
+    ...(calories ? { calories } : {}),
+    ...(proteins !== undefined ? { proteins } : {}),
+    ...(fats !== undefined ? { fats } : {}),
+    ...(carbs !== undefined ? { carbs } : {}),
+  };
+  return Object.keys(nutrition).length > 0 ? nutrition : undefined;
+}
+
 /** Полный рецепт. Порции (`servings`) — только если бэкенд их реально отдаёт. */
 export function mapRecipe(raw: ApiRecipe): Recipe | null {
   const card = mapRecipeCard(raw);
   if (!card) return null;
   const servings = num(raw.servings, 0);
   const video = text(raw.video_url);
+  const nutrition = mapNutrition(raw);
   return {
     ...card,
     ingredients: normalizeIngredients(raw.ingredients),
@@ -85,6 +108,7 @@ export function mapRecipe(raw: ApiRecipe): Recipe | null {
     ...(raw.updated_at ? { updated_at: String(raw.updated_at) } : {}),
     ...(raw.ratings_count != null ? { ratings_count: num(raw.ratings_count) } : {}),
     ...(servings > 0 ? { servings } : {}),
+    ...(nutrition ? { nutrition } : {}),
   };
 }
 

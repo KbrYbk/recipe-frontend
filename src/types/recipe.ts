@@ -59,6 +59,10 @@ export interface ApiRecipe {
   average_rating?: number | string | null;
   ratings_count?: number | null;
   servings?: number | string | null;
+  calories?: number | string | null;
+  proteins?: number | string | null;
+  fats?: number | string | null;
+  carbs?: number | string | null;
   user?: { id?: number; name?: string } | null;
 }
 
@@ -83,6 +87,14 @@ export interface RecipeCategoryRef {
   title: string;
   /** Путь страницы категории на фронте: `/{slugify(title)}`. */
   href: string;
+}
+
+/** Пищевая ценность на 100 г. Только те значения, которые реально есть в данных. */
+export interface Nutrition {
+  calories?: number;
+  proteins?: number;
+  fats?: number;
+  carbs?: number;
 }
 
 /** Карточка рецепта для списков. */
@@ -110,6 +122,7 @@ export interface Recipe extends RecipeCard {
   updated_at?: string;
   ratings_count?: number;
   servings?: number;
+  nutrition?: Nutrition;
 }
 
 export interface RecipeList {

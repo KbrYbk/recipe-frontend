@@ -13,13 +13,14 @@ import ShareButton from "./ShareButton.astro";
 import { formatTime } from "../../lib/formatTime";
 import { ACTION_BUTTON_CLASS, ACTION_LABEL_CLASS } from "./actionStyles";
 import type { Recipe } from "../../types/recipe";
-import { isoDate } from "../../lib/recipeSchema";
+import { isoDate, servingsText } from "../../lib/recipeSchema";
 
 interface Props {
   recipe: Recipe;
 }
 const { recipe } = Astro.props;
-const { id, title, cooking_time, difficulty } = recipe;
+const { id, title, cooking_time, difficulty, servings } = recipe;
+const calories = recipe.nutrition?.calories;
 
 const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
 const difficultyClass =
@@ -87,6 +88,24 @@ const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rou
           <span class={`${chip} ${difficultyClass} text-xs font-bold tracking-wide uppercase print:bg-transparent print:text-black`} aria-label={`Сложность: ${difficultyLabel}`}>
             <Icon name="lucide:flame" class="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{difficultyLabel}</span>
+          </span>
+        )
+      }
+      {
+        calories && (
+          <span class={`${chip} bg-card-bg/20 text-text-main font-medium backdrop-blur-md`} aria-label={`Калорийность: ${calories} ккал на 100 граммов`} data-recipe-calories>
+            <Icon name="lucide:zap" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
+            <span class="whitespace-nowrap tabular-nums">
+              {calories} ккал <span class="text-text-muted font-normal">/ 100 г</span>
+            </span>
+          </span>
+        )
+      }
+      {
+        servings && (
+          <span class={`${chip} bg-card-bg/20 text-text-main font-medium backdrop-blur-md`} aria-label={`Количество порций: ${servings}`} data-recipe-servings>
+            <Icon name="lucide:users" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
+            <span class="whitespace-nowrap tabular-nums">{servingsText(servings)}</span>
           </span>
         )
       }
