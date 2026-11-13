@@ -48,7 +48,7 @@ export function cookingLead(entry: Pick<CookingEntry, "methods" | "forms">): str
   if (!main) return "";
   const where = main.method === "boil" ? "" : ` ${METHOD[main.method].inside}`;
   const first = `${capitalize(entry.forms.acc)} варят${where} ${formatMinutes(main.minMin, main.maxMin, true)}${main.variant ? ` (${main.variant})` : ""}.`;
-  const rest = others.map((m) => `${METHOD[m.method].inside} — ${formatMinutes(m.minMin, m.maxMin)}`).join(", ");
+  const rest = others.map((m) => `${METHOD[m.method].inside} - ${formatMinutes(m.minMin, m.maxMin)}`).join(", ");
   return rest ? `${first} ${capitalize(rest)}.` : first;
 }
 
@@ -62,7 +62,7 @@ export function cookingSeo(entry: Pick<CookingEntry, "methods" | "forms">): Page
 
   const tail = "Как понять, что готово, и таймер.";
   const mainFact = main ? `${capitalize(entry.forms.acc)} варят ${formatMinutes(main.minMin, main.maxMin, true)}` : capitalize(h1);
-  const facts = others.map((m) => `${METHOD[m.method].inside} — ${formatMinutes(m.minMin, m.maxMin)}`);
+  const facts = others.map((m) => `${METHOD[m.method].inside} - ${formatMinutes(m.minMin, m.maxMin)}`);
   let description = "";
   for (let n = facts.length; n >= 0; n--) {
     const candidate = `${[mainFact, ...facts.slice(0, n)].join(", ")}. ${tail}`;

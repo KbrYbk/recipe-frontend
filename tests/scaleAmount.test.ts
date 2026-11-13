@@ -49,9 +49,9 @@ describe("scale options", () => {
     expect(parseScale(null)).toBe(1);
   });
   it("подпись", () => {
-    expect(scaleCaption(1)).toBe("Количество: ×1 — как в рецепте");
+    expect(scaleCaption(1)).toBe("Количество: ×1 - как в рецепте");
     expect(scaleCaption(1.5)).toBe("Количество: ×1,5");
-    expect(scaleCaption(1, 4)).toBe("на 4 порции — как в рецепте");
+    expect(scaleCaption(1, 4)).toBe("на 4 порции - как в рецепте");
     expect(scaleCaption(2, 4)).toBe("на 8 порций");
     expect(scaleCaption(0.5, 1)).toBe("на 1 порцию");
   });

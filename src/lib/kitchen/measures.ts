@@ -118,7 +118,7 @@ function insideText(row: MeasureRow): string {
 /** Прямой ответ под заголовком: «В стакане 250 мл — 160 г пшеничной муки, в столовой ложке с горкой — 25 г, …». */
 export function measureLead(entry: Pick<MeasureEntry, "grams" | "pieceLabel" | "forms">): string {
   const rows = headlineRows(entry);
-  const parts = rows.map((row, i) => `${insideText(row)} — ${formatGrams(row.grams)}${i === 0 ? ` ${entry.forms.gen}` : ""}`);
+  const parts = rows.map((row, i) => `${insideText(row)} - ${formatGrams(row.grams)}${i === 0 ? ` ${entry.forms.gen}` : ""}`);
   const piece = hasMeasure(entry.grams, "piece") ? `${capitalize(entry.pieceLabel ?? "1 штука")} весит около ${formatGrams(entry.grams.piece as number)}.` : "";
   const main = parts.length > 0 ? `${capitalize(parts.join(", "))}.` : "";
   return [main, piece].filter(Boolean).join(" ");
@@ -128,8 +128,8 @@ export function measureLead(entry: Pick<MeasureEntry, "grams" | "pieceLabel" | "
 export function measureSeo(entry: Pick<MeasureEntry, "grams" | "pieceLabel" | "forms">): PageSeo {
   const h1 = `Сколько грамм ${entry.forms.gen} в стакане и ложке`;
   const rows = headlineRows(entry);
-  const facts = rows.map((row) => `${insideText(row)} — ${formatGrams(row.grams)}`);
-  if (hasMeasure(entry.grams, "piece")) facts.push(`${entry.pieceLabel ?? "1 штука"} — около ${formatGrams(entry.grams.piece as number)}`);
+  const facts = rows.map((row) => `${insideText(row)} - ${formatGrams(row.grams)}`);
+  if (hasMeasure(entry.grams, "piece")) facts.push(`${entry.pieceLabel ?? "1 штука"} - около ${formatGrams(entry.grams.piece as number)}`);
   const tail = "Таблица мер и калькулятор для пересчёта в граммы.";
   // Факты добавляются, пока описание помещается в лимит: обрывать цифру на полуслове нельзя.
   let description = "";

@@ -9,6 +9,6 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<Layout title={`${title ?? "Страница не найдена"} — SwagEda`} description="Запрашиваемая страница не найдена. Вернитесь на главную или воспользуйтесь поиском по рецептам." noindex>
+<Layout title={`${title ?? "Страница не найдена"} - SwagEda`} description="Запрашиваемая страница не найдена. Вернитесь на главную или воспользуйтесь поиском по рецептам." noindex>
   <HttpNotFound title={title} />
 </Layout>

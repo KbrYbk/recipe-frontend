@@ -27,7 +27,7 @@ const itemListJsonLd = sorted.length
 {!categories && <UnavailablePage />}
 {
   categories && (
-    <Layout title="Категории рецептов — SwagEda" description={`Все категории рецептов SwagEda: ${sorted.length} разделов — от супов и салатов до выпечки и блюд в аэрогриле.`}>
+    <Layout title="Категории рецептов - SwagEda" description={`Все категории рецептов SwagEda: ${sorted.length} разделов - от супов и салатов до выпечки и блюд в аэрогриле.`}>
       <Fragment slot="head">{itemListJsonLd && <script type="application/ld+json" is:inline set:html={itemListJsonLd} />}</Fragment>
       <div class="container mx-auto px-0 py-4 md:px-4 md:py-12">
         <div class="mb-6 print:hidden">

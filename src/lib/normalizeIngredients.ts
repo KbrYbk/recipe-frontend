@@ -64,7 +64,7 @@ export function formatIngredientAmount(row: IngredientRow): string {
 /** «Мука — 200 г» — одна строка для копирования, schema.org и списка покупок. */
 export function formatIngredientLine(row: IngredientRow): string {
   const amount = formatIngredientAmount(row);
-  return amount ? `${row.name} — ${amount}` : row.name;
+  return amount ? `${row.name} - ${amount}` : row.name;
 }
 
 /** Шаги: строки или объекты {order,text,image}; шаги без текста и картинки отбрасываем. */

@@ -88,7 +88,7 @@ function initCookTimer(root: HTMLElement): void {
     if (toggleLabel) toggleLabel.textContent = running ? "Пауза" : left < duration && left > 0 ? "Продолжить" : "Старт";
     iconPlay?.classList.toggle("hidden", running);
     iconPause?.classList.toggle("hidden", !running);
-    document.title = running ? `${formatClock(left)} — ${pageTitle}` : pageTitle;
+    document.title = running ? `${formatClock(left)} - ${pageTitle}` : pageTitle;
   };
 
   const stopTicking = () => {
@@ -102,8 +102,8 @@ function initCookTimer(root: HTMLElement): void {
     stopTicking();
     left = 0;
     render();
-    status.textContent = "Время вышло — проверьте готовность.";
-    document.title = `Готово! — ${pageTitle}`;
+    status.textContent = "Время вышло - проверьте готовность.";
+    document.title = `Готово! - ${pageTitle}`;
     beep();
     navigator.vibrate?.([300, 150, 300]);
   };

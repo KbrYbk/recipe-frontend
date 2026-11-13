@@ -55,14 +55,14 @@ const page = query.page;
 const href = (o: Parameters<typeof buildCatalogHref>[2]) => buildCatalogHref(basePath, query, o);
 
 // --- SEO ---
-const pageSuffix = page > 1 ? ` — страница ${page}` : "";
+const pageSuffix = page > 1 ? ` - страница ${page}` : "";
 const countText = `${formatCount(total)} ${pluralRecipes(total)}`;
 let h1: string;
 let title: string;
 let description: string;
 if (query.q) {
   h1 = category ? `Поиск «${query.q}» в разделе «${category.title}»` : `Поиск: «${query.q}»`;
-  title = `${h1}${pageSuffix} — SwagEda`;
+  title = `${h1}${pageSuffix} - SwagEda`;
   description = `Результаты поиска рецептов по запросу «${query.q}» на SwagEda.`;
   if (page > 1) description = `${description} Страница ${page}.`;
 } else {

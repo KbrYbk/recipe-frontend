@@ -30,7 +30,7 @@ const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-
       </h2>
 
       <p class="text-text-muted mb-2 text-sm font-semibold" id="substitute-calc-label">
-        В рецепте — {entry.forms.nom}:
+        В рецепте - {entry.forms.nom}:
       </p>
       <div class="flex max-w-sm gap-2">
         <div class="w-28 shrink-0">
@@ -58,13 +58,13 @@ const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-
             <li class="border-line flex flex-col gap-x-4 border-t pt-2 first:border-t-0 first:pt-0 sm:flex-row sm:items-baseline sm:justify-between">
               <span class="text-text-main font-medium">{capitalize(s.name)}</span>
               <span class="text-text-main text-xl font-bold tabular-nums" data-sc-result={i}>
-                {amount !== null ? formatAmount(amount, initialUnit) : "—"}
+                {amount !== null ? formatAmount(amount, initialUnit) : "-"}
               </span>
             </li>
           );
         })}
       </ul>
-      <p class="text-text-muted mt-4 text-sm leading-relaxed">Количество считается в тех же единицах, что и исходный продукт. Остальные условия замены — в таблице выше.</p>
+      <p class="text-text-muted mt-4 text-sm leading-relaxed">Количество считается в тех же единицах, что и исходный продукт. Остальные условия замены - в таблице выше.</p>
     </Surface>
   )
 }

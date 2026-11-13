@@ -7,16 +7,16 @@ const sp = (s: string) => s.replace(/\u00a0/g, " ");
 
 describe("recipeTitle — ступенчатое урезание до 65", () => {
   it("короткое название — полный шаблон", () => {
-    expect(recipeTitle("Луковый Угар")).toBe("Луковый Угар — рецепт с фото пошагово | SwagEda");
+    expect(recipeTitle("Луковый Угар")).toBe("Луковый Угар - рецепт с фото пошагово | SwagEda");
   });
   it("длиннее — сначала убирается бренд", () => {
     const t = "Молодая картошка с мясом в духовке";
-    expect(recipeTitle(t)).toBe(`${t} — рецепт с фото пошагово`);
+    expect(recipeTitle(t)).toBe(`${t} - рецепт с фото пошагово`);
     expect(recipeTitle(t).length).toBeLessThanOrEqual(65);
   });
   it("ещё длиннее — «рецепт с фото», затем только название", () => {
     const t = "Салат с курицей, ананасами и грецкими орехами";
-    expect(recipeTitle(t)).toBe(`${t} — рецепт с фото`);
+    expect(recipeTitle(t)).toBe(`${t} - рецепт с фото`);
     const long = "Очень длинное название домашнего пирога с яблоками, корицей и орехами";
     const r = recipeTitle(long);
     expect(r.length).toBeLessThanOrEqual(65);
@@ -25,7 +25,7 @@ describe("recipeTitle — ступенчатое урезание до 65", () =
     expect(r).not.toMatch(/\s…$/);
   });
   it("«рецепт» в названии не дублируется", () => {
-    expect(recipeTitle("Борщ — классический рецепт")).toBe("Борщ — классический рецепт — пошагово с фото | SwagEda");
+    expect(recipeTitle("Борщ - классический рецепт")).toBe("Борщ - классический рецепт - пошагово с фото | SwagEda");
   });
 });
 
@@ -89,21 +89,21 @@ describe("recipeDescription — фолбэк описания", () => {
 describe("главная, каталог, разделы, подборки", () => {
   it("главная содержит «рецепты» и округлённое число", () => {
     const s = homeSeo(39222);
-    expect(sp(s.title)).toBe("Рецепты с фото пошагово — более 39 000 блюд | SwagEda");
+    expect(sp(s.title)).toBe("Рецепты с фото пошагово - более 39 000 блюд | SwagEda");
     expect(s.h1).toMatch(/^Рецепты с фото пошагово/);
-    expect(homeSeo(0).title).toBe("Рецепты с фото пошагово — простые и вкусные блюда | SwagEda");
+    expect(homeSeo(0).title).toBe("Рецепты с фото пошагово - простые и вкусные блюда | SwagEda");
   });
   it("/recipes", () => {
     const s = recipesSeo(39222, 1);
-    expect(sp(s.title)).toBe("Все рецепты с фото пошагово — каталог 39 222 рецепта | SwagEda");
+    expect(sp(s.title)).toBe("Все рецепты с фото пошагово - каталог 39 222 рецепта | SwagEda");
     expect(s.title.length).toBeLessThanOrEqual(65);
     expect(recipesSeo(39222, 3).title).toContain("страница 3");
     expect(recipesSeo(39222, 3).description).toMatch(/Страница 3\.$/);
   });
   it("категория без SEO-полей — шаблон, бренд убирается при длине > 65", () => {
     const s = sectionSeo({ title: "Борщ" }, 141, 1);
-    expect(s.title).toBe("Борщ — 141 рецепт с фото пошагово | SwagEda");
-    expect(s.h1).toBe("Борщ — рецепты с фото");
+    expect(s.title).toBe("Борщ - 141 рецепт с фото пошагово | SwagEda");
+    expect(s.h1).toBe("Борщ - рецепты с фото");
     expect(s.description).not.toMatch(/SwagEda/);
     const long = sectionSeo({ title: "Салаты праздничные на Новый год" }, 1215, 2);
     expect(long.title.length).toBeLessThanOrEqual(65);
@@ -112,11 +112,11 @@ describe("главная, каталог, разделы, подборки", () 
   });
   it("категория с полями из API", () => {
     const s = sectionSeo(
-      { title: "Борщ", seoTitle: "Борщ — рецепты с фото пошагово: классический, с мясом, зелёный", seoDescription: "141 рецепт борща с фото", h1: "Борщ: рецепты с фото пошагово" },
+      { title: "Борщ", seoTitle: "Борщ - рецепты с фото пошагово: классический, с мясом, зелёный", seoDescription: "141 рецепт борща с фото", h1: "Борщ: рецепты с фото пошагово" },
       141,
       1,
     );
-    expect(s.title).toBe("Борщ — рецепты с фото пошагово: классический, с мясом, зелёный");
+    expect(s.title).toBe("Борщ - рецепты с фото пошагово: классический, с мясом, зелёный");
     expect(s.h1).toBe("Борщ: рецепты с фото пошагово");
     expect(s.description).toBe("141 рецепт борща с фото.");
     expect(sectionSeo({ title: "Борщ", seoTitle: "Борщ" }, 1, 1).title).toBe("Борщ | SwagEda");
@@ -124,10 +124,10 @@ describe("главная, каталог, разделы, подборки", () 
   });
   it("подборки под «что приготовить на …»", () => {
     expect({ ...collectionSeo("breakfast", "Завтраки", 2671, 1), title: sp(collectionSeo("breakfast", "Завтраки", 2671, 1).title) }).toMatchObject({
-      title: "Что приготовить на завтрак — 2 671 рецепт с фото | SwagEda",
+      title: "Что приготовить на завтрак - 2 671 рецепт с фото | SwagEda",
       h1: "Что приготовить на завтрак: рецепты с фото",
     });
-    expect(collectionSeo("dinner", "Ужины", 6000, 1).title).toBe("Что приготовить на ужин — быстрые и простые рецепты с фото");
+    expect(collectionSeo("dinner", "Ужины", 6000, 1).title).toBe("Что приготовить на ужин - быстрые и простые рецепты с фото");
     const p2 = collectionSeo("lunch", "Обеды", 3000, 2);
     expect(p2.title).toContain("страница 2");
     expect(p2.title.length).toBeLessThanOrEqual(65);

@@ -65,7 +65,7 @@ describe("buildRecipeJsonLd", () => {
   it("абсолютные URL", () => {
     expect(ld.image).toEqual(["https://swageda.ru/api-images/storage/b.jpg"]);
     expect(ld.url).toBe("https://swageda.ru/recipe/5-bliny");
-    expect(ld.recipeIngredient).toEqual(["Мука — 200 г"]);
+    expect(ld.recipeIngredient).toEqual(["Мука - 200 г"]);
   });
   it("безопасная сериализация", () => {
     expect(serializeJsonLd({ a: "</script><b>&" })).toBe('{"a":"\\u003c/script\\u003e\\u003cb\\u003e\\u0026"}');
@@ -117,11 +117,11 @@ describe("buildItemListJsonLd", () => {
     { url: "https://swageda.ru/borsch/zelenyy", title: "Зелёный борщ" },
   ];
   it("абсолютные URL и сквозные позиции на странице N", () => {
-    const ld = buildItemListJsonLd(items, "https://swageda.ru", 20, "Борщ — рецепты с фото");
+    const ld = buildItemListJsonLd(items, "https://swageda.ru", 20, "Борщ - рецепты с фото");
     expect(ld).toEqual({
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: "Борщ — рецепты с фото",
+      name: "Борщ - рецепты с фото",
       numberOfItems: 2,
       itemListElement: [
         { "@type": "ListItem", position: 21, url: "https://swageda.ru/borsch/borsch-moskovskiy", name: "Борщ Московский" },

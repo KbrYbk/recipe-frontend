@@ -45,7 +45,7 @@ describe("shoppingList", () => {
     const groups = groupByRecipe(base);
     expect(groups.map((g) => g.title)).toEqual(["Блины", "Мои покупки"]);
     const text = formatShoppingList(toggleItem(base, base[1].id));
-    expect(text).toBe("Список покупок:\n\nБлины:\n• Мука — 200 г\n\nМои покупки:\n• Хлеб");
+    expect(text).toBe("Список покупок:\n\nБлины:\n• Мука - 200 г\n\nМои покупки:\n• Хлеб");
     expect(formatShoppingList([])).toBe("Список покупок пуст");
   });
   it("санитизация данных из localStorage", () => {
@@ -98,6 +98,6 @@ describe("общий список (объединение одинаковых �
     expect(mergeShoppingItems(done).find((m) => m.key === "молоко")?.done).toBe(true);
     expect(removeItems(list, row.ids)).toHaveLength(list.length - 2);
     expect(formatMergedShoppingList(done)).not.toContain("Молоко");
-    expect(formatMergedShoppingList(list)).toContain("• Молоко — 250 мл");
+    expect(formatMergedShoppingList(list)).toContain("• Молоко - 250 мл");
   });
 });

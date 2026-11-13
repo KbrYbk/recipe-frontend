@@ -62,8 +62,8 @@ describe("хранение: форматирование сроков", () => {
 
 describe("хранение: тексты страницы", () => {
   it("прямой ответ с цифрами, глагол согласован с числом", () => {
-    expect(storageLead(chicken)).toBe("Варёная курица хранится в холодильнике 3–4 дня, в морозилке — 2–4 месяца, при комнатной температуре — не дольше 2 часов.");
-    expect(storageLead(pasta)).toBe("Макароны хранятся в холодильнике 2 года, при комнатной температуре — 1–2 года.");
+    expect(storageLead(chicken)).toBe("Варёная курица хранится в холодильнике 3–4 дня, в морозилке - 2–4 месяца, при комнатной температуре - не дольше 2 часов.");
+    expect(storageLead(pasta)).toBe("Макароны хранятся в холодильнике 2 года, при комнатной температуре - 1–2 года.");
     expect(KITCHEN_SECTIONS[0].heading(pasta.forms)).toBe("Сколько хранятся макароны");
     expect(KITCHEN_SECTIONS[0].heading(chicken.forms)).toBe("Сколько хранится варёная курица");
   });
@@ -72,7 +72,7 @@ describe("хранение: тексты страницы", () => {
     const seo = storageSeo(chicken);
     expect(seo.h1).toBe("Сколько хранится варёная курица");
     expect(seo.title).toBe("Сколько хранится варёная курица в холодильнике и в морозилке");
-    expect(seo.description).toContain("в холодильнике — 3–4 дня");
+    expect(seo.description).toContain("в холодильнике - 3–4 дня");
     expect(storageSeo(pasta).h1).toBe("Сколько хранятся макароны");
     const long = { forms: { nom: "салат из свежих овощей с майонезом и варёным мясом птицы", gen: "x", acc: "x" }, conditions: chicken.conditions };
     for (const entry of [chicken, pasta, long]) {
@@ -120,7 +120,7 @@ describe("хранение: расчёт «съесть до»", () => {
       expired: false,
     });
     expect(expiryResult(date("2026-11-13"), fridge, date("2026-11-16"))?.detail).toContain("Сегодня последний день.");
-    expect(expiryResult(date("2026-11-13"), fridge, date("2026-11-18"))).toEqual({ title: "Срок вышел 16 ноября 2026", detail: "Прошло 2 дня — есть уже не стоит.", expired: true });
+    expect(expiryResult(date("2026-11-13"), fridge, date("2026-11-18"))).toEqual({ title: "Срок вышел 16 ноября 2026", detail: "Прошло 2 дня - есть уже не стоит.", expired: true });
     expect(expiryResult(date("2026-11-20"), fridge, date("2026-11-13"))).toMatchObject({ title: "Съесть до 23 ноября 2026", expired: false });
   });
 });

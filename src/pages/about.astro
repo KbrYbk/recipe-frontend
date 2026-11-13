@@ -10,14 +10,14 @@ import { serializeJsonLd } from "../lib/recipeSchema";
 const total = await fetchRecipesTotal();
 const rounded = total >= 2000 ? Math.floor(total / 1000) * 1000 : 0;
 const countText = rounded ? `более ${formatCount(rounded)}` : "тысячи";
-const description = `SwagEda — кулинарный сайт с пошаговыми рецептами: ${countText} рецептов с фото. Кто мы, как отбираем и проверяем рецепты и как сообщить об ошибке.`;
+const description = `SwagEda - кулинарный сайт с пошаговыми рецептами: ${countText} рецептов с фото. Кто мы, как отбираем и проверяем рецепты и как сообщить об ошибке.`;
 
 const origin = Astro.site?.origin ?? Astro.url.origin;
 const aboutJsonLd = serializeJsonLd({
   "@context": "https://schema.org",
   "@type": "AboutPage",
   url: `${origin}/about`,
-  name: "О проекте — SwagEda",
+  name: "О проекте - SwagEda",
   isPartOf: { "@id": `${origin}/#website` },
   about: { "@id": `${origin}/#organization` },
 });
@@ -25,17 +25,17 @@ const aboutJsonLd = serializeJsonLd({
 const checks = [
   { icon: "lucide:list-checks", title: "Полный список ингредиентов", text: "С количеством и единицами измерения, чтобы всё можно было купить заранее и ничего не искать в середине готовки." },
   { icon: "lucide:camera", title: "Шаги с фотографиями", text: "Каждый этап описан отдельно, а к шагам приложены фото: видно, какой должна быть консистенция и как выглядит блюдо на каждом этапе." },
-  { icon: "lucide:clock", title: "Время и сложность", text: "У каждого рецепта указано время приготовления и уровень сложности — легко выбрать блюдо на будний вечер или на праздник." },
+  { icon: "lucide:clock", title: "Время и сложность", text: "У каждого рецепта указано время приготовления и уровень сложности - легко выбрать блюдо на будний вечер или на праздник." },
 ];
 
 const features = [
   { icon: "lucide:chef-hat", title: "Режим готовки", text: "Крупные шаги на весь экран, экран не гаснет, пока вы готовите." },
-  { icon: "lucide:scale", title: "Пересчёт порций", text: "Количество ингредиентов меняется в один клик — от половины до тройной порции." },
+  { icon: "lucide:scale", title: "Пересчёт порций", text: "Количество ингредиентов меняется в один клик - от половины до тройной порции." },
   { icon: "lucide:shopping-cart", title: "Список покупок", text: "Ингредиенты из нескольких рецептов собираются в один список, одинаковые складываются." },
 ];
 ---
 
-<Layout title="О проекте — SwagEda" description={description}>
+<Layout title="О проекте - SwagEda" description={description}>
   <Fragment slot="head"><script type="application/ld+json" is:inline set:html={aboutJsonLd} /></Fragment>
   <div class="mx-auto max-w-4xl px-4 py-12 md:py-16">
     <section class="mb-14 text-center">
@@ -43,7 +43,7 @@ const features = [
         <Icon name="lucide:utensils" class="h-4 w-4" aria-hidden="true" />
         О проекте
       </span>
-      <h1 class="text-text-main mt-5 text-4xl font-extrabold md:text-5xl">SwagEda — рецепты, по которым удобно готовить</h1>
+      <h1 class="text-text-main mt-5 text-4xl font-extrabold md:text-5xl">SwagEda - рецепты, по которым удобно готовить</h1>
       <p class="text-text-muted mx-auto mt-5 max-w-2xl text-lg leading-relaxed">
         Мы делаем кулинарный сайт для обычной домашней кухни. Сейчас на SwagEda <strong class="text-text-main">{countText} рецептов</strong> с пошаговыми фото: супы, салаты, вторые блюда, выпечка, десерты,
         заготовки и блюда для аэрогриля.
@@ -58,11 +58,11 @@ const features = [
         </h2>
         <div class="text-text-muted space-y-4 leading-relaxed">
           <p>
-            SwagEda ведёт небольшая редакция. Мы отбираем рецепты, следим за тем, чтобы они были понятны и полны, разбиваем приготовление на шаги и собираем их в разделы и подборки — «что приготовить
+            SwagEda ведёт небольшая редакция. Мы отбираем рецепты, следим за тем, чтобы они были понятны и полны, разбиваем приготовление на шаги и собираем их в разделы и подборки - «что приготовить
             на завтрак», «на ужин», праздничные салаты, выпечку.
           </p>
           <p>
-            У рецептов есть авторы — их имена указаны на странице рецепта вместе с датой публикации. Некоторые рецепты написала и приготовила сама редакция. Мы не прячем рецепт за регистрацией и не
+            У рецептов есть авторы - их имена указаны на странице рецепта вместе с датой публикации. Некоторые рецепты написала и приготовила сама редакция. Мы не прячем рецепт за регистрацией и не
             просим подписку, чтобы увидеть ингредиенты.
           </p>
         </div>
@@ -94,11 +94,11 @@ const features = [
         </h2>
         <div class="text-text-muted space-y-4 leading-relaxed">
           <p>
-            Опечатка в граммовке, перепутанный шаг или неточное время — напишите нам на
+            Опечатка в граммовке, перепутанный шаг или неточное время - напишите нам на
             <a href="mailto:support@swageda.ru" class="text-brand font-semibold hover:underline">support@swageda.ru</a> и приложите ссылку на рецепт. Мы проверим и исправим рецепт, а дата обновления появится
             на его странице.
           </p>
-          <p>Предложения по разделам, новым подборкам и удобству сайта тоже присылайте на этот адрес — мы читаем все письма.</p>
+          <p>Предложения по разделам, новым подборкам и удобству сайта тоже присылайте на этот адрес - мы читаем все письма.</p>
         </div>
       </Surface>
     </section>

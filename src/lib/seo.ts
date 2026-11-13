@@ -98,9 +98,9 @@ const DIFFICULTY_TEXT: Record<string, string> = { easy: "легко", medium: "�
 export function recipeTitle(title: string): string {
   const t = title.trim();
   if (/рецепт/iu.test(t)) {
-    return fitTitle([`${t} — пошагово с фото | ${BRAND}`, `${t} — пошагово с фото`, `${t} | ${BRAND}`, t]);
+    return fitTitle([`${t} - пошагово с фото | ${BRAND}`, `${t} - пошагово с фото`, `${t} | ${BRAND}`, t]);
   }
-  return fitTitle([`${t} — рецепт с фото пошагово | ${BRAND}`, `${t} — рецепт с фото пошагово`, `${t} — рецепт с фото`, t]);
+  return fitTitle([`${t} - рецепт с фото пошагово | ${BRAND}`, `${t} - рецепт с фото пошагово`, `${t} - рецепт с фото`, t]);
 }
 
 export interface RecipeDescriptionSource {
@@ -170,7 +170,7 @@ export function homeSeo(total: number): PageSeo {
   const rounded = total >= 2000 ? Math.floor(total / 1000) * 1000 : 0;
   const more = rounded ? `Более ${formatCount(rounded)}` : "Тысячи";
   return {
-    title: rounded ? `Рецепты с фото пошагово — более ${formatCount(rounded)} блюд | ${BRAND}` : `Рецепты с фото пошагово — простые и вкусные блюда | ${BRAND}`,
+    title: rounded ? `Рецепты с фото пошагово - более ${formatCount(rounded)} блюд | ${BRAND}` : `Рецепты с фото пошагово - простые и вкусные блюда | ${BRAND}`,
     description: `${more} пошаговых рецептов с фото и видео: супы, салаты, выпечка, мясо, блюда в аэрогриле. Режим готовки, пересчёт порций и список покупок.`,
     h1: "Рецепты с фото пошагово: что приготовить сегодня?",
   };
@@ -178,12 +178,12 @@ export function homeSeo(total: number): PageSeo {
 
 // --- Каталог, категории, лендинги ---
 
-const pageSuffix = (page: number) => (page > 1 ? ` — страница ${page}` : "");
+const pageSuffix = (page: number) => (page > 1 ? ` - страница ${page}` : "");
 const pageSentence = (page: number) => (page > 1 ? ` Страница ${page}.` : "");
 
 /** Каталог /recipes. */
 export function recipesSeo(total: number, page: number): PageSeo {
-  const n = total > 0 ? ` — каталог ${countRecipes(total)}` : "";
+  const n = total > 0 ? ` - каталог ${countRecipes(total)}` : "";
   return {
     title: fitTitle([`Все рецепты с фото пошагово${n}${pageSuffix(page)} | ${BRAND}`, `Все рецепты с фото пошагово${n}${pageSuffix(page)}`, `Все рецепты с фото${pageSuffix(page)}`]),
     description: `Каталог из ${total > 0 ? countRecipes(total) : "тысяч рецептов"} с фото: от быстрых завтраков до праздничных блюд. Фильтры по времени, сложности и рейтингу, новые рецепты каждый день.${pageSentence(page)}`,
@@ -212,43 +212,43 @@ export function sectionSeo(section: SeoFields, total: number, page: number): Pag
   const title = section.seoTitle
     ? fitTitle(/swageda/i.test(section.seoTitle) ? [`${section.seoTitle}${sfx}`] : [`${section.seoTitle}${sfx} | ${BRAND}`, `${section.seoTitle}${sfx}`], 70)
     : fitTitle([
-        n ? `${name} — ${n} с фото пошагово${sfx} | ${BRAND}` : `${name} — рецепты с фото пошагово${sfx} | ${BRAND}`,
-        n ? `${name} — ${n} с фото пошагово${sfx}` : `${name} — рецепты с фото пошагово${sfx}`,
-        `${name} — рецепты с фото${sfx}`,
+        n ? `${name} - ${n} с фото пошагово${sfx} | ${BRAND}` : `${name} - рецепты с фото пошагово${sfx} | ${BRAND}`,
+        n ? `${name} - ${n} с фото пошагово${sfx}` : `${name} - рецепты с фото пошагово${sfx}`,
+        `${name} - рецепты с фото${sfx}`,
       ]);
 
   const description = section.seoDescription
     ? `${ensurePeriod(section.seoDescription)}${pageSentence(page)}`
     : `${n ? `${n.charAt(0).toUpperCase()}${n.slice(1)} с фото пошагово` : "Рецепты с фото пошагово"} в разделе «${name}». Подберите блюдо по времени и сложности, готовьте в режиме «шаг за шагом».${pageSentence(page)}`;
 
-  return { title, description, h1: section.h1?.trim() || `${name} — рецепты с фото` };
+  return { title, description, h1: section.h1?.trim() || `${name} - рецепты с фото` };
 }
 
 // --- Подборки ---
 
 const COLLECTION_SEO: Record<string, { title: (n: string) => string[]; h1: string; description: (n: string) => string }> = {
   breakfast: {
-    title: (n) => [`Что приготовить на завтрак — ${n} с фото | ${BRAND}`, `Что приготовить на завтрак — рецепты с фото`],
+    title: (n) => [`Что приготовить на завтрак - ${n} с фото | ${BRAND}`, `Что приготовить на завтрак - рецепты с фото`],
     h1: "Что приготовить на завтрак: рецепты с фото",
-    description: (n) => `${n} завтраков с фото: быстрые и сытные, из яиц и творога, каши, блины и сырники. Идеи на каждый день и выходные — с временем приготовления.`,
+    description: (n) => `${n} завтраков с фото: быстрые и сытные, из яиц и творога, каши, блины и сырники. Идеи на каждый день и выходные - с временем приготовления.`,
   },
   lunch: {
-    title: (n) => [`Что приготовить на обед — ${n} с фото | ${BRAND}`, `Что приготовить на обед — рецепты с фото`],
+    title: (n) => [`Что приготовить на обед - ${n} с фото | ${BRAND}`, `Что приготовить на обед - рецепты с фото`],
     h1: "Что приготовить на обед: рецепты с фото",
-    description: (n) => `${n} обедов с фото: супы, вторые блюда, гарниры и салаты. Сытные и простые идеи на каждый день — с пошаговыми фото и временем приготовления.`,
+    description: (n) => `${n} обедов с фото: супы, вторые блюда, гарниры и салаты. Сытные и простые идеи на каждый день - с пошаговыми фото и временем приготовления.`,
   },
   dinner: {
-    title: () => [`Что приготовить на ужин — быстрые и простые рецепты с фото`],
+    title: () => [`Что приготовить на ужин - быстрые и простые рецепты с фото`],
     h1: "Что приготовить на ужин: рецепты с фото",
     description: (n) => `${n} ужинов с фото: быстро из курицы, фарша, рыбы и овощей, в духовке и на сковороде. Простые идеи на каждый день с пошаговыми фото.`,
   },
   bakery: {
-    title: (n) => [`Выпечка — ${n} с фото пошагово | ${BRAND}`, `Выпечка — рецепты с фото пошагово`],
+    title: (n) => [`Выпечка - ${n} с фото пошагово | ${BRAND}`, `Выпечка - рецепты с фото пошагово`],
     h1: "Выпечка: рецепты с фото пошагово",
-    description: (n) => `${n} выпечки с фото: пироги, булочки, печенье, кексы и пирожки. Домашняя выпечка из дрожжевого, слоёного и песочного теста — пошагово.`,
+    description: (n) => `${n} выпечки с фото: пироги, булочки, печенье, кексы и пирожки. Домашняя выпечка из дрожжевого, слоёного и песочного теста - пошагово.`,
   },
   hd: {
-    title: (n) => [`Здоровое питание — ${n} с фото | ${BRAND}`, `Здоровое питание — рецепты с фото`],
+    title: (n) => [`Здоровое питание - ${n} с фото | ${BRAND}`, `Здоровое питание - рецепты с фото`],
     h1: "Здоровое питание: рецепты с фото",
     description: (n) => `${n} здорового питания с фото: лёгкие блюда из овощей, рыбы и птицы, полезные завтраки и ужины. Простые рецепты с пошаговыми фото.`,
   },

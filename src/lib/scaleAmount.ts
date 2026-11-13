@@ -64,9 +64,9 @@ export function scaleAmountText(text: string, factor: number): string {
 export function scaleCaption(factor: number, servings?: number): string {
   if (servings && servings > 0) {
     const n = Math.max(1, Math.round(servings * factor * 10) / 10);
-    return `на ${formatNumber(n)} ${pluralPortions(n)}${factor === 1 ? " — как в рецепте" : ""}`;
+    return `на ${formatNumber(n)} ${pluralPortions(n)}${factor === 1 ? " - как в рецепте" : ""}`;
   }
-  return factor === 1 ? "Количество: ×1 — как в рецепте" : `Количество: ×${formatNumber(factor)}`;
+  return factor === 1 ? "Количество: ×1 - как в рецепте" : `Количество: ×${formatNumber(factor)}`;
 }
 
 export function pluralPortions(n: number): string {

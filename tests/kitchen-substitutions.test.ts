@@ -5,7 +5,7 @@ import type { Substitute } from "../src/types/kitchen";
 
 const sub = (name: string, factor?: number): Substitute => ({
   name,
-  ratioText: `На 1 ч. л. разрыхлителя — ½ ч. л.: ${name}.`,
+  ratioText: `На 1 ч. л. разрыхлителя - ½ ч. л.: ${name}.`,
   ...(factor !== undefined ? { factor } : {}),
   bestFor: ["блины"],
   notFor: [],
@@ -44,13 +44,13 @@ describe("замены: пересчёт количества", () => {
 
 describe("замены: тексты страницы", () => {
   it("прямой ответ: до трёх вариантов и пропорция лучшего", () => {
-    expect(substitutionLead(powder)).toBe("Вместо разрыхлителя подойдёт сода с уксусом, сода с кефиром или взбитые белки. На 1 ч. л. разрыхлителя — ½ ч. л.: сода с уксусом.");
+    expect(substitutionLead(powder)).toBe("Вместо разрыхлителя подойдёт сода с уксусом, сода с кефиром или взбитые белки. На 1 ч. л. разрыхлителя - ½ ч. л.: сода с уксусом.");
     expect(substitutionLead({ forms: powder.forms, subs: [sub("сода")] })).toContain("подойдёт сода.");
   });
   it("title ≤ 65, description ≤ 160", () => {
     const seo = substitutionSeo(powder);
     expect(seo.h1).toBe("Чем заменить разрыхлитель");
-    expect(seo.title).toBe("Чем заменить разрыхлитель — 4 варианта с пропорциями | SwagEda");
+    expect(seo.title).toBe("Чем заменить разрыхлитель - 4 варианта с пропорциями | SwagEda");
     expect(seo.description).toContain("сода с уксусом");
     const long = {
       forms: { nom: "x", gen: "x", acc: "нерафинированное кокосовое масло холодного отжима первого сорта" },

@@ -26,7 +26,7 @@ function initExpiryCalculator(): void {
       const result = start && condition ? expiryResult(start, condition, todayPlain()) : null;
       if (!result) {
         title.textContent = "Выберите дату";
-        detail.textContent = "Калькулятор берёт нижнюю границу срока — так надёжнее.";
+        detail.textContent = "Калькулятор берёт нижнюю границу срока - так надёжнее.";
         title.classList.remove("text-rose-500");
         return;
       }

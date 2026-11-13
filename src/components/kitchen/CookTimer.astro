@@ -38,7 +38,7 @@ const boundClass =
           <select id="cook-timer-method" class={fieldClass} data-timer-method>
             {methods.map((m, i) => (
               <option value={i}>
-                {methodLabel(m)} — {formatMinutes(m.minMin, m.maxMin)}
+                {methodLabel(m)} - {formatMinutes(m.minMin, m.maxMin)}
               </option>
             ))}
           </select>

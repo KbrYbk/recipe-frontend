@@ -48,7 +48,7 @@ if (canonicalHref.endsWith("/") && canonicalURL.pathname !== "/") {
 const isDefaultImage = !image;
 const shareImageSrc = image ?? DEFAULT_OG_IMAGE;
 const shareImage = shareImageSrc.startsWith("http") ? shareImageSrc : new URL(shareImageSrc, siteURL).href;
-const shareImageAlt = imageAlt ?? (isDefaultImage ? "SwagEda — рецепты с фото пошагово" : title);
+const shareImageAlt = imageAlt ?? (isDefaultImage ? "SwagEda - рецепты с фото пошагово" : title);
 
 // 5. Единый JSON-LD граф: WebSite + Organization рендерим одной разметкой.
 // За счёт @graph это один <script>, а сущности остаются логически разделены.

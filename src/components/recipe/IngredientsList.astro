@@ -158,7 +158,7 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
       const text = Array.from(checkboxes)
         .map((input) => {
           const label = input.closest("li")?.querySelector("label");
-          return `• ${(label?.innerText ?? "").replace(/\s*\n\s*/g, " — ")}`;
+          return `• ${(label?.innerText ?? "").replace(/\s*\n\s*/g, " - ")}`;
         })
         .join("\n");
       try {

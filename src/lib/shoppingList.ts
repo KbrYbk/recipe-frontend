@@ -123,7 +123,7 @@ export function formatShoppingList(list: ShoppingItem[]): string {
   const lines: string[] = ["Список покупок:"];
   for (const g of groupByRecipe(list.filter((i) => !i.done))) {
     lines.push("", `${g.title}:`);
-    for (const i of g.items) lines.push(`• ${i.name}${i.amount ? ` — ${i.amount}` : ""}`);
+    for (const i of g.items) lines.push(`• ${i.name}${i.amount ? ` - ${i.amount}` : ""}`);
   }
   return lines.length > 1 ? lines.join("\n") : "Список покупок пуст";
 }
@@ -206,5 +206,5 @@ export function removeItems(list: ShoppingItem[], ids: string[]): ShoppingItem[]
 export function formatMergedShoppingList(list: ShoppingItem[]): string {
   const rows = mergeShoppingItems(list.filter((i) => !i.done));
   if (rows.length === 0) return "Список покупок пуст";
-  return ["Список покупок:", "", ...rows.map((r) => `• ${r.name}${r.amount ? ` — ${r.amount}` : ""}`)].join("\n");
+  return ["Список покупок:", "", ...rows.map((r) => `• ${r.name}${r.amount ? ` - ${r.amount}` : ""}`)].join("\n");
 }

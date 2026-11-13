@@ -15,7 +15,7 @@ describe("normalizeIngredients", () => {
     expect(normalizeIngredients({ name: "x" })).toEqual([]);
   });
   it("форматирует строку", () => {
-    expect(formatIngredientLine({ name: "Мука", amount: "200", unit: "г" })).toBe("Мука — 200 г");
+    expect(formatIngredientLine({ name: "Мука", amount: "200", unit: "г" })).toBe("Мука - 200 г");
     expect(formatIngredientLine({ name: "Соль" })).toBe("Соль");
   });
 });
@@ -36,11 +36,11 @@ describe("formatIngredientAmount (отображение битых данных
     expect(formatIngredientAmount({ name: "Соль", amount: "вкусу" })).toBe("по вкусу");
     expect(formatIngredientAmount({ name: "Соль", amount: "по", unit: "вкусу" })).toBe("по вкусу");
     expect(formatIngredientAmount({ name: "Соль", unit: "по вкусу" })).toBe("по вкусу");
-    expect(formatIngredientLine({ name: "Соль и перец", unit: "вкусу" })).toBe("Соль и перец — по вкусу");
+    expect(formatIngredientLine({ name: "Соль и перец", unit: "вкусу" })).toBe("Соль и перец - по вкусу");
   });
   it("убирает ведущие тире и дефисы", () => {
     expect(formatIngredientAmount({ name: "Хмели-сунели", amount: "- 0,5", unit: "ч.л." })).toBe("0,5 ч.л.");
-    expect(formatIngredientAmount({ name: "x", amount: "—", unit: "– 2 шт." })).toBe("2 шт.");
+    expect(formatIngredientAmount({ name: "x", amount: "-", unit: "– 2 шт." })).toBe("2 шт.");
     expect(formatIngredientAmount({ name: "x", amount: " -", unit: "" })).toBe("");
     expect(cleanIngredientAmount("-  1 ст.")).toBe("1 ст.");
   });

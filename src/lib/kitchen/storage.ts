@@ -52,7 +52,7 @@ function storeVerb(forms: Pick<KitchenForms, "plural">): string {
 
 /** Прямой ответ: «Варёная курица хранится в холодильнике 3–4 дня, в морозилке — 2–4 месяца, при комнатной температуре — не дольше 2 часов.» */
 export function storageLead(entry: Pick<StorageEntry, "conditions" | "forms">): string {
-  const parts = orderedConditions(entry).map((c, i) => `${PLACE[c.where].inside}${i === 0 ? "" : " —"} ${termPhrase(c)}`);
+  const parts = orderedConditions(entry).map((c, i) => `${PLACE[c.where].inside}${i === 0 ? "" : " -"} ${termPhrase(c)}`);
   return `${capitalize(entry.forms.nom)} ${storeVerb(entry.forms)} ${parts.join(", ")}.`;
 }
 
@@ -65,7 +65,7 @@ export function storageSeo(entry: Pick<StorageEntry, "conditions" | "forms">): P
   const heading = capitalize(h1);
   const title = fitTitle([`${heading}${where} | ${BRAND}`, `${heading}${where}`, `${heading} | ${BRAND}`, heading]);
 
-  const facts = conditions.map((c) => `${PLACE[c.where].inside} — ${termPhrase(c)}`);
+  const facts = conditions.map((c) => `${PLACE[c.where].inside} - ${termPhrase(c)}`);
   const tail = "Признаки порчи и калькулятор «съесть до».";
   let description = "";
   for (let n = facts.length; n > 0; n--) {
@@ -162,7 +162,7 @@ export function expiryResult(start: PlainDate, c: Pick<StorageCondition, "min" |
   if (daysBetween(today, start) > 0) return { title: `Съесть до ${formatPlainDate(until)}`, detail: basis, expired: false };
   if (left < 0) {
     const ago = -left;
-    return { title: `Срок вышел ${formatPlainDate(until)}`, detail: `Прошло ${ago} ${pluralRu(ago, DAY_FORMS)} — есть уже не стоит.`, expired: true };
+    return { title: `Срок вышел ${formatPlainDate(until)}`, detail: `Прошло ${ago} ${pluralRu(ago, DAY_FORMS)} - есть уже не стоит.`, expired: true };
   }
   const rest = left === 0 ? "Сегодня последний день." : `Осталось ${left} ${pluralRu(left, DAY_FORMS)}.`;
   return { title: `Съесть до ${formatPlainDate(until)}`, detail: `${rest} ${basis}`, expired: false };

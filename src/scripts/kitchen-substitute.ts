@@ -25,7 +25,7 @@ function initSubstituteCalculator(): void {
       const empty = qty.value.trim() === "";
       root.querySelectorAll<HTMLElement>("[data-sc-result]").forEach((cell) => {
         const amount = quantity === null ? null : substituteAmount(quantity, factors[Number(cell.dataset.scResult)]);
-        cell.textContent = amount === null ? "—" : formatAmount(amount, unit);
+        cell.textContent = amount === null ? "-" : formatAmount(amount, unit);
       });
       hint?.classList.toggle("hidden", quantity !== null || empty);
       qty.setAttribute("aria-invalid", String(quantity === null && !empty));

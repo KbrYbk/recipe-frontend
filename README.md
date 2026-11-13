@@ -1,4 +1,4 @@
-# 🍳 SwagEda — Modern Recipe Portal
+# 🍳 SwagEda - Modern Recipe Portal
 
 <p align="center">
   <a href="README.ru.md">🇷🇺 Русская версия</a> | <b>🇺🇸 English Version</b>
@@ -139,24 +139,24 @@ The project features full support for Light and Dark modes, which can be toggled
 
 <h4 align="center">Home Page</h4>
 
-| Light Theme | Dark Theme |
-| :---: | :---: |
+|                        Light Theme                        |                          Dark Theme                          |
+| :-------------------------------------------------------: | :----------------------------------------------------------: |
 | <img src="./img/swageda.ru_.png" alt="Home Page Light" /> | <img src="./img/swageda.ru_ (1).png" alt="Home Page Dark" /> |
 
 <h4 align="center">All Recipes (Catalog)</h4>
 
-| Light Theme | Dark Theme |
-| :---: | :---: |
+|                          Light Theme                           |                            Dark Theme                             |
+| :------------------------------------------------------------: | :---------------------------------------------------------------: |
 | <img src="./img/swageda.ru_recipes.png" alt="Catalog Light" /> | <img src="./img/swageda.ru_recipes (1).png" alt="Catalog Dark" /> |
 
 <h4 align="center">Recipe Detail</h4>
 
-| Light Theme | Dark Theme |
-| :---: | :---: |
+|                                 Light Theme                                  |                                   Dark Theme                                    |
+| :--------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: |
 | <img src="./img/swageda.ru_recipe_db-40723.png" alt="Recipe Detail Light" /> | <img src="./img/swageda.ru_recipe_db-40723 (1).png" alt="Recipe Detail Dark" /> |
 
 ### Mobile View (iPhone)
 
-| Light Theme | Dark Theme |
-| :---: | :---: |
+|                                              Light Theme                                               |                                                Dark Theme                                                 |
+| :----------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------: |
 | <img src="./img/swageda.ru_collection_dinner(iPhone 14 Pro Max).png" alt="Mobile Light" width="300" /> | <img src="./img/swageda.ru_collection_dinner(iPhone 14 Pro Max) (1).png" alt="Mobile Dark" width="300" /> |
