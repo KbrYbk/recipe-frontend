@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gameForRecipeSlug, gamePagePath, RECIPE_GAMES } from "../src/lib/games";
+import { buildSitemapXml } from "../src/lib/kitchen/sitemap";
+import { gameForRecipeSlug, gamePagePath, gameSitemapEntries, RECIPE_GAMES } from "../src/lib/games";
 import { navSection } from "../src/lib/nav";
 
 describe("игры рецептов", () => {
@@ -31,5 +32,21 @@ describe("игры рецептов", () => {
   it("страница игры подсвечивает раздел рецептов", () => {
     expect(navSection("/vtorye-blyuda/lukovyy-ugar/igra")).toBe("recipes");
     expect(navSection("/vtorye-blyuda/lukovyy-ugar/igra/")).toBe("recipes");
+  });
+
+  it("в sitemap попадают только рецепты с игрой, адрес с категорией из API", () => {
+    const entries = gameSitemapEntries([
+      { slug: "lukovyy-ugar", url: "/vtorye-blyuda/lukovyy-ugar" },
+      { slug: "borsch", url: "/supy/borsch" },
+    ]);
+    expect(entries).toEqual([{ path: "/vtorye-blyuda/lukovyy-ugar/igra", lastmod: "2026-11-13" }]);
+    const xml = buildSitemapXml("https://swageda.ru", entries);
+    expect(xml).toContain("<loc>https://swageda.ru/vtorye-blyuda/lukovyy-ugar/igra</loc>");
+    expect(xml).toContain("<lastmod>2026-11-13</lastmod>");
+    expect(xml).not.toContain("borsch");
+  });
+
+  it("дата обновления каждой игры - корректная дата", () => {
+    for (const game of Object.values(RECIPE_GAMES)) expect(Number.isNaN(Date.parse(game.updatedAt))).toBe(false);
   });
 });

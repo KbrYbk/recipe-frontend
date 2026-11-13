@@ -14,6 +14,8 @@ export interface RecipeGame {
   intro: string;
   /** Как управлять - список для блока под игрой. */
   controls: readonly string[];
+  /** Дата последнего обновления игры (YYYY-MM-DD): идёт в lastmod файла sitemap_games.xml. */
+  updatedAt: string;
 }
 
 /** Суффикс страницы игры после пути рецепта. */
@@ -25,6 +27,7 @@ export const RECIPE_GAMES: Readonly<Record<string, RecipeGame>> = {
     frameSrc: "/game-files/lukovyy-ugar/index.html",
     intro: "Аркада с мини-играми по мотивам рецепта: один ужин состоит из 6-8 шагов приготовления и нескольких коротких «сюрпризов». Каждый уровень занимает меньше пяти минут.",
     controls: ["На телефоне: касание, удержание и свайп.", "На компьютере: мышь, а также пробел или Enter и стрелки (или WASD).", "Esc - пауза. Прогресс сохраняется в вашем браузере."],
+    updatedAt: "2026-11-13",
   },
 };
 
@@ -32,6 +35,16 @@ export const RECIPE_GAMES: Readonly<Record<string, RecipeGame>> = {
 export function gameForRecipeSlug(slug: string | null | undefined): RecipeGame | null {
   if (!slug || !Object.prototype.hasOwnProperty.call(RECIPE_GAMES, slug)) return null;
   return RECIPE_GAMES[slug];
+}
+
+/** Страницы игр для sitemap: по одной на игру, адрес берётся из пути рецепта (категория приходит из API). */
+export function gameSitemapEntries(recipes: ReadonlyArray<{ slug: string; url: string }>): Array<{ path: string; lastmod: string }> {
+  const out: Array<{ path: string; lastmod: string }> = [];
+  for (const recipe of recipes) {
+    const game = gameForRecipeSlug(recipe.slug);
+    if (game) out.push({ path: gamePagePath(recipe.url), lastmod: game.updatedAt });
+  }
+  return out;
 }
 
 /** Путь страницы игры по пути рецепта: `/{категория}/{slug}` → `/{категория}/{slug}/igra`. */
