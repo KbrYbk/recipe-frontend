@@ -33,8 +33,8 @@ const showUpdated = !!published && !!updated && updated.slice(0, 10) !== publish
 const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
 ---
 
-<header class="mb-6 md:mb-8">
-  <h1 class="page-title text-text-main mb-3 md:mb-4 print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-semibold">
+<header class="mb-6 lg:mb-0">
+  <h1 class="page-title text-text-main mb-3 md:mb-4 lg:text-[2.75rem] xl:text-[3.25rem] print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-semibold">
     {title}
   </h1>
 
@@ -70,9 +70,9 @@ const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
     <a href="#steps-heading" class="text-brand-ink hover:underline">К рецепту</a>
   </nav>
 
-  <div class="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-3 print:mb-4">
+  <div class="flex flex-col gap-3 print:mb-4">
     <!-- Чипы: на мобильном одна строка (при нехватке места — горизонтальная прокрутка без полосы) -->
-    <div class="-mx-1 flex items-center gap-5 overflow-x-auto px-1 py-1 [scrollbar-width:none] lg:mx-0 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+    <div class="-mx-1 flex items-center gap-5 overflow-x-auto px-1 py-1 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:gap-y-0 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
       {
         cooking_time > 0 && (
           <span class={`${chip} text-text-main font-medium`} aria-label={`Время приготовления: ${formatTime(cooking_time)}`}>
@@ -110,7 +110,7 @@ const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
       <RatingStars recipeId={id} averageRating={recipe.average_rating} />
     </div>
 
-    <div class="bg-line mx-1 hidden h-6 w-px lg:block print:hidden" aria-hidden="true"></div>
+    <div class="hidden" aria-hidden="true"></div>
 
     <!-- Вторичные действия: на мобильном — иконки (подписи в aria-label), с sm — с подписями -->
     <div class="flex items-center gap-2 print:hidden" role="group" aria-label="Действия с рецептом">
@@ -127,7 +127,7 @@ const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
 
     {
       recipe.steps.length > 0 && (
-        <Button variant="primary" class="h-12 w-full text-base lg:ml-auto lg:h-11 lg:w-auto print:hidden" data-cook-open>
+        <Button variant="primary" class="mt-1 h-12 w-full text-base sm:max-w-xs print:hidden" data-cook-open>
           <Icon name="lucide:chef-hat" slot="icon-left" class="h-5 w-5 shrink-0" aria-hidden="true" />
           Режим готовки
         </Button>

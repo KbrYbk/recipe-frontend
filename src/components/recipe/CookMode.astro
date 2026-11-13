@@ -59,11 +59,11 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
           </header>
 
           <div class="bg-line h-1 w-full" aria-hidden="true">
-            <div class="bg-brand h-1 transition-[width] duration-300" style="width:0%" data-cook-progress />
+            <div class="bg-brand ease-soft h-1 w-full origin-left transition-transform duration-300" style="transform:scaleX(0)" data-cook-progress />
           </div>
 
           <div class="relative min-h-0 flex-1">
-            <div class="h-full overflow-y-auto overscroll-contain px-5 py-6 md:px-10 md:py-10" data-cook-stage>
+            <div class="h-full touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-6 md:px-10 md:py-10" data-cook-stage>
               {steps.map((step, index) => (
                 <section class="mx-auto hidden max-w-3xl" data-cook-step={index} aria-label={`Шаг ${index + 1}`}>
                   <p class="text-brand-ink mb-4 text-sm font-semibold">Шаг {index + 1}</p>
@@ -156,6 +156,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
 <script>
   import { clampStep, firstUndoneStep, ingredientKey, stepKey, swipeDirection } from "../../lib/cookState";
   import { readString, writeString } from "../../lib/client/storage";
+  import { animateSpring, prefersReducedMotion, project, releaseVelocity, rubberband, type MotionSample, type SpringAnimation } from "../../lib/client/spring";
 
   type WakeLockSentinelLike = { release: () => Promise<void>; addEventListener: (t: "release", cb: () => void) => void };
   type NavigatorWithWakeLock = Navigator & { wakeLock?: { request: (type: "screen") => Promise<WakeLockSentinelLike> } };
@@ -212,7 +213,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         finishScreen?.classList.add("hidden");
         footer?.classList.remove("hidden");
         if (current) current.textContent = String(this.index + 1);
-        if (progress) progress.style.width = `${((this.index + 1) / total) * 100}%`;
+        if (progress) progress.style.transform = `scaleX(${(this.index + 1) / total})`;
         if (prevBtn) prevBtn.disabled = this.index === 0;
         if (nextLabel) nextLabel.textContent = this.index === total - 1 ? "Готово" : "Далее";
         stage?.scrollTo({ top: 0 });
@@ -223,7 +224,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         sections.forEach((s) => s.classList.add("hidden"));
         finishScreen?.classList.remove("hidden");
         footer?.classList.add("hidden");
-        if (progress) progress.style.width = "100%";
+        if (progress) progress.style.transform = "scaleX(1)";
         stage?.scrollTo({ top: 0 });
         finishScreen?.querySelector<HTMLElement>("[data-cook-finish-close]")?.focus();
       };
@@ -291,8 +292,8 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
       this.querySelector("[data-cook-close]")?.addEventListener("click", () => dialog.close());
       this.querySelector("[data-cook-finish-close]")?.addEventListener("click", () => dialog.close());
       this.querySelector("[data-cook-restart]")?.addEventListener("click", restart);
-      prevBtn?.addEventListener("click", prev);
-      nextBtn?.addEventListener("click", next);
+      prevBtn?.addEventListener("click", () => turn("prev"));
+      nextBtn?.addEventListener("click", () => turn("next"));
 
       ingToggle?.addEventListener("click", () => {
         const opened = ingPanel?.classList.toggle("hidden") === false;
@@ -304,32 +305,154 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         if (target?.tagName === "INPUT" && e.key === " ") return;
         if (e.key === "ArrowRight" || e.key === "PageDown") {
           e.preventDefault();
-          next();
+          turn("next");
         } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
           e.preventDefault();
-          prev();
+          turn("prev");
         }
       });
 
+      // --- Перелистывание шагов. Шаг идёт за пальцем 1:1; при отпускании цель выбирается по тому,
+      // куда «долетит» бросок, а анимация продолжает движение со скоростью пальца. Анимацию можно
+      // перехватить в любой момент — она остановится на текущем месте и пойдёт за пальцем дальше.
+      let x = 0;
+      let anim: SpringAnimation | null = null;
+      const visible = () => (this.finished ? finishScreen : sections[this.index]) ?? null;
+      const canPrev = () => this.finished || this.index > 0;
+      const stageWidth = () => stage?.clientWidth || 320;
+      const fadeDistance = () => Math.min(stageWidth() * 0.45, 260);
+      const paint = (el: HTMLElement | null, value: number) => {
+        if (!el) return;
+        el.style.transform = value ? `translate3d(${value}px, 0, 0)` : "";
+        el.style.opacity = value ? String(Math.max(0, 1 - Math.abs(value) / fadeDistance())) : "";
+      };
+      const settle = (velocity = 0) => {
+        const el = visible();
+        // Лёгкий отскок — только если был бросок; иначе спокойный возврат без перелёта.
+        anim = animateSpring({
+          from: x,
+          to: 0,
+          velocity,
+          response: 0.3,
+          damping: Math.abs(velocity) > 300 ? 0.8 : 1,
+          onUpdate: (v) => {
+            x = v;
+            paint(el, v);
+          },
+          onRest: () => (anim = null),
+        });
+      };
+      const turn = (dir: "next" | "prev", velocity = 0) => {
+        if (dir === "prev" && !canPrev()) return;
+        if (dir === "next" && this.finished) return;
+        const go = dir === "next" ? next : prev;
+        anim?.stop();
+        anim = null;
+        const leaving = visible();
+        if (prefersReducedMotion()) {
+          x = 0;
+          paint(leaving, 0);
+          go();
+          return;
+        }
+        // Уходит и приходит по одному пути: старый шаг — в сторону жеста, новый — с противоположной.
+        const sign = dir === "next" ? -1 : 1;
+        anim = animateSpring({
+          from: x,
+          to: sign * fadeDistance(),
+          velocity,
+          response: 0.22,
+          onUpdate: (v) => {
+            x = v;
+            paint(leaving, v);
+          },
+          onRest: () => {
+            paint(leaving, 0);
+            go();
+            x = -sign * fadeDistance() * 0.5;
+            paint(visible(), x);
+            settle();
+          },
+        });
+      };
+
+      dialog.addEventListener("close", () => {
+        anim?.stop();
+        anim = null;
+        x = 0;
+        sections.forEach((el) => paint(el, 0));
+        paint(finishScreen, 0);
+      });
+
+      let pointerId: number | null = null;
+      let tracking = false;
       let startX = 0;
       let startY = 0;
-      stage?.addEventListener(
-        "touchstart",
-        (e) => {
-          startX = e.changedTouches[0].clientX;
-          startY = e.changedTouches[0].clientY;
-        },
-        { passive: true },
-      );
-      stage?.addEventListener(
-        "touchend",
-        (e) => {
-          const dir = swipeDirection(e.changedTouches[0].clientX - startX, e.changedTouches[0].clientY - startY);
-          if (dir === "next") next();
-          else if (dir === "prev" && (this.finished || this.index > 0)) prev();
-        },
-        { passive: true },
-      );
+      let grabX = 0;
+      let baseX = 0;
+      let samples: MotionSample[] = [];
+
+      stage?.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" || !e.isPrimary) return;
+        pointerId = e.pointerId;
+        tracking = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        samples = [];
+        if (anim) {
+          // Перехват на лету: продолжаем с того места, где элемент сейчас на экране.
+          x = anim.stop().value;
+          anim = null;
+        }
+        baseX = x;
+      });
+
+      stage?.addEventListener("pointermove", (e) => {
+        if (e.pointerId !== pointerId || prefersReducedMotion()) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!tracking) {
+          // Порог 10 px: сначала понимаем направление, вертикаль оставляем прокрутке.
+          if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+          if (Math.abs(dy) > Math.abs(dx)) {
+            pointerId = null;
+            if (x !== 0) settle();
+            return;
+          }
+          tracking = true;
+          grabX = dx;
+          stage.setPointerCapture(e.pointerId);
+        }
+        const raw = baseX + dx - grabX;
+        // Назад с первого шага листать некуда — упругая граница вместо жёсткой остановки.
+        x = raw > 0 && !canPrev() ? rubberband(raw, stageWidth()) : raw;
+        paint(visible(), x);
+        samples.push({ t: e.timeStamp, p: e.clientX });
+        if (samples.length > 8) samples.shift();
+      });
+
+      const release = (e: PointerEvent, cancelled: boolean) => {
+        if (e.pointerId !== pointerId) return;
+        pointerId = null;
+        if (prefersReducedMotion()) {
+          const dir = cancelled ? null : swipeDirection(e.clientX - startX, e.clientY - startY);
+          if (dir) turn(dir);
+          return;
+        }
+        if (!tracking) {
+          if (x !== 0) settle();
+          return;
+        }
+        tracking = false;
+        const velocity = cancelled ? 0 : releaseVelocity(samples, e.timeStamp);
+        const projected = x + project(velocity);
+        const threshold = stageWidth() * 0.3;
+        if (!cancelled && projected < -threshold && !this.finished) turn("next", velocity);
+        else if (!cancelled && projected > threshold && canPrev()) turn("prev", velocity);
+        else settle(velocity);
+      };
+      stage?.addEventListener("pointerup", (e) => release(e, false));
+      stage?.addEventListener("pointercancel", (e) => release(e, true));
     }
   }
 

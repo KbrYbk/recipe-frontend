@@ -24,14 +24,14 @@ const rows = entry ? entry.methods.map((m) => [{ text: methodLabel(m), note: m.n
       <KitchenTable caption={`Время варки: ${entry.forms.nom}`} head={["Способ", "Время"]} rows={rows} />
       <CookTimer entry={entry} />
       <section aria-labelledby="readiness-heading">
-        <h2 id="readiness-heading" class="text-text-main mb-4 text-2xl font-semibold">
+        <h2 id="readiness-heading" class="section-title text-text-main mb-4">
           Как понять, что готово
         </h2>
         <p class="text-text-main leading-relaxed">{entry.readiness}</p>
       </section>
       {entry.tips.length > 0 && (
         <section aria-labelledby="cooking-tips-heading">
-          <h2 id="cooking-tips-heading" class="text-text-main mb-4 text-2xl font-semibold">
+          <h2 id="cooking-tips-heading" class="section-title text-text-main mb-4">
             Советы
           </h2>
           <ul class="space-y-2">

@@ -40,7 +40,7 @@ const itemListJsonLd =
   <div class="mx-auto max-w-6xl md:px-4">
     <header class="border-line mb-6 border-b pb-6 md:mb-10 md:pt-6 md:pb-10">
       <Breadcrumbs items={[{ name: "Справочник", href: KITCHEN_ROOT }]} />
-      <h1 class="text-text-main text-2xl leading-tight font-semibold md:text-5xl">{seo.h1}</h1>
+      <h1 class="page-title text-text-main">{seo.h1}</h1>
       <p class="text-text-muted mt-3 max-w-3xl text-base leading-relaxed md:mt-5 md:text-lg">
         Короткие ответы на вопросы, которые возникают прямо у плиты: сколько продукт пролежит в холодильнике, сколько граммов помещается в стакане, сколько минут варить и чем заменить то, чего не
         оказалось под рукой. В каждой статье — таблица и калькулятор.
@@ -73,7 +73,7 @@ const itemListJsonLd =
     {
       sections.map((s) => (
         <section class="mt-14" aria-labelledby={`kitchen-${s.path}`}>
-          <h2 id={`kitchen-${s.path}`} class="text-text-main mb-6 text-2xl font-semibold md:text-3xl">
+          <h2 id={`kitchen-${s.path}`} class="section-title text-text-main mb-6">
             <a href={s.href} class="hover:text-brand-ink transition-colors">
               {s.name}
             </a>

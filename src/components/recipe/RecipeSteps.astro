@@ -26,7 +26,7 @@ const { steps, recipeId, recipeTitle } = Astro.props;
             {/* Номер шага и компактная отметка «Готово» рядом с ним */}
             <div class="mb-3 flex items-center gap-3 print:mb-1">
               <div
-                class="bg-raised text-text-main group-has-checked:bg-positive group-has-checked:text-page-bg relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-semibold tabular-nums transition-colors duration-200 print:h-6 print:w-6 print:min-w-6 print:border print:border-black print:bg-transparent print:text-[9pt] print:text-black"
+                class="text-brand group-has-checked:text-positive bg-page-bg relative z-10 flex h-10 w-10 shrink-0 items-center justify-center text-[2rem] leading-none font-semibold tracking-[-0.03em] tabular-nums transition-colors duration-200 print:h-6 print:w-6 print:min-w-6 print:border print:border-black print:bg-transparent print:text-[9pt] print:text-black"
                 aria-hidden="true"
               >
                 {step.order ?? index + 1}

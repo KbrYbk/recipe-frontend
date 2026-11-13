@@ -8,12 +8,12 @@ import Surface from "../components/ui/Surface.astro";
   title="Контакты — SwagEda"
   description="Свяжитесь с командой SwagEda: техподдержка support@swageda.ru, сотрудничество и реклама ads@swageda.ru. Мы реальные, отвечаем по-человечески и не кусаемся."
 >
-  <main class="mx-auto max-w-2xl px-4 py-12 text-center md:py-16">
+  <div class="mx-auto max-w-2xl px-4 py-12 text-center md:py-16">
     <span class="bg-accent-soft text-brand-ink inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold">
       <Icon name="lucide:message-circle" class="h-4 w-4" aria-hidden="true" />
       Мы реальные
     </span>
-    <h1 class="text-text-main mt-4 text-4xl font-semibold">Контакты</h1>
+    <h1 class="page-title text-text-main mt-4">Контакты</h1>
     <p class="text-text-muted mx-auto mt-3 max-w-xl">
       Нашли баг, есть идея или просто хочется сказать «спасибо»? Пишите — мы не кусаемся и отвечаем по-человечески, а не автоответом «Ваше обращение принято».
     </p>
@@ -47,7 +47,7 @@ import Surface from "../components/ui/Surface.astro";
     </div>
 
     <div class="mt-16 text-left">
-      <h2 class="text-text-main text-2xl font-semibold">Частые вопросы</h2>
+      <h2 class="section-title text-text-main">Частые вопросы</h2>
       <div class="mt-6 space-y-6">
         <div>
           <h3 class="text-text-main text-lg font-semibold">Можно ли добавить свой рецепт?</h3>
@@ -74,5 +74,5 @@ import Surface from "../components/ui/Surface.astro";
     </div>
 
     <p class="text-text-muted mx-auto mt-16 max-w-md text-sm">Обычно отвечаем в течение 24 часов, в выходные и праздники — чуть дольше.</p>
-  </main>
+  </div>
 </Layout>

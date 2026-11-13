@@ -13,9 +13,11 @@ interface Props {
   headingLevel?: "h2" | "h3" | "h4";
   /** Кнопка «Убрать из избранного» поверх фото (страница избранного). */
   removable?: boolean;
+  /** Крупная карточка: занимает две колонки и два ряда сетки, фото заполняет всю свободную высоту. */
+  featured?: boolean;
 }
 
-const { recipe, priority = false, headingLevel = "h2", removable = false } = Astro.props;
+const { recipe, priority = false, headingLevel = "h2", removable = false, featured = false } = Astro.props;
 const { id, title, description, main_image, url: recipeUrl } = recipe;
 const cooking_time = recipe.cooking_time;
 const Heading = headingLevel;
@@ -26,9 +28,12 @@ const imageAlt = `Фото блюда: ${title}`;
 
 <article
   data-recipe-card={id}
-  class="group glass-border-3d bg-card-bg rounded-card shadow-soft hover:shadow-float focus-within:ring-brand/60 relative flex h-full flex-col overflow-hidden transition-shadow duration-200 focus-within:ring-2"
+  class:list={[
+    "group glass-border-3d bg-card-bg rounded-card shadow-soft hover:shadow-float focus-within:ring-brand/60 relative flex h-full flex-col overflow-hidden transition-shadow duration-200 focus-within:ring-2",
+    featured && "md:col-span-2 lg:row-span-2",
+  ]}
 >
-  <div class="bg-raised relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden">
+  <div class:list={["bg-raised relative flex w-full items-center justify-center overflow-hidden", featured ? "aspect-[3/2] md:aspect-[2/1] lg:aspect-auto lg:min-h-80 lg:flex-1" : "aspect-[3/2]"]}>
     {
       main_image ? (
         <Image
@@ -39,7 +44,11 @@ const imageAlt = `Фото блюда: ${title}`;
           loading={priority ? "eager" : "lazy"}
           fetchpriority={priority ? "high" : undefined}
           decoding="async"
-          class:list={["ease-soft h-full w-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.03]", !priority && "animate-fade-in opacity-0"]}
+          class:list={[
+            "ease-soft h-full w-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.03]",
+            featured && "lg:absolute lg:inset-0",
+            !priority && "animate-fade-in opacity-0",
+          ]}
         />
       ) : null
     }
@@ -63,14 +72,23 @@ const imageAlt = `Фото блюда: ${title}`;
     }
   </div>
 
-  <div class="flex grow flex-col p-4 md:p-5">
-    <Heading class="text-text-main group-hover:text-brand-ink mb-2 line-clamp-3 text-lg leading-snug font-semibold tracking-[-0.01em] transition-colors duration-150 md:text-xl">
+  <div class:list={["flex flex-col p-4 md:p-5", featured ? "lg:p-7" : "grow"]}>
+    <Heading
+      class:list={[
+        "text-text-main group-hover:text-brand-ink mb-2 line-clamp-3 text-lg leading-snug font-semibold tracking-[-0.01em] transition-colors duration-150 md:text-xl",
+        featured && "lg:text-[1.75rem] lg:leading-tight lg:tracking-[-0.02em]",
+      ]}
+    >
       <a href={recipeUrl} class="after:absolute after:inset-0 focus:outline-none">
         {title}
       </a>
     </Heading>
 
-    {!isDescriptionRedundant({ title, description }) && <p class="text-text-muted mb-4 line-clamp-2 text-sm leading-relaxed text-pretty break-words">{description}</p>}
+    {
+      !isDescriptionRedundant({ title, description }) && (
+        <p class:list={["text-text-muted mb-4 line-clamp-2 text-sm leading-relaxed text-pretty break-words", featured && "lg:line-clamp-3 lg:max-w-[60ch] lg:text-base"]}>{description}</p>
+      )
+    }
 
     <div class="text-text-muted mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
       {
@@ -96,7 +114,10 @@ const imageAlt = `Фото блюда: ${title}`;
           )
         }
 
-        <div class="text-text-secondary flex items-center gap-1 text-xs font-medium" aria-label={`Время приготовления: ${formatTime(cooking_time)}`}>
+        <div
+          class="bg-card-bg/90 text-text-main rounded-control shadow-soft absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md"
+          aria-label={`Время приготовления: ${formatTime(cooking_time)}`}
+        >
           <Icon name="lucide:clock" class="text-text-muted h-3.5 w-3.5" aria-hidden="true" />
           <span class="tabular-nums">{formatTime(cooking_time)}</span>
         </div>

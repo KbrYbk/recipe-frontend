@@ -141,7 +141,7 @@ const searchParams: Record<string, string> = {
       <Breadcrumbs items={breadcrumbs} />
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
         <div class="min-w-0">
-          <h1 class="text-text-main text-2xl leading-tight font-semibold md:text-5xl">{h1}</h1>
+          <h1 class="page-title text-text-main">{h1}</h1>
           <p class="text-text-muted mt-1 text-sm md:mt-4 md:text-lg">
             {total > 0 ? (query.q ? `Найдено ${countText}` : countText) : "Рецептов не найдено"}
             {
@@ -368,7 +368,7 @@ const searchParams: Record<string, string> = {
             <section class="mt-12 max-w-4xl" aria-label={`О разделе «${sectionName}»`}>
               {intro.length > 1 && (
                 <div class="text-text-muted space-y-4 text-base leading-relaxed md:text-lg">
-                  <h2 class="text-text-main text-2xl font-semibold">О разделе «{sectionName}»</h2>
+                  <h2 class="section-title text-text-main">О разделе «{sectionName}»</h2>
                   {intro.slice(1).map((paragraph) => (
                     <p>{paragraph}</p>
                   ))}
@@ -376,7 +376,7 @@ const searchParams: Record<string, string> = {
               )}
               {faq.length > 0 && (
                 <div class="mt-10">
-                  <h2 class="text-text-main mb-4 text-2xl font-semibold">Частые вопросы</h2>
+                  <h2 class="section-title text-text-main mb-4">Частые вопросы</h2>
                   <div class="space-y-3">
                     {faq.map((f) => (
                       <details class="glass-border-3d bg-card-bg group rounded-card shadow-soft px-5 py-4">

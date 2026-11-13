@@ -55,24 +55,26 @@ const itemLists = [
         ))}
       </Fragment>
       <div class="mx-auto max-w-6xl px-4">
-        <section class="py-8 md:py-14">
-          <h1 class="page-title text-text-main mb-4 max-w-3xl lg:text-[3.5rem]">
-            Рецепты с фото пошагово: что <span class="text-brand">приготовить</span> сегодня?
-          </h1>
-          <p class="lead-text mb-8 max-w-2xl">Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.</p>
-          <SearchBar />
-        </section>
+        <div class="glass-border-3d bg-card-bg rounded-panel shadow-soft mt-2 mb-8 px-4 py-7 md:px-10 md:py-12 lg:px-14 lg:py-16">
+          <section class="pb-8 md:pb-10">
+            <h1 class="page-title text-text-main mb-5 max-w-4xl lg:text-[4rem]">
+              Рецепты с фото пошагово: что <span class="text-brand">приготовить</span> сегодня?
+            </h1>
+            <p class="lead-text mb-8 max-w-2xl">Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.</p>
+            <SearchBar />
+          </section>
 
-        <section aria-labelledby="categories-heading" class="mb-12">
-          <h2 id="categories-heading" class="sr-only">
-            Популярные категории
-          </h2>
-          <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-            {COLLECTION_CONFIG.map((c) => (
-              <CategoryCard iconName={c.icon} title={c.title} href={`/collection/${c.id}`} />
-            ))}
-          </div>
-        </section>
+          <section aria-labelledby="categories-heading">
+            <h2 id="categories-heading" class="sr-only">
+              Популярные категории
+            </h2>
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+              {COLLECTION_CONFIG.map((c) => (
+                <CategoryCard iconName={c.icon} title={c.title} href={`/collection/${c.id}`} />
+              ))}
+            </div>
+          </section>
+        </div>
 
         {/* Баннер 17 — после категорий, горячий трафик главной */}
         <AdSlot id="R-A-19056160-17" className="max-w-6xl" />
@@ -91,7 +93,7 @@ const itemLists = [
 
           <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
             {latestRecipes.map((recipe, i) => (
-              <RecipeCard recipe={recipe} headingLevel="h3" priority={i === 0} />
+              <RecipeCard recipe={recipe} headingLevel="h3" priority={i === 0} featured={i === 0} />
             ))}
           </div>
         </section>

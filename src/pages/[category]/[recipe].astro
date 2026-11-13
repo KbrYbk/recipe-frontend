@@ -97,36 +97,41 @@ const breadcrumbs = recipe
       <article class="mx-auto max-w-6xl px-0 py-2 min-[1480px]:max-w-5xl min-[1560px]:max-w-6xl md:px-4 md:py-6" data-recipe-id={recipe.id}>
         <script type="application/ld+json" is:inline set:html={jsonLd} />
 
-        <div class="print:hidden">
-          <Breadcrumbs items={breadcrumbs} />
-        </div>
-
-        <RecipeHeader recipe={recipe} />
-
-        <Surface
-          padding="none"
-          class="relative mb-8 aspect-video overflow-hidden md:mb-10 print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
-        >
-          {recipe.main_image ? (
-            <Image
-              src={recipe.main_image}
-              alt={`Фото готового блюда: ${recipe.title}`}
-              widths={[450, 800, 1200]}
-              sizes="(max-width: 768px) 450px, (max-width: 1100px) 800px, 1200px"
-              width={1200}
-              height={675}
-              data-zoomable
-              class="image-zoom h-full w-full object-cover print:float-right print:mb-3 print:ml-3 print:h-auto print:w-32.5 print:max-w-32.5 print:rounded print:grayscale"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-            />
-          ) : (
-            <div class="flex h-full w-full items-center justify-center">
-              <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
+        {/* Первый экран: слева заголовок, мета и действия, справа — крупное фото. На узких экранах — друг под другом. */}
+        <div class="mb-8 md:mb-10 lg:mb-14 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center lg:gap-10 xl:gap-14 print:mb-4 print:block">
+          <div class="min-w-0">
+            <div class="print:hidden">
+              <Breadcrumbs items={breadcrumbs} />
             </div>
-          )}
-        </Surface>
+
+            <RecipeHeader recipe={recipe} />
+          </div>
+
+          <Surface
+            padding="none"
+            class="relative aspect-video overflow-hidden lg:aspect-[4/3] print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
+          >
+            {recipe.main_image ? (
+              <Image
+                src={recipe.main_image}
+                alt={`Фото готового блюда: ${recipe.title}`}
+                widths={[450, 800, 1200]}
+                sizes="(max-width: 768px) 450px, (max-width: 1100px) 800px, 1200px"
+                width={1200}
+                height={675}
+                data-zoomable
+                class="image-zoom h-full w-full object-cover print:float-right print:mb-3 print:ml-3 print:h-auto print:w-32.5 print:max-w-32.5 print:rounded print:grayscale"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+              />
+            ) : (
+              <div class="flex h-full w-full items-center justify-center">
+                <Icon name="lucide:utensils-crossed" class="text-text-muted h-24 w-24 opacity-10" aria-hidden="true" />
+              </div>
+            )}
+          </Surface>
+        </div>
 
         <div class="grid grid-cols-1 gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)] xl:gap-12">
           <aside class="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:gap-8 lg:pb-4 print:static print:block print:max-h-none print:overflow-visible">

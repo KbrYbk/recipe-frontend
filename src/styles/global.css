@@ -256,17 +256,17 @@
   /* === Типографика: размер, интерлиньяж и трекинг — одним набором.
      Крупный текст плотнее (отрицательный трекинг, тесный интерлиньяж), мелкий — свободнее. === */
   .page-title {
-    font-size: clamp(1.875rem, 1.35rem + 2.2vw, 3rem);
-    line-height: 1.08;
-    letter-spacing: -0.022em;
+    font-size: clamp(2rem, 1.3rem + 3vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.028em;
     font-weight: 600;
     text-wrap: balance;
   }
 
   .section-title {
-    font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
+    font-size: clamp(1.5rem, 1.25rem + 1.1vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     font-weight: 600;
     text-wrap: balance;
   }

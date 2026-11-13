@@ -8,7 +8,7 @@ const { title = "Страница не найдена" } = Astro.props;
 <div class="mx-auto flex max-w-lg flex-col items-center px-4 py-16 text-center">
   <img src="/images/404.webp" alt="" class="mb-6 h-60 w-60" width="240" height="240" aria-hidden="true" />
   <p class="text-text-muted mb-2 text-sm font-semibold">404</p>
-  <h1 class="text-text-main mb-3 text-3xl font-semibold md:text-4xl">{title}</h1>
+  <h1 class="page-title text-text-main mb-3">{title}</h1>
   <p class="text-text-muted mb-8">Проверьте ссылку или вернитесь к каталогу.</p>
   <a href="/recipes" class="btn-primary px-6 py-3"> Все рецепты </a>
 </div>
