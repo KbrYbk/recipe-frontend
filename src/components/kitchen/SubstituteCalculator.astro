@@ -1,0 +1,74 @@
+---
+/**
+ * Калькулятор замены: «в рецепте N единиц продукта → возьмите M заменителя».
+ * Показывает только замены с коэффициентом `factor`; если таких нет — блок не выводится.
+ */
+import { Icon } from "astro-icon/components";
+import Surface from "../ui/Surface.astro";
+import { SUBSTITUTE_UNITS, calculableSubs, formatAmount, substituteAmount } from "../../lib/kitchen/substitutions";
+import { capitalize } from "../../lib/kitchen/seo";
+import type { SubstitutionEntry } from "../../types/kitchen";
+
+interface Props {
+  entry: SubstitutionEntry;
+}
+
+const { entry } = Astro.props;
+const subs = calculableSubs(entry);
+const initialQuantity = 100;
+const initialUnit = SUBSTITUTE_UNITS[0];
+const payload = JSON.stringify(subs.map((s) => s.factor));
+const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full rounded-2xl border px-4 text-lg tabular-nums focus:ring-4 focus:outline-none";
+---
+
+{
+  subs.length > 0 && (
+    <Surface as="section" padding="sm" aria-labelledby="substitute-calc-heading" data-substitute-calculator data-factors={payload}>
+      <h2 id="substitute-calc-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-bold md:text-2xl">
+        <Icon name="lucide:calculator" class="text-brand h-6 w-6 shrink-0" aria-hidden="true" />
+        Сколько взять вместо {entry.forms.gen}
+      </h2>
+
+      <p class="text-text-muted mb-2 text-sm font-semibold" id="substitute-calc-label">
+        В рецепте — {entry.forms.nom}:
+      </p>
+      <div class="flex max-w-sm gap-2">
+        <div class="w-28 shrink-0">
+          <input type="text" inputmode="decimal" autocomplete="off" maxlength="8" value={initialQuantity} class={fieldClass} aria-labelledby="substitute-calc-label" data-sc-qty />
+        </div>
+        <div class="min-w-0 flex-1">
+          <label for="substitute-calc-unit" class="sr-only">
+            Единица измерения
+          </label>
+          <select id="substitute-calc-unit" class={`${fieldClass} cursor-pointer text-base`} data-sc-unit>
+            {SUBSTITUTE_UNITS.map((unit) => (
+              <option value={unit}>{unit}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <p class="text-text-muted mt-1 hidden text-sm" data-sc-hint>
+        Введите число: 100, 1,5 или 1/2.
+      </p>
+
+      <ul class="mt-5 space-y-2" aria-live="polite">
+        {subs.map((s, i) => {
+          const amount = substituteAmount(initialQuantity, s.factor);
+          return (
+            <li class="border-line flex flex-col gap-x-4 border-t pt-2 first:border-t-0 first:pt-0 sm:flex-row sm:items-baseline sm:justify-between">
+              <span class="text-text-main font-medium">{capitalize(s.name)}</span>
+              <span class="text-text-main text-xl font-bold tabular-nums" data-sc-result={i}>
+                {amount !== null ? formatAmount(amount, initialUnit) : "—"}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      <p class="text-text-muted mt-4 text-sm leading-relaxed">Количество считается в тех же единицах, что и исходный продукт. Остальные условия замены — в таблице выше.</p>
+    </Surface>
+  )
+}
+
+<script>
+  import "../../scripts/kitchen-substitute";
+</script>

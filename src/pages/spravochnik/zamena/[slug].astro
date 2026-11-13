@@ -1,0 +1,42 @@
+---
+/** Страница продукта: чем заменить ингредиент, пропорции, калькулятор количества. */
+import NotFoundPage from "../../../components/errors/NotFoundPage.astro";
+import KitchenPage from "../../../components/kitchen/KitchenPage.astro";
+import KitchenTable from "../../../components/kitchen/KitchenTable.astro";
+import SubstituteCalculator from "../../../components/kitchen/SubstituteCalculator.astro";
+import { getBySlug } from "../../../lib/kitchen/data";
+import { conditionalResponse } from "../../../lib/kitchen/http";
+import { capitalize } from "../../../lib/kitchen/seo";
+import { substitutionLead, substitutionSeo } from "../../../lib/kitchen/substitutions";
+
+const entry = getBySlug("substitutions", String(Astro.params.slug ?? ""));
+if (!entry) Astro.response.status = 404;
+
+const notModified = entry ? conditionalResponse(Astro.request, Astro.response.headers, [entry.updatedAt]) : null;
+if (notModified) return notModified;
+
+const rows = entry
+  ? entry.subs.map((s) => [
+      { text: capitalize(s.name), note: s.note },
+      s.ratioText,
+      { text: capitalize(s.bestFor.join(", ")), note: s.notFor.length > 0 ? `Не подойдёт: ${s.notFor.join("; ")}` : undefined },
+    ])
+  : [];
+---
+
+{
+  entry ? (
+    <KitchenPage section="substitutions" entry={entry} seo={substitutionSeo(entry)} lead={substitutionLead(entry)}>
+      <section aria-labelledby="role-heading">
+        <h2 id="role-heading" class="text-text-main mb-3 text-2xl font-bold">
+          Зачем в рецепте {entry.forms.nom}
+        </h2>
+        <p class="text-text-main leading-relaxed">{entry.role}</p>
+      </section>
+      <KitchenTable caption={`Замены: ${entry.forms.nom}`} head={["Чем заменить", "Пропорция", "Где подойдёт"]} rows={rows} wide />
+      <SubstituteCalculator entry={entry} />
+    </KitchenPage>
+  ) : (
+    <NotFoundPage />
+  )
+}
