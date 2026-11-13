@@ -17,7 +17,7 @@ const { preserveParams = {}, initialQuery = "", action = "/recipes", compact = f
 const autofocus = Astro.url.searchParams.get("action") === "search";
 ---
 
-<div class:list={["mx-auto", compact ? "w-full" : "max-w-3xl"]}>
+<div class:list={[compact ? "w-full" : "max-w-2xl"]}>
   <form action={action} method="GET" role="search" class="flex flex-row gap-2">
     {Object.entries(preserveParams).map(([name, value]) => (value ? <input type="hidden" name={name} value={value} /> : null))}
     <div class="relative flex-1">

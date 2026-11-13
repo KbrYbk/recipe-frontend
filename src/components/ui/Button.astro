@@ -33,7 +33,8 @@ const sizes = {
   sm: "px-4 py-2 text-sm gap-1.5",
   md: "px-5 py-2.5 text-base gap-2",
   lg: "px-6 py-3 text-base md:text-lg gap-2.5",
-  icon: "h-11 w-11 p-0 justify-center",
+  // Видимый размер 40px, область нажатия — 44px (псевдоэлемент), чтобы не менять высоту шапки.
+  icon: "relative h-10 w-10 p-0 justify-center before:absolute before:-inset-0.5 before:content-['']",
 };
 
 const widthStyle = fullWidth ? "w-full" : "";

@@ -37,10 +37,7 @@ const jsonLd = JSON.stringify(breadcrumbList).replace(/</g, "\\u003c").replace(/
 
 <script type="application/ld+json" set:html={jsonLd} is:inline />
 
-<nav
-  aria-label="Хлебные крошки"
-  class="glass-border-3d bg-card-bg/60 shadow-soft rounded-card text-text-muted mb-6 flex w-fit flex-wrap items-center gap-2 px-4 py-2 text-sm backdrop-blur-md print:hidden"
->
+<nav aria-label="Хлебные крошки" class="text-text-muted mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm print:hidden">
   <a href="/" class="hover:text-brand-ink flex items-center transition-colors" aria-label="Главная">
     <Icon name="lucide:home" class="h-4 w-4" />
   </a>
@@ -52,7 +49,7 @@ const jsonLd = JSON.stringify(breadcrumbList).replace(/</g, "\\u003c").replace(/
         <>
           <Icon name="lucide:chevron-right" class="h-3.5 w-3.5 shrink-0 opacity-50" aria-hidden="true" />
           {isLast ? (
-            <span class="text-text-main font-semibold" aria-current="page">
+            <span class="text-text-secondary font-medium" aria-current="page">
               {item.name}
             </span>
           ) : (

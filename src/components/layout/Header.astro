@@ -19,16 +19,16 @@ const linkClass = (active: boolean) =>
   }`;
 ---
 
-<header class="site-header glass-border-3d bg-card-bg/60 shadow-soft sticky top-0 z-50 backdrop-blur-md transition-transform duration-300 will-change-transform print:hidden">
+<header class="site-header material border-line ease-soft sticky top-0 z-50 border-b transition-transform duration-300 will-change-transform print:hidden">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-    <a href="/" class="text-brand-ink flex shrink-0 items-center gap-2 text-2xl font-semibold transition-transform active:scale-95 lg:text-3xl" aria-label="SwagEda — на главную">
+    <a href="/" class="text-brand pressable focus-ring rounded-control flex shrink-0 items-center gap-2 text-2xl font-semibold lg:text-[1.75rem]" aria-label="SwagEda — на главную">
       <img src="/favicon.svg" alt="" class="h-7 w-7 lg:h-8 lg:w-8" aria-hidden="true" />
-      <span class="tracking-tight">SwagEda</span>
+      <span class="tracking-[-0.02em]">SwagEda</span>
     </a>
 
     <!-- Desktop Navigation -->
     <!-- 768–1023px: компактнее (меньше отступы и шрифт), чтобы пункты не переносились на две строки -->
-    <nav class="hidden items-center gap-4 text-[15px] md:flex lg:gap-8 lg:text-base" aria-label="Основная навигация">
+    <nav class="hidden items-center gap-4 text-[0.9375rem] md:flex lg:gap-8 lg:text-base" aria-label="Основная навигация">
       {
         links.map((l) => (
           <a
@@ -44,12 +44,12 @@ const linkClass = (active: boolean) =>
 
       {
         !isHome && (
-          <Button variant="outline" size="icon" class="bg-page-bg shrink-0" aria-label="Поиск рецептов" aria-expanded="false" aria-controls="header-search" data-header-search-toggle>
+          <Button variant="ghost" size="icon" class="shrink-0" aria-label="Поиск рецептов" aria-expanded="false" aria-controls="header-search" data-header-search-toggle>
             <Icon name="lucide:search" class="h-5 w-5" aria-hidden="true" />
           </Button>
         )
       }
-      <Button variant="outline" size="icon" id="themeToggle" class="bg-page-bg shrink-0" aria-label="Переключить тему">
+      <Button variant="ghost" size="icon" id="themeToggle" class="shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-5 w-5" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-5 w-5" aria-hidden="true" />
       </Button>
