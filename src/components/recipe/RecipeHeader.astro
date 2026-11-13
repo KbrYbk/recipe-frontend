@@ -11,6 +11,7 @@ import FavoriteButton from "./FavoriteButton.astro";
 import LikeButton from "./LikeButton.astro";
 import ShareButton from "./ShareButton.astro";
 import { formatTime } from "../../lib/formatTime";
+import { gameForRecipeSlug, gamePagePath } from "../../lib/games";
 import { ACTION_BUTTON_CLASS, ACTION_LABEL_CLASS } from "./actionStyles";
 import type { Recipe } from "../../types/recipe";
 import { isoDate, servingsText } from "../../lib/recipeSchema";
@@ -21,6 +22,8 @@ interface Props {
 const { recipe } = Astro.props;
 const { id, title, cooking_time, difficulty, servings } = recipe;
 const calories = recipe.nutrition?.calories;
+// У некоторых рецептов есть игра (src/lib/games.ts): тогда рядом с «Режимом готовки» появляется кнопка «Играть».
+const game = gameForRecipeSlug(recipe.slug);
 
 const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
 const difficultyClass = difficulty === "hard" ? "text-red-500" : difficulty === "medium" ? "text-amber-600 dark:text-amber-500" : "text-emerald-600 dark:text-emerald-500";
@@ -134,6 +137,14 @@ const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
         <Button variant="primary" class="mt-1 h-12 w-full rounded-full! text-base sm:max-w-xs print:hidden" data-cook-open>
           <Icon name="lucide:chef-hat" slot="icon-left" class="h-5 w-5 shrink-0" aria-hidden="true" />
           Режим готовки
+        </Button>
+      )
+    }
+    {
+      game && (
+        <Button href={gamePagePath(recipe.url)} variant="outline" class="h-12 w-full rounded-full! text-base sm:max-w-xs print:hidden" data-game-link>
+          <Icon name="lucide:gamepad-2" slot="icon-left" class="h-5 w-5 shrink-0" aria-hidden="true" />
+          Играть в «{game.title}»
         </Button>
       )
     }

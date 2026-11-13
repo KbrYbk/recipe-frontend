@@ -1,0 +1,106 @@
+---
+/**
+ * Страница игры рецепта: /{категория}/{slug}/igra. Есть только у рецептов из src/lib/games.ts, иначе 404.
+ * Неверная категория или регистр → 301 на канонический путь. Рекламу даёт Layout, как на всех страницах.
+ */
+import { Icon } from "astro-icon/components";
+import Layout from "../../../layouts/Layout.astro";
+import Breadcrumbs from "../../../components/layout/Breadcrumbs.astro";
+import NotFoundPage from "../../../components/errors/NotFoundPage.astro";
+import UnavailablePage from "../../../components/errors/UnavailablePage.astro";
+import Button from "../../../components/ui/Button.astro";
+import { fetchRecipeBySlug } from "../../../lib/api/recipes";
+import { gameForRecipeSlug, gamePagePath } from "../../../lib/games";
+import { isCanonicalRecipePath, isValidRecipeSlug } from "../../../lib/recipeUrl";
+import { fitTitle } from "../../../lib/seo";
+
+const slugParam = String(Astro.params.recipe ?? "").toLowerCase();
+const game = isValidRecipeSlug(slugParam) ? gameForRecipeSlug(slugParam) : null;
+let state: "ok" | "not_found" | "unavailable" = "not_found";
+const recipeRes = game ? await fetchRecipeBySlug(slugParam) : null;
+
+if (recipeRes?.ok) state = "ok";
+else if (recipeRes && recipeRes.status !== 404) state = "unavailable";
+
+let recipe = recipeRes?.ok ? recipeRes.data : null;
+
+if (recipe) {
+  // Без path в ответе (старый API) редиректить некуда - временно недоступно, без петель.
+  if (!isCanonicalRecipePath(recipe.url)) {
+    recipe = null;
+    state = "unavailable";
+  } else if (Astro.url.pathname !== gamePagePath(recipe.url)) {
+    return Astro.redirect(gamePagePath(recipe.url), 301);
+  }
+}
+if (state === "not_found") Astro.response.status = 404;
+if (state === "unavailable") {
+  Astro.response.status = 503;
+  Astro.response.headers.set("Retry-After", "60");
+}
+
+const canonical = recipe ? gamePagePath(recipe.url) : "/";
+const title = game ? fitTitle([`Играть в «${game.title}» онлайн бесплатно | SwagEda`, `Играть в «${game.title}» онлайн бесплатно`, `Игра «${game.title}»`]) : "";
+const description = game ? `Бесплатная онлайн-игра «${game.title}» по мотивам рецепта на SwagEda: мини-игры, короткие уровни, прогресс сохраняется в браузере. Играйте с телефона или компьютера.` : "";
+const breadcrumbs =
+  recipe && game
+    ? [
+        { name: "Категории", href: "/categories" },
+        ...(recipe.category ? [{ name: recipe.category.title, href: recipe.category.href }] : []),
+        { name: recipe.title, href: recipe.url },
+        { name: "Игра", href: canonical },
+      ]
+    : [];
+---
+
+{state === "not_found" && <NotFoundPage title="Страница не найдена" />}
+{state === "unavailable" && <UnavailablePage />}
+{
+  recipe && game && (
+    <Layout title={title} description={description} canonical={canonical}>
+      <article class="mx-auto max-w-4xl px-0 py-2 md:px-4 md:py-6">
+        <Breadcrumbs items={breadcrumbs} />
+        <h1 class="text-text-main mb-4 text-3xl leading-tight font-bold text-balance md:text-4xl">Игра «{game.title}»</h1>
+
+        <div class="glass-border-3d bg-card-bg mx-auto w-full max-w-3xl overflow-hidden rounded-3xl shadow-md shadow-black/15" data-game-frame>
+          <iframe src={game.frameSrc} title={`Игра «${game.title}»`} class="block h-[min(80svh,720px)] min-h-[420px] w-full border-0" allow="autoplay; fullscreen" data-game-iframe />
+        </div>
+
+        <div class="mx-auto mt-4 flex w-full max-w-3xl flex-wrap items-center justify-between gap-3">
+          <Button href={recipe.url} variant="outline" size="sm">
+            <Icon name="lucide:chef-hat" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
+            Рецепт «{recipe.title}»
+          </Button>
+          <Button type="button" variant="outline" size="sm" class="hidden" data-game-fullscreen>
+            <Icon name="lucide:maximize" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
+            Во весь экран
+          </Button>
+        </div>
+
+        <section class="mx-auto mt-10 max-w-3xl" aria-labelledby="game-controls-heading">
+          <p class="text-text-muted mb-6 text-lg leading-relaxed">{game.intro}</p>
+          <h2 id="game-controls-heading" class="text-text-main mb-4 text-2xl font-bold">
+            Как играть
+          </h2>
+          <ul class="text-text-muted list-disc space-y-2 pl-6 text-lg leading-relaxed">
+            {game.controls.map((line) => (
+              <li>{line}</li>
+            ))}
+          </ul>
+        </section>
+      </article>
+    </Layout>
+  )
+}
+
+<script>
+  // Во весь экран: только там, где браузер разрешает это для фрейма (на iPhone такого режима нет - кнопка остаётся скрытой).
+  const frame = document.querySelector<HTMLElement>("[data-game-iframe]");
+  const button = document.querySelector<HTMLButtonElement>("[data-game-fullscreen]");
+  if (frame && button && document.fullscreenEnabled && typeof frame.requestFullscreen === "function") {
+    button.classList.remove("hidden");
+    button.addEventListener("click", () => {
+      frame.requestFullscreen().catch(() => {});
+    });
+  }
+</script>
