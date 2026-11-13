@@ -1,0 +1,66 @@
+---
+/**
+ * Список продуктов подраздела по группам. `filter` — поле быстрого поиска по названию
+ * (без JS список просто показан целиком).
+ */
+import { Icon } from "astro-icon/components";
+import { filterKey } from "../../lib/kitchen/filter";
+
+export interface KitchenHubGroup {
+  group: string;
+  entries: { href: string; title: string }[];
+}
+
+interface Props {
+  groups: KitchenHubGroup[];
+  filter?: boolean;
+  /** Уровень заголовков групп. */
+  headingLevel?: "h2" | "h3";
+}
+
+const { groups, filter = false, headingLevel = "h2" } = Astro.props;
+const Heading = headingLevel;
+---
+
+<div data-kitchen-grid>
+  {
+    filter && (
+      <div class="relative mb-8 max-w-xl">
+        <Icon name="lucide:search" class="text-text-muted pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 opacity-70" aria-hidden="true" />
+        <input
+          type="search"
+          maxlength="60"
+          autocomplete="off"
+          placeholder="Найти продукт: мука, курица, рис…"
+          aria-label="Найти продукт в списке"
+          class="bg-card-bg text-text-main placeholder:text-text-muted focus:ring-brand/30 border-line w-full rounded-2xl border py-3 pr-4 pl-11 text-base focus:ring-4 focus:outline-none"
+          data-kitchen-filter
+        />
+      </div>
+    )
+  }
+
+  <div class="space-y-8">
+    {
+      groups.map((g) => (
+        <section data-kitchen-group>
+          <Heading class="text-text-main border-line mb-3 border-b pb-2 text-lg font-bold first-letter:uppercase md:text-xl">{g.group}</Heading>
+          <ul class="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">
+            {g.entries.map((e) => (
+              <li data-kitchen-item={filterKey(e.title)}>
+                <a href={e.href} class="text-text-main hover:text-brand inline-block py-1.5 leading-snug font-medium transition-colors first-letter:uppercase">
+                  {e.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+  <p class="text-text-muted hidden text-lg" data-kitchen-empty role="status">Такого продукта в списке пока нет.</p>
+</div>
+
+<script>
+  import "../../scripts/kitchen-filter";
+</script>

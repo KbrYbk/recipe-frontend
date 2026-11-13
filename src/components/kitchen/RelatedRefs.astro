@@ -1,0 +1,53 @@
+---
+/** Перелинковка страницы продукта: тот же продукт в других подразделах и соседи по группе. */
+import { Icon } from "astro-icon/components";
+import { getSection, neighbourRefs, sameProductRefs } from "../../lib/kitchen/data";
+import type { KitchenEntryBase, KitchenSectionKey } from "../../types/kitchen";
+
+interface Props {
+  section: KitchenSectionKey;
+  entry: KitchenEntryBase;
+}
+
+const { section, entry } = Astro.props;
+const same = sameProductRefs(section, entry);
+const neighbours = neighbourRefs(section, entry, 6);
+const linkClass = "text-text-main hover:text-brand group flex items-start gap-2 py-1.5 leading-snug font-medium transition-colors";
+---
+
+{
+  (same.length > 0 || neighbours.length > 0) && (
+    <nav aria-label="Смотрите также" class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+      {same.length > 0 && (
+        <div>
+          <h2 class="text-text-main mb-3 text-xl font-bold">Ещё про {entry.forms.acc}</h2>
+          <ul>
+            {same.map((ref) => (
+              <li>
+                <a href={ref.href} class={linkClass}>
+                  <Icon name={getSection(ref.section).icon} class="text-brand mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                  {ref.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {neighbours.length > 0 && (
+        <div>
+          <h2 class="text-text-main mb-3 text-xl font-bold">Похожие продукты</h2>
+          <ul>
+            {neighbours.map((ref) => (
+              <li>
+                <a href={ref.href} class={linkClass}>
+                  <Icon name="lucide:chevron-right" class="text-text-muted mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                  {ref.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </nav>
+  )
+}

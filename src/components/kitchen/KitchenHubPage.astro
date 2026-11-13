@@ -1,0 +1,50 @@
+---
+/** Хаб подраздела справочника: H1, вводный абзац, все продукты по группам с фильтром, ItemList JSON-LD. */
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../layout/Breadcrumbs.astro";
+import KitchenHubGrid from "./KitchenHubGrid.astro";
+import { KITCHEN_ROOT, entryHref, getAll, getSection, groupEntries, sectionHref } from "../../lib/kitchen/data";
+import { kitchenSectionSeo } from "../../lib/kitchen/seo";
+import { buildItemListJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
+import type { KitchenEntryBase, KitchenSectionKey } from "../../types/kitchen";
+
+interface Props {
+  section: KitchenSectionKey;
+}
+
+const { section } = Astro.props;
+const meta = getSection(section);
+const entries: readonly KitchenEntryBase[] = getAll(section);
+const seo = kitchenSectionSeo(section, entries.length);
+const canonical = sectionHref(section);
+const groups = groupEntries(entries).map((g) => ({ group: g.group, entries: g.entries.map((e) => ({ href: entryHref(section, e.slug), title: e.forms.nom })) }));
+
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const itemListJsonLd = serializeJsonLd(
+  buildItemListJsonLd(
+    entries.map((e) => ({ url: entryHref(section, e.slug), title: meta.heading(e.forms) })),
+    origin,
+    0,
+    seo.h1,
+  ),
+);
+---
+
+<Layout title={seo.title} description={seo.description} canonical={canonical}>
+  <Fragment slot="head"><script type="application/ld+json" is:inline set:html={itemListJsonLd} /></Fragment>
+
+  <div class="mx-auto max-w-6xl md:px-4">
+    <header class="border-line mb-6 border-b pb-6 md:mb-10 md:pt-6 md:pb-10">
+      <Breadcrumbs
+        items={[
+          { name: "Справочник", href: KITCHEN_ROOT },
+          { name: meta.name, href: canonical },
+        ]}
+      />
+      <h1 class="text-text-main text-2xl leading-tight font-bold md:text-5xl">{seo.h1}</h1>
+      <p class="text-text-muted mt-3 max-w-3xl text-base leading-relaxed md:mt-5 md:text-lg">{seo.intro}</p>
+    </header>
+
+    <KitchenHubGrid groups={groups} filter />
+  </div>
+</Layout>

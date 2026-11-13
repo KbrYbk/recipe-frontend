@@ -118,3 +118,42 @@ export function updatedDates(key?: KitchenSectionKey): string[] {
   const keys = key ? [key] : KITCHEN_SECTIONS.map((s) => s.key);
   return keys.flatMap((k) => SORTED[k].map((e) => e.updatedAt));
 }
+
+export interface KitchenRef {
+  section: KitchenSectionKey;
+  slug: string;
+  href: string;
+  /** Анкор ссылки: заголовок страницы («Сколько грамм муки в стакане и ложке»). */
+  title: string;
+}
+
+function toRef<K extends KitchenSectionKey>(key: K, entry: KitchenEntryMap[K]): KitchenRef {
+  return { section: key, slug: entry.slug, href: entryHref(key, entry.slug), title: getSection(key).heading(entry.forms) };
+}
+
+const aliasKey = (value: string) => value.toLocaleLowerCase("ru-RU").replace(/ё/g, "е").trim();
+
+/** Тот же продукт в других подразделах: совпадает slug или хотя бы один алиас. Не больше одной ссылки на подраздел. */
+export function sameProductRefs(key: KitchenSectionKey, entry: KitchenEntryBase): KitchenRef[] {
+  const aliases = new Set(entry.aliases.map(aliasKey));
+  const refs: KitchenRef[] = [];
+  for (const section of KITCHEN_SECTIONS) {
+    if (section.key === key) continue;
+    const match = INDEX[section.key].get(entry.slug) ?? SORTED[section.key].find((other) => other.aliases.some((a) => aliases.has(aliasKey(a))));
+    if (match) refs.push(toRef(section.key, match));
+  }
+  return refs;
+}
+
+/**
+ * Соседи по группе в том же подразделе: следующие по алфавиту, по кругу.
+ * Так каждая страница группы получает одинаковое число входящих ссылок.
+ */
+export function neighbourRefs(key: KitchenSectionKey, entry: KitchenEntryBase, limit = 6): KitchenRef[] {
+  const group = SORTED[key].filter((e) => e.group === entry.group);
+  const start = group.findIndex((e) => e.slug === entry.slug);
+  if (start < 0) return [];
+  const refs: KitchenRef[] = [];
+  for (let i = 1; i < group.length && refs.length < limit; i++) refs.push(toRef(key, group[(start + i) % group.length]));
+  return refs;
+}

@@ -1,0 +1,45 @@
+---
+/** Блок «Частые вопросы» с разметкой FAQPage (вид — как у FAQ категорий в каталоге). */
+import { Icon } from "astro-icon/components";
+import { serializeJsonLd } from "../../lib/recipeSchema";
+import type { KitchenFaqItem } from "../../types/kitchen";
+
+interface Props {
+  items: readonly KitchenFaqItem[];
+  heading?: string;
+}
+
+const { items, heading = "Частые вопросы" } = Astro.props;
+const jsonLd =
+  items.length > 0
+    ? serializeJsonLd({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: items.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+      })
+    : "";
+---
+
+{
+  items.length > 0 && (
+    <section aria-labelledby="kitchen-faq-heading">
+      <script type="application/ld+json" is:inline set:html={jsonLd} />
+      <h2 id="kitchen-faq-heading" class="text-text-main mb-4 text-2xl font-bold">
+        {heading}
+      </h2>
+      <div class="space-y-3">
+        {items.map((f) => (
+          <details class="glass-border-3d bg-card-bg/60 group rounded-2xl px-5 py-4 shadow-sm shadow-black/15">
+            <summary class="text-text-main cursor-pointer list-none font-semibold">
+              <span class="flex items-center justify-between gap-4">
+                {f.q}
+                <Icon name="lucide:chevron-down" class="text-text-muted h-5 w-5 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+              </span>
+            </summary>
+            <p class="text-text-muted mt-3 leading-relaxed">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}

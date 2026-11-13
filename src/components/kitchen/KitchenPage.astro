@@ -1,0 +1,65 @@
+---
+/**
+ * Оболочка страницы продукта в справочнике. Порядок блоков одинаков для всех подразделов:
+ * H1 → прямой ответ → (слот: таблица, виджет, советы) → FAQ → (слот recipes) → перелинковка → источники.
+ */
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../layout/Breadcrumbs.astro";
+import KitchenFaq from "./KitchenFaq.astro";
+import RelatedRefs from "./RelatedRefs.astro";
+import { KITCHEN_ROOT, entryHref, getSection, sectionHref } from "../../lib/kitchen/data";
+import { capitalize } from "../../lib/kitchen/seo";
+import type { PageSeo } from "../../lib/seo";
+import type { KitchenEntryBase, KitchenSectionKey } from "../../types/kitchen";
+
+interface Props {
+  section: KitchenSectionKey;
+  entry: KitchenEntryBase;
+  seo: PageSeo;
+  /** Прямой ответ с цифрой: первый абзац под заголовком. */
+  lead: string;
+}
+
+const { section, entry, seo, lead } = Astro.props;
+const meta = getSection(section);
+const canonical = entryHref(section, entry.slug);
+const breadcrumbs = [
+  { name: "Справочник", href: KITCHEN_ROOT },
+  { name: meta.name, href: sectionHref(section) },
+  { name: capitalize(entry.forms.nom), href: canonical },
+];
+const updated = new Date(entry.updatedAt);
+const updatedText = Number.isFinite(updated.getTime()) ? new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(updated) : "";
+---
+
+<Layout title={seo.title} description={seo.description} canonical={canonical} ogType="article">
+  <article class="mx-auto max-w-4xl py-2 md:px-4 md:py-8" data-kitchen-page={section}>
+    <Breadcrumbs items={breadcrumbs} />
+
+    <header class="mb-8">
+      <h1 class="text-text-main text-3xl leading-tight font-bold text-balance md:text-5xl">{seo.h1}</h1>
+      <p class="text-text-main mt-5 text-lg leading-relaxed md:text-xl" data-kitchen-lead>{lead}</p>
+    </header>
+
+    <div class="space-y-10">
+      <slot />
+      <KitchenFaq items={entry.faq} />
+      <slot name="recipes" />
+      <RelatedRefs section={section} entry={entry} />
+    </div>
+
+    <footer class="border-line text-text-muted mt-12 border-t pt-6 text-sm leading-relaxed">
+      <p class="font-semibold">Источники данных</p>
+      <ul class="mt-1 space-y-0.5">
+        {entry.sources.map((source) => <li>{source}</li>)}
+      </ul>
+      {
+        updatedText && (
+          <p class="mt-3">
+            Обновлено: <time datetime={entry.updatedAt}>{updatedText}</time>
+          </p>
+        )
+      }
+    </footer>
+  </article>
+</Layout>

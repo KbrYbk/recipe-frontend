@@ -3,7 +3,8 @@
 import { Icon } from "astro-icon/components";
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
-import { KITCHEN_NAME, KITCHEN_ROOT, filledSections, getAll, sectionHref, updatedDates } from "../../lib/kitchen/data";
+import KitchenHubGrid from "../../components/kitchen/KitchenHubGrid.astro";
+import { KITCHEN_NAME, KITCHEN_ROOT, entryHref, filledSections, getAll, groupEntries, sectionHref, updatedDates } from "../../lib/kitchen/data";
 import { conditionalResponse } from "../../lib/kitchen/http";
 import { kitchenHubSeo } from "../../lib/kitchen/seo";
 import { buildItemListJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
@@ -13,7 +14,12 @@ const notModified = conditionalResponse(Astro.request, Astro.response.headers, u
 if (notModified) return notModified;
 
 const seo = kitchenHubSeo();
-const sections = filledSections().map((s) => ({ ...s, href: sectionHref(s.key), count: getAll(s.key).length }));
+const sections = filledSections().map((s) => ({
+  ...s,
+  href: sectionHref(s.key),
+  count: getAll(s.key).length,
+  groups: groupEntries(getAll(s.key)).map((g) => ({ group: g.group, entries: g.entries.map((e) => ({ href: entryHref(s.key, e.slug), title: e.forms.nom })) })),
+}));
 const origin = Astro.site?.origin ?? Astro.url.origin;
 const itemListJsonLd =
   sections.length > 0
@@ -65,6 +71,19 @@ const itemListJsonLd =
       ) : (
         <p class="text-text-muted text-lg">Разделы справочника скоро появятся.</p>
       )
+    }
+
+    {
+      sections.map((s) => (
+        <section class="mt-14" aria-labelledby={`kitchen-${s.path}`}>
+          <h2 id={`kitchen-${s.path}`} class="text-text-main mb-6 text-2xl font-bold md:text-3xl">
+            <a href={s.href} class="hover:text-brand transition-colors">
+              {s.name}
+            </a>
+          </h2>
+          <KitchenHubGrid groups={s.groups} headingLevel="h3" />
+        </section>
+      ))
     }
   </div>
 </Layout>

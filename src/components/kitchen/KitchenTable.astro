@@ -1,0 +1,67 @@
+---
+/**
+ * Таблица справочника. Стили — только классами на своих элементах (глобальных правил для table/td в проекте нет).
+ * На узких экранах таблица прокручивается по горизонтали внутри карточки и не растягивает страницу.
+ */
+import Surface from "../ui/Surface.astro";
+
+export interface KitchenTableCell {
+  text: string;
+  /** Мелкая поясняющая строка под значением. */
+  note?: string;
+}
+
+interface Props {
+  /** Подпись таблицы (видна, читается скринридером). */
+  caption: string;
+  head: string[];
+  /** Первая ячейка строки — заголовок строки. */
+  rows: (string | KitchenTableCell)[][];
+  class?: string;
+}
+
+const { caption, head, rows, class: className } = Astro.props;
+const cell = (c: string | KitchenTableCell): KitchenTableCell => (typeof c === "string" ? { text: c } : c);
+---
+
+<Surface padding="none" class:list={["overflow-hidden", className]}>
+  <div class="overflow-x-auto overscroll-x-contain" tabindex="0" role="region" aria-label={caption}>
+    <table class="w-full min-w-72 border-collapse text-left text-base">
+      <caption class="text-text-muted border-line border-b px-4 py-3 text-left text-sm font-semibold md:px-6">{caption}</caption>
+      <thead>
+        <tr class="bg-accent-soft">
+          {
+            head.map((h) => (
+              <th scope="col" class="text-text-main px-4 py-3 text-sm font-bold whitespace-nowrap md:px-6">
+                {h}
+              </th>
+            ))
+          }
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((row) => (
+            <tr class="border-line border-t">
+              {row.map((raw, i) => {
+                const c = cell(raw);
+                const note = c.note && <span class="text-text-muted mt-0.5 block text-sm font-normal">{c.note}</span>;
+                return i === 0 ? (
+                  <th scope="row" class="text-text-main px-4 py-3 align-top font-semibold md:px-6">
+                    {c.text}
+                    {note}
+                  </th>
+                ) : (
+                  <td class="text-text-main px-4 py-3 align-top tabular-nums md:px-6">
+                    {c.text}
+                    {note}
+                  </td>
+                );
+              })}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</Surface>
