@@ -1,0 +1,35 @@
+---
+/** Ссылки на подразделы «Кухонного справочника»: блок под фильтрами каталога (виден на широких экранах, где есть боковая колонка). */
+import { Icon } from "astro-icon/components";
+import { KITCHEN_NAME, KITCHEN_ROOT, filledSections, sectionHref } from "../../lib/kitchen/data";
+
+const sections = filledSections().map((s) => ({ name: s.name, lead: s.lead, icon: s.icon, href: sectionHref(s.key) }));
+---
+
+{
+  sections.length > 0 && (
+    <nav aria-labelledby="catalog-kitchen-heading" class="glass-border-3d bg-card-bg/60 mt-6 hidden rounded-3xl p-5 shadow-xl shadow-black/15 backdrop-blur-md lg:block lg:p-6" data-catalog-kitchen>
+      <h2 id="catalog-kitchen-heading" class="text-text-main mb-4 flex items-center gap-2 text-xl font-bold">
+        <Icon name="lucide:book-open" class="text-brand h-5 w-5 shrink-0" aria-hidden="true" />
+        <a href={KITCHEN_ROOT} class="hover:text-brand transition-colors">
+          {KITCHEN_NAME}
+        </a>
+      </h2>
+      <ul class="-mx-2 space-y-1">
+        {sections.map((s) => (
+          <li>
+            <a href={s.href} class="group hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors">
+              <span class="bg-accent-soft text-brand flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
+                <Icon name={s.icon} class="h-4.5 w-4.5" aria-hidden="true" />
+              </span>
+              <span class="min-w-0">
+                <span class="text-text-main group-hover:text-brand block font-semibold transition-colors">{s.name}</span>
+                <span class="text-text-muted mt-0.5 block text-sm leading-snug">{s.lead}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

@@ -35,10 +35,15 @@ const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
 
 <header class="mb-6 lg:mb-0">
   <h1
-    class="text-text-main mb-4 text-3xl leading-[1.08] font-semibold tracking-[-0.025em] text-balance md:mb-5 md:text-5xl lg:text-[2.75rem] xl:text-[3.25rem] print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-extrabold"
+    class="text-text-main mb-1 text-3xl leading-[1.08] font-semibold tracking-[-0.025em] text-balance md:mb-2 md:text-5xl lg:text-[2.75rem] xl:text-[3.25rem] print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-extrabold"
   >
     {title}
   </h1>
+
+  {/* Рейтинг — сразу под заголовком; подпись «Ваша оценка» появляется под звёздами, поэтому снизу оставлен запас. */}
+  <div class="mb-3 flex md:mb-4">
+    <RatingStars recipeId={id} averageRating={recipe.average_rating} />
+  </div>
 
   <p class="text-text-muted mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm md:mb-4 print:mb-2" data-recipe-byline>
     <span>Пошаговый рецепт с фото</span>
@@ -109,7 +114,6 @@ const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
           </span>
         )
       }
-      <RatingStars recipeId={id} averageRating={recipe.average_rating} />
     </div>
 
     <!-- Вторичные действия: на мобильном — иконки (подписи в aria-label), с sm — с подписями -->
