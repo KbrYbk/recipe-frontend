@@ -1,0 +1,11 @@
+---
+/** Хаб подраздела «Сколько варить». */
+import KitchenHubPage from "../../../components/kitchen/KitchenHubPage.astro";
+import { updatedDates } from "../../../lib/kitchen/data";
+import { conditionalResponse } from "../../../lib/kitchen/http";
+
+const notModified = conditionalResponse(Astro.request, Astro.response.headers, updatedDates("cooking"));
+if (notModified) return notModified;
+---
+
+<KitchenHubPage section="cooking" />

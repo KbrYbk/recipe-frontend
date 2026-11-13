@@ -1,0 +1,51 @@
+---
+/** Страница продукта: время варки разными способами, признаки готовности, таймер. */
+import { Icon } from "astro-icon/components";
+import NotFoundPage from "../../../components/errors/NotFoundPage.astro";
+import CookTimer from "../../../components/kitchen/CookTimer.astro";
+import KitchenPage from "../../../components/kitchen/KitchenPage.astro";
+import KitchenTable from "../../../components/kitchen/KitchenTable.astro";
+import { cookingLead, cookingSeo, formatMinutes, methodLabel } from "../../../lib/kitchen/cooking";
+import { getBySlug } from "../../../lib/kitchen/data";
+import { conditionalResponse } from "../../../lib/kitchen/http";
+
+const entry = getBySlug("cooking", String(Astro.params.slug ?? ""));
+if (!entry) Astro.response.status = 404;
+
+const notModified = entry ? conditionalResponse(Astro.request, Astro.response.headers, [entry.updatedAt]) : null;
+if (notModified) return notModified;
+
+const rows = entry ? entry.methods.map((m) => [{ text: methodLabel(m), note: m.note }, formatMinutes(m.minMin, m.maxMin)]) : [];
+---
+
+{
+  entry ? (
+    <KitchenPage section="cooking" entry={entry} seo={cookingSeo(entry)} lead={cookingLead(entry)}>
+      <KitchenTable caption={`Время варки: ${entry.forms.nom}`} head={["Способ", "Время"]} rows={rows} />
+      <CookTimer entry={entry} />
+      <section aria-labelledby="readiness-heading">
+        <h2 id="readiness-heading" class="text-text-main mb-4 text-2xl font-bold">
+          Как понять, что готово
+        </h2>
+        <p class="text-text-main leading-relaxed">{entry.readiness}</p>
+      </section>
+      {entry.tips.length > 0 && (
+        <section aria-labelledby="cooking-tips-heading">
+          <h2 id="cooking-tips-heading" class="text-text-main mb-4 text-2xl font-bold">
+            Советы
+          </h2>
+          <ul class="space-y-2">
+            {entry.tips.map((tip) => (
+              <li class="text-text-main flex items-start gap-3 leading-relaxed">
+                <Icon name="lucide:check" class="text-brand mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </KitchenPage>
+  ) : (
+    <NotFoundPage />
+  )
+}
