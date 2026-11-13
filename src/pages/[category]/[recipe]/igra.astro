@@ -10,9 +10,10 @@ import NotFoundPage from "../../../components/errors/NotFoundPage.astro";
 import UnavailablePage from "../../../components/errors/UnavailablePage.astro";
 import Button from "../../../components/ui/Button.astro";
 import { fetchRecipeBySlug } from "../../../lib/api/recipes";
-import { gameForRecipeSlug, gamePagePath } from "../../../lib/games";
+import { buildGameJsonLd, gameForRecipeSlug, gamePagePath } from "../../../lib/games";
 import { isCanonicalRecipePath, isValidRecipeSlug } from "../../../lib/recipeUrl";
 import { fitTitle } from "../../../lib/seo";
+import { serializeJsonLd } from "../../../lib/recipeSchema";
 
 const slugParam = String(Astro.params.recipe ?? "").toLowerCase();
 const game = isValidRecipeSlug(slugParam) ? gameForRecipeSlug(slugParam) : null;
@@ -41,7 +42,10 @@ if (state === "unavailable") {
 
 const canonical = recipe ? gamePagePath(recipe.url) : "/";
 const title = game ? fitTitle([`Играть в «${game.title}» онлайн бесплатно | SwagEda`, `Играть в «${game.title}» онлайн бесплатно`, `Игра «${game.title}»`]) : "";
-const description = game ? `Бесплатная онлайн-игра «${game.title}» по мотивам рецепта на SwagEda: мини-игры, короткие уровни, прогресс сохраняется в браузере. Играйте с телефона или компьютера.` : "";
+const description = game ? game.description : "";
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const absoluteImage = recipe?.main_image ? (recipe.main_image.startsWith("http") ? recipe.main_image : new URL(recipe.main_image, origin).href) : undefined;
+const gameJsonLd = recipe && game ? serializeJsonLd(buildGameJsonLd(game, { origin, path: canonical, recipePath: recipe.url, recipeTitle: recipe.title, image: absoluteImage })) : "";
 const breadcrumbs =
   recipe && game
     ? [
@@ -57,7 +61,8 @@ const breadcrumbs =
 {state === "unavailable" && <UnavailablePage />}
 {
   recipe && game && (
-    <Layout title={title} description={description} canonical={canonical} adLayout="sides">
+    <Layout title={title} description={description} canonical={canonical} image={recipe.main_image} imageAlt={`Фото блюда: ${recipe.title}`} adLayout="game">
+      <script slot="head" type="application/ld+json" is:inline set:html={gameJsonLd} />
       <article class="mx-auto max-w-4xl px-0 py-2 md:px-4 md:py-6">
         <Breadcrumbs items={breadcrumbs} />
         <h1 class="text-text-main mb-4 text-3xl leading-tight font-bold text-balance md:text-4xl">Игра «{game.title}»</h1>
@@ -78,7 +83,11 @@ const breadcrumbs =
         </div>
 
         <section class="mx-auto mt-10 max-w-3xl" aria-labelledby="game-controls-heading">
-          <p class="text-text-muted mb-6 text-lg leading-relaxed">{game.intro}</p>
+          <p class="text-text-muted mb-4 text-lg leading-relaxed">{game.intro}</p>
+          {game.about.map((paragraph) => (
+            <p class="text-text-muted mb-4 text-lg leading-relaxed">{paragraph}</p>
+          ))}
+          <div class="mb-6" />
           <h2 id="game-controls-heading" class="text-text-main mb-4 text-2xl font-bold">
             Как играть
           </h2>
