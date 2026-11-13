@@ -18,5 +18,7 @@ export function navSection(pathname: string, search: URLSearchParams | string = 
   if (RECIPE_PATHS.has(path) || RECIPE_PREFIXES.some((p) => path.startsWith(p))) return "recipes";
   // Страница рецепта: /{категория}/{slug} — единственные двухсегментные страницы, кроме префиксов выше.
   if (/^\/[^/]+\/[^/]+$/.test(path) && !path.startsWith("/partials/")) return "recipes";
+  // Страница игры рецепта: /{категория}/{slug}/igra.
+  if (/^\/[^/]+\/[^/]+\/igra$/.test(path)) return "recipes";
   return null;
 }

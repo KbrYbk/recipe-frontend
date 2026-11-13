@@ -3,21 +3,26 @@ import { Icon } from "astro-icon/components";
 import Button from "../ui/Button.astro";
 import { ACTION_BUTTON_CLASS, ACTION_LABEL_CLASS } from "./actionStyles";
 
+import { formatCount } from "../../lib/catalog";
+
 interface Props {
   recipeId: number;
+  /** Сколько лайков у рецепта сейчас. */
+  likes?: number;
 }
-const { recipeId } = Astro.props;
+const { recipeId, likes = 0 } = Astro.props;
 ---
 
 <like-button data-id={recipeId} class="block shrink-0">
   <Button variant="outline" aria-label="Лайкнуть рецепт" aria-pressed="false" size="sm" class={`like-btn ${ACTION_BUTTON_CLASS}`}>
     <Icon name="lucide:heart" slot="icon-left" class="heart-icon h-4 w-4 shrink-0" aria-hidden="true" />
-    <span class={ACTION_LABEL_CLASS}>Лайк</span>
+    <span class={ACTION_LABEL_CLASS}>Лайк<span class="like-count text-text-muted ml-1 font-medium tabular-nums" data-count={likes}>{likes > 0 ? formatCount(likes) : ""}</span></span>
   </Button>
 </like-button>
 
 <script>
   import { incrementLike } from "../../lib/client/api";
+  import { formatCount } from "../../lib/catalog";
   import { hasId, LIKES_KEY, toggleId } from "../../lib/client/storage";
   import { showToast } from "../../lib/client/toast";
 
@@ -34,6 +39,7 @@ const { recipeId } = Astro.props;
     connectedCallback() {
       const btn = this.querySelector<HTMLButtonElement>(".like-btn");
       const icon = this.querySelector(".heart-icon");
+      const counter = this.querySelector<HTMLElement>(".like-count");
       const recipeId = Number(this.dataset.id);
       if (!btn || !recipeId) return;
 
@@ -46,6 +52,12 @@ const { recipeId } = Astro.props;
         icon?.classList.toggle("text-rose-500", active);
       };
 
+      const showCount = (n: number) => {
+        if (!counter || !Number.isFinite(n) || n < 0) return;
+        counter.dataset.count = String(n);
+        counter.textContent = n > 0 ? formatCount(n) : "";
+      };
+
       apply(hasId(LIKES_KEY, recipeId));
       let busy = false;
 
@@ -56,9 +68,21 @@ const { recipeId } = Astro.props;
         try {
           const res = await incrementLike(recipeId);
           if (res.ok) {
+            let body: { likes?: number; already_liked?: boolean } | null = null;
+            try {
+              body = await res.json();
+            } catch {
+              body = null;
+            }
             toggleId(LIKES_KEY, recipeId, true);
             apply(true);
-            showToast(MESSAGES[Math.floor(Math.random() * MESSAGES.length)], "success");
+            // Бэкенд отдаёт актуальное число (с учётом нашего лайка); страница могла прийти из кэша со старым.
+            if (typeof body?.likes === "number") showCount(body.likes);
+            else showCount(Number(counter?.dataset.count ?? 0) + 1);
+            if (body?.already_liked) showToast("Вы уже ставили лайк этому рецепту", "info");
+            else showToast(MESSAGES[Math.floor(Math.random() * MESSAGES.length)], "success");
+          } else if (res.status === 429) {
+            showToast("Слишком часто. Подождите минуту и попробуйте снова.", "error");
           } else {
             showToast("Не удалось поставить лайк. Попробуйте позже.", "error");
           }

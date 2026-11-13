@@ -18,6 +18,8 @@ export function buildRobotsTxt(origin: string): string {
     `Sitemap: ${origin.replace(/\/+$/, "")}/sitemap.xml`,
     // «Кухонный справочник»: отдельный файл, его отдаёт фронт (src/pages/sitemap_kitchen.xml.ts).
     `Sitemap: ${origin.replace(/\/+$/, "")}/sitemap_kitchen.xml`,
+    // Страницы игр рецептов: отдельный файл, его отдаёт фронт (src/pages/sitemap_games.xml.ts).
+    `Sitemap: ${origin.replace(/\/+$/, "")}/sitemap_games.xml`,
     "",
   ].join("\n");
 }

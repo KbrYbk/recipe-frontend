@@ -18,8 +18,8 @@ describe("robots.txt", () => {
     }
     expect(buildRobotsTxt("https://swageda.ru/")).toContain("Sitemap: https://swageda.ru/sitemap.xml");
   });
-  it("вторая строка Sitemap — справочник", () => {
+  it("после основного sitemap идут справочник и игры", () => {
     const sitemaps = txt.split("\n").filter((l) => l.startsWith("Sitemap:"));
-    expect(sitemaps).toEqual(["Sitemap: https://swageda.ru/sitemap.xml", "Sitemap: https://swageda.ru/sitemap_kitchen.xml"]);
+    expect(sitemaps).toEqual(["Sitemap: https://swageda.ru/sitemap.xml", "Sitemap: https://swageda.ru/sitemap_kitchen.xml", "Sitemap: https://swageda.ru/sitemap_games.xml"]);
   });
 });

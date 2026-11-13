@@ -19,6 +19,11 @@ interface Props {
   canonical?: string;
   noindex?: boolean;
   ogType?: "website" | "article";
+  /**
+   * Состав рекламы страницы. По умолчанию - все блоки сайта. "sides" - только боковые баннеры (страницы с играми:
+   * без верхнего и нижнего баннеров, fullscreen и плавающей рекламы, чтобы не провоцировать случайные клики).
+   */
+  adLayout?: "default" | "sides";
   // Добавляем пропс для данных рецепта
   recipeData?: {
     publishDate?: string;
@@ -30,7 +35,7 @@ interface Props {
 /** Картинка для соцсетей по умолчанию: 1200×630 (размеры заявляем только для неё — у фото рецептов они разные). */
 const DEFAULT_OG_IMAGE = "/og-default.png";
 
-const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image, imageAlt, canonical, noindex = false, ogType = "website", recipeData } = Astro.props;
+const { title, description = "Лучшие рецепты для каждого: просто, вкусно и понятно.", image, imageAlt, canonical, noindex = false, ogType = "website", adLayout = "default", recipeData } = Astro.props;
 
 // 1. Сначала определяем базовый URL сайта (из конфига или текущего окружения)
 const siteURL = Astro.site ? Astro.site.origin : Astro.url.origin;
@@ -203,18 +208,18 @@ const jsonLdGraph = {
     <PageProgress />
     <Header />
     <!-- Баннер 15 — над контентом, виден на всех страницах -->
-    <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" />
+    {adLayout === "default" && <AdSlot id="R-A-19056160-15" className="mt-4 mb-2 max-w-6xl" />}
     <main id="main-content" tabindex="-1" class="main-content-transition grow px-4 pt-4 pb-24 md:px-8 md:pt-8 md:pb-8 lg:px-12">
       <slot />
     </main>
     <!-- Баннер 16 — после контента, перед футером -->
-    <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" />
+    {adLayout === "default" && <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" />}
     <Footer />
     <BottomNav />
     <BackToTop />
     <CookieConsent />
     <!-- Скрытый контейнер для ID глобальной рекламы (Fullscreen и FloorAd) -->
-    <div id="ya-global-ads" data-fullscreen="R-A-19056160-20" data-floor="R-A-19056160-21" class="hidden" aria-hidden="true"></div>
+    {adLayout === "default" && <div id="ya-global-ads" data-fullscreen="R-A-19056160-20" data-floor="R-A-19056160-21" class="hidden" aria-hidden="true" />}
     <script>
       import "../scripts/consent";
       import "../scripts/ads.js";
