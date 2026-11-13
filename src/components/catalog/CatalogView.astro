@@ -175,7 +175,7 @@ const searchParams: Record<string, string> = {
     }
 
     <!-- Сортировка (горизонтальная прокрутка на мобильных) + кнопка фильтров на мобильных -->
-    <div class="mb-4 flex items-center gap-2 md:mb-6">
+    <div class="mb-5 flex items-center gap-2 md:mb-6">
       <button
         type="button"
         class="glass-border-3d bg-card-bg text-text-main rounded-control flex h-9 shrink-0 cursor-pointer items-center gap-1.5 px-3 text-sm font-semibold lg:hidden"
@@ -421,6 +421,16 @@ const searchParams: Record<string, string> = {
     filtersToggle?.addEventListener("click", () => {
       const open = panel?.classList.toggle("hidden") === false;
       filtersToggle.setAttribute("aria-expanded", String(open));
+      // Панель появляется от своей кнопки: короткий подъём и проявление (без анимации при «уменьшении движения»).
+      if (open && panel && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        panel.animate(
+          [
+            { opacity: 0, transform: "translateY(-8px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 220, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+        );
+      }
     });
   }
   initCatalog();
