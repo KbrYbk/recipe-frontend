@@ -25,7 +25,7 @@ function route(map: Record<string, { ok: boolean; status: number; data?: unknown
 describe("лендинги: разбор", () => {
   it("slug-кандидаты", () => {
     expect(isLandingSlugCandidate("bliny-na-moloke")).toBe(true);
-    for (const s of ["", "Bliny", "bliny_na", "блины", "recipes", "categories", "-x", "a".repeat(101)]) expect(isLandingSlugCandidate(s)).toBe(false);
+    for (const s of ["", "Bliny", "bliny_na", "блины", "recipes", "categories", "spravochnik", "-x", "a".repeat(101)]) expect(isLandingSlugCandidate(s)).toBe(false);
   });
   it("ответ API → лендинг + список с пагинацией", () => {
     const r = parseLandingResponse(landingBody, 1)!;

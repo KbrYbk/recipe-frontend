@@ -1,0 +1,70 @@
+---
+/** Хаб «Кухонного справочника»: подразделы, в которых уже есть записи. */
+import { Icon } from "astro-icon/components";
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
+import { KITCHEN_NAME, KITCHEN_ROOT, filledSections, getAll, sectionHref, updatedDates } from "../../lib/kitchen/data";
+import { conditionalResponse } from "../../lib/kitchen/http";
+import { kitchenHubSeo } from "../../lib/kitchen/seo";
+import { buildItemListJsonLd, serializeJsonLd } from "../../lib/recipeSchema";
+import { formatCount } from "../../lib/catalog";
+
+const notModified = conditionalResponse(Astro.request, Astro.response.headers, updatedDates());
+if (notModified) return notModified;
+
+const seo = kitchenHubSeo();
+const sections = filledSections().map((s) => ({ ...s, href: sectionHref(s.key), count: getAll(s.key).length }));
+const origin = Astro.site?.origin ?? Astro.url.origin;
+const itemListJsonLd =
+  sections.length > 0
+    ? serializeJsonLd(
+        buildItemListJsonLd(
+          sections.map((s) => ({ url: s.href, title: s.name })),
+          origin,
+          0,
+          KITCHEN_NAME,
+        ),
+      )
+    : "";
+---
+
+<Layout title={seo.title} description={seo.description} canonical={KITCHEN_ROOT}>
+  <Fragment slot="head">{itemListJsonLd && <script type="application/ld+json" is:inline set:html={itemListJsonLd} />}</Fragment>
+
+  <div class="mx-auto max-w-6xl md:px-4">
+    <header class="border-line mb-6 border-b pb-6 md:mb-10 md:pt-6 md:pb-10">
+      <Breadcrumbs items={[{ name: "Справочник", href: KITCHEN_ROOT }]} />
+      <h1 class="text-text-main text-2xl leading-tight font-bold md:text-5xl">{seo.h1}</h1>
+      <p class="text-text-muted mt-3 max-w-3xl text-base leading-relaxed md:mt-5 md:text-lg">
+        Короткие ответы на вопросы, которые возникают прямо у плиты: сколько продукт пролежит в холодильнике, сколько граммов помещается в стакане, сколько минут варить и чем заменить то, чего не
+        оказалось под рукой. В каждой статье — таблица и калькулятор.
+      </p>
+    </header>
+
+    {
+      sections.length > 0 ? (
+        <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {sections.map((s) => (
+            <li>
+              <a
+                href={s.href}
+                class="group glass-border-3d bg-card-bg/60 hover:bg-card-bg/80 flex h-full items-start gap-4 rounded-3xl p-5 shadow-md shadow-black/15 backdrop-blur-md transition-all hover:shadow-lg hover:shadow-black/20 md:p-6"
+              >
+                <span class="bg-accent-soft text-brand group-hover:bg-brand flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-colors group-hover:text-white">
+                  <Icon name={s.icon} class="h-6 w-6" aria-hidden="true" />
+                </span>
+                <span class="min-w-0">
+                  <span class="text-text-main group-hover:text-brand block text-lg font-bold transition-colors md:text-xl">{s.name}</span>
+                  <span class="text-text-muted mt-1 block leading-relaxed">{s.lead}</span>
+                  <span class="text-text-muted mt-2 block text-sm font-semibold tabular-nums">Продуктов: {formatCount(s.count)}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-text-muted text-lg">Разделы справочника скоро появятся.</p>
+      )
+    }
+  </div>
+</Layout>

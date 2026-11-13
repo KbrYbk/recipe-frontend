@@ -1,0 +1,11 @@
+---
+/**
+ * Любой неизвестный адрес внутри /spravochnik → 404 без запроса к API.
+ * Без этого маршрута такой путь попадал бы в /[category]/[recipe] и искался как рецепт.
+ */
+import NotFoundPage from "../../components/errors/NotFoundPage.astro";
+
+Astro.response.status = 404;
+---
+
+<NotFoundPage />

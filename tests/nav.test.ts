@@ -18,6 +18,12 @@ describe("navSection", () => {
     expect(navSection("/about")).toBeNull();
     expect(navSection("/recipesx")).toBeNull();
   });
+  it("справочник — отдельный раздел, его страницы не считаются рецептами", () => {
+    expect(navSection("/spravochnik")).toBe("reference");
+    expect(navSection("/spravochnik/mery")).toBe("reference");
+    expect(navSection("/spravochnik/mery/muka")).toBe("reference");
+    expect(navSection("/spravochnik-x/muka")).toBe("recipes");
+  });
   it("поиск отдельно от каталога", () => {
     expect(navSection("/recipes", "?action=search")).toBe("search");
     expect(navSection("/recipes", new URLSearchParams("q=суп"))).toBe("search");

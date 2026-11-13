@@ -16,7 +16,23 @@ export interface Landing extends SectionContent {
 const LANDING_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** Корневые адреса фронта, которые не могут быть лендингом. */
-const RESERVED = new Set(["recipes", "recipe", "categories", "collection", "favorites", "shopping-list", "random", "about", "contacts", "privacy", "partials", "api-proxy", "api-images", "404"]);
+const RESERVED = new Set([
+  "recipes",
+  "recipe",
+  "categories",
+  "collection",
+  "favorites",
+  "shopping-list",
+  "random",
+  "about",
+  "contacts",
+  "privacy",
+  "partials",
+  "api-proxy",
+  "api-images",
+  "404",
+  "spravochnik",
+]);
 
 export function isLandingSlugCandidate(segment: string): boolean {
   return segment.length <= 100 && LANDING_SLUG_RE.test(segment) && !RESERVED.has(segment);
