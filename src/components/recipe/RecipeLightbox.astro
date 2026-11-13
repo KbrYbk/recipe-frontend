@@ -3,18 +3,35 @@ import { Icon } from "astro-icon/components";
 ---
 
 <recipe-lightbox>
-  <dialog class="fullscreen-modal m-auto h-full max-h-screen w-full max-w-[100vw] border-none bg-transparent p-0 backdrop:bg-black/90">
-    <button type="button" class="close-modal absolute top-4 right-4 z-50 p-2 text-white opacity-70 transition-opacity hover:opacity-100" aria-label="Закрыть">
-      <Icon name="lucide:x" class="h-8 w-8" />
+  <dialog class="fullscreen-modal m-auto h-full max-h-screen w-full max-w-[100vw] touch-none border-none bg-transparent p-0">
+    <button
+      type="button"
+      class="close-modal absolute top-4 right-4 z-50 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
+      aria-label="Закрыть"
+    >
+      <Icon name="lucide:x" class="h-6 w-6" />
     </button>
-    <div class="flex h-full w-full items-center justify-center p-4">
-      <img src="" alt="Увеличенное фото" class="modal-img max-h-full max-w-full object-contain" />
+    <div class="flex h-full w-full items-center justify-center overflow-hidden p-4">
+      <img src="" alt="Увеличенное фото" class="modal-img max-w-none cursor-zoom-in rounded-lg will-change-transform select-none" draggable="false" />
     </div>
-    <span class="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm text-white/50">Esc или клик вне фото для закрытия</span>
+    <span class="lightbox-hint pointer-events-none absolute bottom-6 left-1/2 w-max max-w-[90vw] -translate-x-1/2 text-center text-sm text-white/70">
+      <span class="pointer-coarse:hidden">Нажмите на фото, чтобы приблизить. Esc или клик мимо фото закрывает</span>
+      <span class="hidden pointer-coarse:inline">Нажмите на фото, чтобы приблизить. Смахните вниз, чтобы закрыть</span>
+    </span>
   </dialog>
 </recipe-lightbox>
 
 <script>
+  import { animateSpring, prefersReducedMotion, project, releaseVelocity, type MotionSample, type SpringAnimation } from "../../lib/client/spring";
+
+  /** Положение фото: сдвиг от центра окна, масштаб и доля затемнения фона. */
+  type Pose = { x: number; y: number; scale: number; dim: number };
+  const REST: Pose = { x: 0, y: 0, scale: 1, dim: 1 };
+  /** Во сколько раз приближает нажатие на фото. */
+  const ZOOM = 2.5;
+  /** Поля вокруг фото, px (совпадают с p-4 контейнера). */
+  const PADDING = 16;
+
   class RecipeLightbox extends HTMLElement {
     private cleanup?: () => void;
 
@@ -26,37 +43,246 @@ import { Icon } from "astro-icon/components";
       if (!dialog || !img) return;
 
       const triggers = document.querySelectorAll<HTMLImageElement>("img[data-zoomable]");
+      let source: HTMLImageElement | null = null;
+      let pose: Pose = { ...REST };
+      let anim: SpringAnimation | null = null;
+      let closing = false;
+      let zoomed = false;
+      // Размер фото в окне без приближения.
+      let baseWidth = 0;
+      let baseHeight = 0;
+
+      const paint = (p: Pose) => {
+        pose = p;
+        img.style.transform = p.x || p.y || p.scale !== 1 ? `translate3d(${p.x}px, ${p.y}px, 0) scale(${p.scale})` : "";
+        dialog.style.setProperty("--dim", String(Math.max(0, Math.min(1, p.dim))));
+      };
+
+      /** Фото занимает всё доступное окно с сохранением пропорций (а не остаётся размером с миниатюру). */
+      const fit = () => {
+        const ratio = (img.naturalWidth || source?.naturalWidth || 16) / (img.naturalHeight || source?.naturalHeight || 9);
+        const maxWidth = window.innerWidth - PADDING * 2;
+        const maxHeight = window.innerHeight - PADDING * 2;
+        baseWidth = Math.min(maxWidth, maxHeight * ratio);
+        baseHeight = baseWidth / ratio;
+        img.style.width = `${baseWidth}px`;
+        img.style.height = `${baseHeight}px`;
+      };
+
+      /** Не даём увести приближённое фото за край: сдвиг ограничен тем, насколько фото больше окна. */
+      const clampPan = (x: number, y: number, scale: number) => {
+        const maxX = Math.max(0, (baseWidth * scale - window.innerWidth) / 2);
+        const maxY = Math.max(0, (baseHeight * scale - window.innerHeight) / 2);
+        return { x: Math.max(-maxX, Math.min(maxX, x)), y: Math.max(-maxY, Math.min(maxY, y)) };
+      };
+
+      /** Поза, в которой большое фото совпадает с миниатюрой, из которой его открыли. */
+      const sourcePose = (): Pose => {
+        const from = source?.getBoundingClientRect();
+        const visible = !!from && from.width > 0 && from.bottom > 0 && from.top < window.innerHeight;
+        if (!from || !visible || !baseWidth) return { x: 0, y: 24, scale: 0.92, dim: 0 };
+        return {
+          x: from.left + from.width / 2 - window.innerWidth / 2,
+          y: from.top + from.height / 2 - window.innerHeight / 2,
+          scale: Math.max(from.width / baseWidth, 0.05),
+          dim: 0,
+        };
+      };
+
+      /** Одна пружина ведёт долю пути 0→1, поза интерполируется: вход и выход идут по одной траектории. */
+      const moveTo = (target: Pose, opts: { response?: number; onRest?: () => void } = {}) => {
+        anim?.stop();
+        const start = pose;
+        anim = animateSpring({
+          from: 0,
+          to: 1,
+          response: opts.response ?? 0.4,
+          precision: 0.002,
+          onUpdate: (t) =>
+            paint({
+              x: start.x + (target.x - start.x) * t,
+              y: start.y + (target.y - start.y) * t,
+              scale: start.scale + (target.scale - start.scale) * t,
+              dim: start.dim + (target.dim - start.dim) * t,
+            }),
+          onRest: () => {
+            anim = null;
+            opts.onRest?.();
+          },
+        });
+      };
+
+      const setZoomed = (value: boolean) => {
+        zoomed = value;
+        img.classList.toggle("cursor-zoom-in", !value);
+        img.classList.toggle("cursor-grab", value);
+      };
+
+      /** Приблизить в точку нажатия или вернуть к исходному размеру. */
+      const toggleZoom = (clientX: number, clientY: number) => {
+        if (zoomed) {
+          setZoomed(false);
+          moveTo(REST, { response: 0.32 });
+          return;
+        }
+        setZoomed(true);
+        // Точка под пальцем остаётся под пальцем: сдвигаем фото на расстояние от центра, умноженное на прирост масштаба.
+        const dx = (window.innerWidth / 2 - clientX) * (ZOOM - 1);
+        const dy = (window.innerHeight / 2 - clientY) * (ZOOM - 1);
+        moveTo({ ...clampPan(dx, dy, ZOOM), scale: ZOOM, dim: 1 }, { response: 0.36 });
+      };
 
       const openModal = (e: Event) => {
-        const target = e.currentTarget as HTMLImageElement;
-        img.src = target.currentSrc || target.src;
+        source = e.currentTarget as HTMLImageElement;
+        closing = false;
+        setZoomed(false);
+        img.src = source.currentSrc || source.src;
+        fit();
+        paint({ ...REST });
         dialog.showModal();
         document.body.style.overflow = "hidden"; // Блокируем скролл страницы
+        if (prefersReducedMotion()) return;
+        // Фото «вырастает» из миниатюры: стартуем из её положения.
+        paint(sourcePose());
+        moveTo(REST);
       };
 
       const closeModal = () => {
-        dialog.close();
+        if (closing) return;
+        if (prefersReducedMotion()) {
+          dialog.close();
+          return;
+        }
+        closing = true;
+        moveTo(sourcePose(), { response: 0.32, onRest: () => dialog.close() });
       };
 
       // Слушаем нативное событие закрытия, чтобы надежно разблокировать скролл
       dialog.addEventListener("close", () => {
+        anim?.stop();
+        anim = null;
+        closing = false;
+        setZoomed(false);
+        paint({ ...REST });
         document.body.style.overflow = "";
       });
+
+      // Esc: закрываем той же анимацией, а не мгновенно.
+      dialog.addEventListener("cancel", (e) => {
+        e.preventDefault();
+        closeModal();
+      });
+
+      const onImageLoad = () => {
+        if (dialog.open) fit();
+      };
+      const onResize = () => {
+        if (!dialog.open) return;
+        fit();
+        if (zoomed) paint({ ...pose, ...clampPan(pose.x, pose.y, pose.scale) });
+      };
+      img.addEventListener("load", onImageLoad);
+      window.addEventListener("resize", onResize);
+
+      const onTriggerKey = (e: KeyboardEvent) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        openModal(e);
+      };
 
       triggers.forEach((t) => {
         t.style.cursor = "zoom-in";
         t.addEventListener("click", openModal);
+        t.addEventListener("keydown", onTriggerKey);
       });
 
       closeBtn?.addEventListener("click", closeModal);
 
+      // Клик в любом месте мимо фото закрывает окно.
       dialog.addEventListener("click", (e) => {
-        if (e.target === dialog) closeModal();
+        if (e.target !== img && !(e.target as HTMLElement).closest(".close-modal")) closeModal();
       });
+
+      // Жесты на фото. Без приближения: нажатие приближает, смахивание вниз закрывает (фото идёт за пальцем, фон светлеет).
+      // С приближением: перетаскивание двигает фото, нажатие возвращает исходный размер.
+      let pointerId: number | null = null;
+      let startX = 0;
+      let startY = 0;
+      let originX = 0;
+      let originY = 0;
+      let dragging = false;
+      let samples: MotionSample[] = [];
+      const dismissPose = (dy: number): Pose => {
+        const k = Math.min(Math.abs(dy) / (window.innerHeight * 0.6), 1);
+        return { x: 0, y: dy, scale: 1 - k * 0.25, dim: 1 - k * 0.8 };
+      };
+
+      img.addEventListener("pointerdown", (e) => {
+        if (!e.isPrimary || closing || e.button > 0) return;
+        pointerId = e.pointerId;
+        // Перехват анимации: продолжаем с текущего положения фото на экране.
+        if (anim) {
+          anim.stop();
+          anim = null;
+        }
+        startX = e.clientX;
+        startY = e.clientY;
+        originX = pose.x;
+        originY = pose.y;
+        dragging = false;
+        samples = [];
+      });
+
+      img.addEventListener("pointermove", (e) => {
+        if (e.pointerId !== pointerId) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!dragging) {
+          if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+          dragging = true;
+          img.setPointerCapture(e.pointerId);
+          if (zoomed) img.classList.add("cursor-grabbing");
+        }
+        if (zoomed) {
+          paint({ ...clampPan(originX + dx, originY + dy, pose.scale), scale: pose.scale, dim: 1 });
+        } else if (!prefersReducedMotion()) {
+          paint(dismissPose(originY + dy));
+          samples.push({ t: e.timeStamp, p: e.clientY });
+          if (samples.length > 8) samples.shift();
+        }
+      });
+
+      const release = (e: PointerEvent, cancelled: boolean) => {
+        if (e.pointerId !== pointerId) return;
+        pointerId = null;
+        img.classList.remove("cursor-grabbing");
+        if (!dragging) {
+          // Нажатие без движения: приблизить или вернуть. Если перехватили анимацию — дать ей доиграть к нужной позе.
+          if (!cancelled) toggleZoom(e.clientX, e.clientY);
+          else if (!zoomed) moveTo(REST);
+          return;
+        }
+        dragging = false;
+        if (zoomed) return;
+        if (prefersReducedMotion()) {
+          if (!cancelled && e.clientY - startY > 80) closeModal();
+          return;
+        }
+        const velocity = cancelled ? 0 : releaseVelocity(samples, e.timeStamp);
+        if (!cancelled && Math.abs(pose.y + project(velocity)) > window.innerHeight * 0.25) closeModal();
+        else moveTo(REST, { response: 0.3 });
+      };
+      img.addEventListener("pointerup", (e) => release(e, false));
+      img.addEventListener("pointercancel", (e) => release(e, true));
 
       // Очистка при View Transitions
       this.cleanup = () => {
-        triggers.forEach((t) => t.removeEventListener("click", openModal));
+        triggers.forEach((t) => {
+          t.removeEventListener("click", openModal);
+          t.removeEventListener("keydown", onTriggerKey);
+        });
+        window.removeEventListener("resize", onResize);
+        anim?.stop();
         document.body.style.overflow = "";
       };
     }
@@ -70,7 +296,23 @@ import { Icon } from "astro-icon/components";
 </script>
 
 <style>
+  /* Затемнение фона управляется переменной --dim: при смахивании фон светлеет вместе с движением фото. */
   dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgb(0 0 0 / calc(0.92 * var(--dim, 1)));
+    -webkit-backdrop-filter: blur(calc(12px * var(--dim, 1)));
+    backdrop-filter: blur(calc(12px * var(--dim, 1)));
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    dialog::backdrop {
+      background-color: rgb(0 0 0 / calc(0.97 * var(--dim, 1)));
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  .lightbox-hint,
+  .close-modal {
+    opacity: var(--dim, 1);
   }
 </style>
