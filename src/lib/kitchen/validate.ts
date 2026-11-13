@@ -5,6 +5,14 @@
 import type { KitchenSectionKey } from "../../types/kitchen";
 import { slugify } from "../slugify";
 
+/**
+ * Slug страницы справочника: транслитерация названия без «ь» и «ъ» (как у рецептов), чтобы адрес был
+ * `/hranenie/apelsin`, а не `/hranenie/apel-sin`. Сам `slugify` не меняется — он общий с бэкендом.
+ */
+export function kitchenSlug(nom: string): string {
+  return slugify(nom.replace(/[ьъ]/giu, ""));
+}
+
 const PLACES = new Set(["room", "fridge", "freezer"]);
 const STORAGE_UNITS = new Set(["h", "d", "mo"]);
 const MEASURES = new Set(["glass250", "glass200", "tbsp", "tbspHeaped", "tsp", "tspHeaped", "piece"]);
@@ -46,9 +54,10 @@ function validateBase(e: Rec, errors: string[]): void {
   const forms = isRecord(e.forms) ? e.forms : {};
   const nom = text(forms.nom);
   if (!nom || !text(forms.gen) || !text(forms.acc)) errors.push("forms: нужны nom, gen и acc");
+  if (forms.plural !== undefined && typeof forms.plural !== "boolean") errors.push("forms.plural: true или false");
   const slug = text(e.slug);
   if (!slug) errors.push("slug пуст");
-  else if (nom && slug !== slugify(nom)) errors.push(`slug «${slug}» не совпадает со slugify(forms.nom) = «${slugify(nom)}»`);
+  else if (nom && slug !== kitchenSlug(nom)) errors.push(`slug «${slug}» не совпадает с kitchenSlug(forms.nom) = «${kitchenSlug(nom)}»`);
 
   if (!isTextList(e.aliases, 1)) errors.push("aliases: нужен хотя бы один непустой алиас");
   else if (e.aliases.some((a) => a !== a.toLocaleLowerCase("ru-RU").trim())) errors.push("aliases: только нижний регистр, без пробелов по краям");

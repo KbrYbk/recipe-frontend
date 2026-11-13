@@ -1,0 +1,90 @@
+---
+/**
+ * Конвертер мер продукта: стаканы/ложки → граммы и граммы → стаканы/ложки.
+ * Начальное состояние отрисовано на сервере; расчёт — чистые функции из lib/kitchen/measures.
+ */
+import { Icon } from "astro-icon/components";
+import Surface from "../ui/Surface.astro";
+import { formatGrams, fromGrams, measureRows, toGrams } from "../../lib/kitchen/measures";
+import type { MeasureEntry } from "../../types/kitchen";
+
+interface Props {
+  entry: MeasureEntry;
+}
+
+const { entry } = Astro.props;
+const rows = measureRows(entry);
+const first = rows[0];
+const initialGrams = first && first.grams >= 50 ? 100 : 10;
+const initialResult = first ? toGrams(entry.grams, first.key, 1) : null;
+const amounts = fromGrams(entry.grams, initialGrams);
+const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full rounded-2xl border px-4 text-lg tabular-nums focus:ring-4 focus:outline-none";
+---
+
+{
+  first && (
+    <Surface as="section" padding="sm" aria-labelledby="measure-converter-heading" data-measure-converter data-grams={JSON.stringify(entry.grams)}>
+      <h2 id="measure-converter-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-bold md:text-2xl">
+        <Icon name="lucide:calculator" class="text-brand h-6 w-6 shrink-0" aria-hidden="true" />
+        Калькулятор: {entry.forms.nom}
+      </h2>
+
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
+        <div>
+          <h3 class="text-text-main mb-3 font-semibold">Стаканы и ложки — в граммы</h3>
+          <div class="flex gap-2">
+            <div class="w-24 shrink-0">
+              <label for="mc-qty" class="sr-only">
+                Количество
+              </label>
+              <input id="mc-qty" type="text" inputmode="decimal" autocomplete="off" maxlength="8" value="1" class={fieldClass} data-mc-qty />
+            </div>
+            <div class="min-w-0 flex-1">
+              <label for="mc-measure" class="sr-only">
+                Мера
+              </label>
+              <select id="mc-measure" class={`${fieldClass} cursor-pointer text-base`} data-mc-measure>
+                {rows.map((row) => (
+                  <option value={row.key}>{row.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <p class="text-text-main mt-4 text-3xl font-bold tabular-nums" aria-live="polite" data-mc-result>
+            {initialResult !== null ? `= ${formatGrams(initialResult)}` : ""}
+          </p>
+          <p class="text-text-muted mt-1 hidden text-sm" data-mc-qty-hint>
+            Введите число: 2, 1,5 или 1/2.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-text-main mb-3 font-semibold">Граммы — в стаканы и ложки</h3>
+          <div class="flex items-center gap-3">
+            <div class="w-32 shrink-0">
+              <label for="mc-grams" class="sr-only">
+                Масса в граммах
+              </label>
+              <input id="mc-grams" type="text" inputmode="decimal" autocomplete="off" maxlength="8" value={initialGrams} class={fieldClass} data-mc-grams />
+            </div>
+            <span class="text-text-muted text-lg">г — это</span>
+          </div>
+          <ul class="mt-4 space-y-1.5" aria-live="polite" data-mc-list>
+            {amounts.map((a) => (
+              <li class="text-text-main text-lg font-semibold tabular-nums" data-mc-key={a.key}>
+                {a.text}
+              </li>
+            ))}
+          </ul>
+          <p class="text-text-muted mt-1 hidden text-sm" data-mc-grams-hint>
+            Введите массу в граммах, например 250.
+          </p>
+        </div>
+      </div>
+    </Surface>
+  )
+}
+
+<script>
+  import "../../scripts/kitchen-measures";
+</script>

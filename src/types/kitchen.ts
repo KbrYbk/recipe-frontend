@@ -8,6 +8,8 @@ export interface KitchenForms {
   nom: string;
   gen: string;
   acc: string;
+  /** Название во множественном числе («макароны», «сливки»): «Сколько хранятся…» вместо «хранится». */
+  plural?: boolean;
 }
 
 export interface KitchenFaqItem {
@@ -17,7 +19,7 @@ export interface KitchenFaqItem {
 
 /** Поля, общие для всех подразделов. */
 export interface KitchenEntryBase {
-  /** = slugify(forms.nom), уникален в пределах файла. */
+  /** = kitchenSlug(forms.nom): транслитерация без «ь/ъ»; уникален в пределах файла. */
   slug: string;
   forms: KitchenForms;
   /** Как продукт называется в ингредиентах рецептов (нижний регистр). */

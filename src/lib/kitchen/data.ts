@@ -33,7 +33,7 @@ export const KITCHEN_SECTIONS: readonly KitchenSection[] = [
     name: "Сроки хранения",
     lead: "Сколько продукт хранится в холодильнике, морозилке и при комнатной температуре.",
     icon: "lucide:refrigerator",
-    heading: (f) => `Сколько хранится ${f.nom}`,
+    heading: (f) => `Сколько ${f.plural ? "хранятся" : "хранится"} ${f.nom}`,
   },
   {
     key: "measures",

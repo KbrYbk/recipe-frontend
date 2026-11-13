@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { KITCHEN_SECTIONS, entryHref, getAll, getBySlug, groupEntries, sectionHref } from "../src/lib/kitchen/data";
-import { findDuplicateFaq, validateEntries, validateEntry } from "../src/lib/kitchen/validate";
+import { findDuplicateFaq, kitchenSlug, validateEntries, validateEntry } from "../src/lib/kitchen/validate";
 import { kitchenHubSeo } from "../src/lib/kitchen/seo";
 import { DESCRIPTION_MAX, TITLE_MAX } from "../src/lib/seo";
 import { isLandingSlugCandidate } from "../src/lib/landings";
@@ -108,7 +108,21 @@ describe("справочник: валидатор", () => {
     expect(validateEntry("storage", { ...storage(), sources: ["  "] }).join()).toContain("sources");
   });
 
-  it("slug должен совпадать со slugify(forms.nom)", () => {
+  it("slug — транслитерация без мягкого и твёрдого знаков", () => {
+    expect(["апельсин", "растительное масло", "соль", "свёкла", "яйцо куриное", "объёмный хлеб", "Мёд"].map(kitchenSlug)).toEqual([
+      "apelsin",
+      "rastitelnoe-maslo",
+      "sol",
+      "svekla",
+      "yayco-kurinoe",
+      "obemnyy-hleb",
+      "med",
+    ]);
+    expect(validateEntry("measures", { ...measures(), forms: { nom: "соль", gen: "соли", acc: "соль" }, slug: "sol" })).toEqual([]);
+    expect(validateEntry("measures", { ...measures(), forms: { nom: "апельсин", gen: "апельсина", acc: "апельсин" }, slug: "apel-sin" }).join()).toContain("не совпадает");
+  });
+
+  it("slug должен совпадать с названием продукта", () => {
     expect(validateEntry("measures", { ...measures(), slug: "flour" }).join()).toContain("не совпадает");
     // ё транслитерируется как е
     expect(validateEntry("cooking", cooking())).toEqual([]);

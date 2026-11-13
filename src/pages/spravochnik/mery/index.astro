@@ -1,0 +1,11 @@
+---
+/** Хаб подраздела «Меры веса и объёма». */
+import KitchenHubPage from "../../../components/kitchen/KitchenHubPage.astro";
+import { updatedDates } from "../../../lib/kitchen/data";
+import { conditionalResponse } from "../../../lib/kitchen/http";
+
+const notModified = conditionalResponse(Astro.request, Astro.response.headers, updatedDates("measures"));
+if (notModified) return notModified;
+---
+
+<KitchenHubPage section="measures" />
