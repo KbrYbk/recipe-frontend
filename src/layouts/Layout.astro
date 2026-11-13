@@ -20,10 +20,10 @@ interface Props {
   noindex?: boolean;
   ogType?: "website" | "article";
   /**
-   * Состав рекламы страницы. По умолчанию - все блоки сайта. "sides" - только боковые баннеры (страницы с играми:
-   * без верхнего и нижнего баннеров, fullscreen и плавающей рекламы, чтобы не провоцировать случайные клики).
+   * Состав рекламы страницы. По умолчанию - все блоки сайта. "game" - страницы с играми: боковые баннеры и нижний
+   * баннер, без верхнего баннера, fullscreen и плавающей рекламы (они провоцируют случайные клики во время игры).
    */
-  adLayout?: "default" | "sides";
+  adLayout?: "default" | "game";
   // Добавляем пропс для данных рецепта
   recipeData?: {
     publishDate?: string;
@@ -213,7 +213,7 @@ const jsonLdGraph = {
       <slot />
     </main>
     <!-- Баннер 16 — после контента, перед футером -->
-    {adLayout === "default" && <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" />}
+    <AdSlot id="R-A-19056160-16" className="mb-8 max-w-6xl" />
     <Footer />
     <BottomNav />
     <BackToTop />
