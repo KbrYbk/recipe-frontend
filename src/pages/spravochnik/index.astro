@@ -52,10 +52,7 @@ const itemListJsonLd =
         <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {sections.map((s) => (
             <li>
-              <a
-                href={s.href}
-                class="group glass-border-3d bg-card-bg/60 hover:bg-card-bg/80 rounded-panel shadow-soft hover:shadow-float flex h-full items-start gap-4 p-5 backdrop-blur-md transition-all md:p-6"
-              >
+              <a href={s.href} class="group glass-border-3d bg-card-bg hover:bg-raised rounded-panel shadow-soft hover:shadow-float flex h-full items-start gap-4 p-5 transition-colors md:p-6">
                 <span class="bg-accent-soft text-brand-ink group-hover:bg-brand rounded-card group-hover:text-on-brand flex h-12 w-12 shrink-0 items-center justify-center transition-colors">
                   <Icon name={s.icon} class="h-6 w-6" aria-hidden="true" />
                 </span>

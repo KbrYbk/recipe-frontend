@@ -54,7 +54,7 @@ import { Icon } from "astro-icon/components";
       </button>
       <button
         type="button"
-        class="rounded-control text-negative inline-flex cursor-pointer items-center gap-1.5 bg-rose-500/10 px-3 py-2 text-sm font-semibold hover:bg-rose-500/20"
+        class="rounded-control text-negative bg-negative/10 hover:bg-negative/20 inline-flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-semibold"
         data-shopping-clear
       >
         <Icon name="lucide:trash-2" class="h-4 w-4" aria-hidden="true" />
@@ -62,7 +62,7 @@ import { Icon } from "astro-icon/components";
       </button>
     </div>
 
-    <div class="bg-page-bg/70 border-line rounded-card mb-4 inline-grid grid-cols-2 gap-1 border p-1" role="group" aria-label="Вид списка" data-shopping-view hidden>
+    <div class="bg-raised border-line rounded-card mb-4 inline-grid grid-cols-2 gap-1 border p-1" role="group" aria-label="Вид списка" data-shopping-view hidden>
       <button type="button" class="rounded-control h-9 cursor-pointer px-4 text-sm font-semibold transition-colors" data-view="merged" aria-pressed="true">Всё вместе</button>
       <button type="button" class="rounded-control h-9 cursor-pointer px-4 text-sm font-semibold transition-colors" data-view="recipes" aria-pressed="false">По рецептам</button>
     </div>
@@ -168,7 +168,7 @@ import { Icon } from "astro-icon/components";
     if (isEmpty) return;
 
     if (view === "merged") {
-      const section = el("section", "glass-border-3d bg-card-bg/60 rounded-panel p-4 md:p-6");
+      const section = el("section", "glass-border-3d bg-card-bg rounded-panel p-4 md:p-6");
       const ul = el("ul", "space-y-1");
       for (const item of mergeShoppingItems(list)) {
         ul.appendChild(row(item.name, item.amount, item.done, item.ids, item.recipes.length > 1 ? item.recipes.join(", ") : undefined));
@@ -179,7 +179,7 @@ import { Icon } from "astro-icon/components";
     }
 
     for (const group of groupByRecipe(list)) {
-      const section = el("section", "glass-border-3d bg-card-bg/60 rounded-panel p-4 md:p-6");
+      const section = el("section", "glass-border-3d bg-card-bg rounded-panel p-4 md:p-6");
       const head = el("div", "mb-3 flex items-center justify-between gap-3");
       const title = group.url ? el("a", "text-text-main hover:text-brand-ink text-lg font-semibold", group.title) : el("h2", "text-text-main text-lg font-semibold", group.title);
       if (group.url && title instanceof HTMLAnchorElement) title.href = group.url;

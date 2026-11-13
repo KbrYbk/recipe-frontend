@@ -40,7 +40,7 @@ const { recipeId } = Astro.props;
       const apply = (active: boolean) => {
         btn.classList.toggle("text-negative", active);
         btn.classList.toggle("border-negative", active);
-        btn.classList.toggle("bg-rose-500/10", active);
+        btn.classList.toggle("bg-negative/10", active);
         btn.setAttribute("aria-pressed", String(active));
         icon?.classList.toggle("fill-negative", active);
         icon?.classList.toggle("text-negative", active);

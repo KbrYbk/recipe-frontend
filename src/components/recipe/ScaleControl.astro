@@ -16,12 +16,12 @@ const name = `scale-${recipeId}-${Math.random().toString(36).slice(2, 7)}`;
 
 <fieldset class:list={["print:hidden", className]} data-scale-control data-recipe-id={recipeId} data-servings={servings ?? ""}>
   <legend class="sr-only">Пересчёт количества ингредиентов</legend>
-  <div class="bg-page-bg/70 border-line rounded-card grid grid-cols-5 gap-1 border p-1">
+  <div class="bg-raised rounded-control grid grid-cols-5 gap-1 p-1">
     {
       SCALE_OPTIONS.map((o) => (
         <label class="relative">
           <input type="radio" name={name} value={o.value} checked={o.value === 1} class="peer sr-only" data-scale-option />
-          <span class="text-text-muted hover:text-text-main peer-checked:bg-brand peer-focus-visible:ring-brand rounded-control peer-checked:text-on-brand flex h-9 cursor-pointer items-center justify-center text-sm font-semibold tabular-nums transition-colors peer-focus-visible:ring-2">
+          <span class="text-text-muted hover:text-text-main peer-checked:bg-card-bg peer-checked:text-text-main peer-checked:shadow-soft peer-focus-visible:ring-brand flex h-9 cursor-pointer items-center justify-center rounded-md text-sm font-medium tabular-nums transition-colors duration-150 peer-focus-visible:ring-2">
             {o.label}
           </span>
         </label>

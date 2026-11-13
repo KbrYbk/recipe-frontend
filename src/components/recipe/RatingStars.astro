@@ -8,7 +8,7 @@ const { recipeId, averageRating } = Astro.props;
 
 <rating-stars data-id={recipeId} data-avg={averageRating} class="block shrink-0">
   <div
-    class="rating-container glass-border-3d bg-card-bg/20 hover:bg-card-bg/40 rounded-card text-rating shadow-soft hover:shadow-soft flex h-10 items-center justify-center gap-1 px-1.5 text-sm font-semibold backdrop-blur-md transition-all sm:w-auto sm:gap-2 sm:px-3"
+    class="rating-container text-rating flex h-10 items-center justify-center gap-1 text-sm font-medium sm:gap-2"
     role="group"
     aria-label={`Рейтинг: ${averageRating ? Number(averageRating).toFixed(1) : "0"} из 5`}
   >
@@ -18,7 +18,7 @@ const { recipeId, averageRating } = Astro.props;
           <button
             type="button"
             data-star={star}
-            class="star-btn focus-visible:ring-brand flex h-8 w-6 items-center justify-center rounded-md transition-transform outline-none hover:scale-110 focus-visible:ring-2 disabled:hover:scale-100"
+            class="star-btn pressable focus-visible:ring-brand flex h-10 w-6 items-center justify-center rounded-md outline-none focus-visible:ring-2"
             aria-label={`Оценить на ${star}`}
             aria-pressed="false"
           >

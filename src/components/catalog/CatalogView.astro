@@ -178,7 +178,7 @@ const searchParams: Record<string, string> = {
     <div class="mb-4 flex items-center gap-2 md:mb-6">
       <button
         type="button"
-        class="glass-border-3d bg-card-bg/40 text-text-main rounded-control flex h-9 shrink-0 cursor-pointer items-center gap-1.5 px-3 text-sm font-semibold lg:hidden"
+        class="glass-border-3d bg-card-bg text-text-main rounded-control flex h-9 shrink-0 cursor-pointer items-center gap-1.5 px-3 text-sm font-semibold lg:hidden"
         aria-expanded="false"
         aria-controls="catalog-filters"
         data-filters-toggle
@@ -207,7 +207,7 @@ const searchParams: Record<string, string> = {
 
     <div class="flex flex-col gap-6 lg:flex-row lg:gap-8">
       <aside id="catalog-filters" class="hidden w-full shrink-0 lg:block lg:w-72" data-filters-panel>
-        <div class="glass-border-3d bg-card-bg/60 rounded-panel shadow-float p-5 backdrop-blur-md lg:p-6">
+        <div class="glass-border-3d bg-card-bg rounded-panel shadow-float p-5 lg:p-6">
           <h2 class="text-text-main mb-4 flex items-center gap-2 text-xl font-semibold lg:mb-6">
             <Icon name="lucide:filter" class="text-brand-ink h-5 w-5" aria-hidden="true" />
             Фильтры
@@ -269,7 +269,7 @@ const searchParams: Record<string, string> = {
                   size="sm"
                   fullWidth
                   href={href({ difficulty: null, maxTime: null, minTime: null, minRating: null })}
-                  class="text-negative! bg-rose-500/10! transition-colors hover:bg-rose-500/20!"
+                  class="text-negative! bg-negative/10! hover:bg-negative/20! transition-colors"
                 >
                   <Icon name="lucide:x" class="h-4 w-4" slot="icon-left" />
                   Сбросить фильтры
@@ -379,7 +379,7 @@ const searchParams: Record<string, string> = {
                   <h2 class="text-text-main mb-4 text-2xl font-semibold">Частые вопросы</h2>
                   <div class="space-y-3">
                     {faq.map((f) => (
-                      <details class="glass-border-3d bg-card-bg/60 group rounded-card shadow-soft px-5 py-4">
+                      <details class="glass-border-3d bg-card-bg group rounded-card shadow-soft px-5 py-4">
                         <summary class="text-text-main cursor-pointer list-none font-semibold">
                           <span class="flex items-center justify-between gap-4">
                             {f.q}
@@ -399,7 +399,7 @@ const searchParams: Record<string, string> = {
     </div>
 
     <Divider>
-      <h2 class="text-text-main mb-6 text-2xl font-semibold">Популярные рецепты:</h2>
+      <h2 class="text-text-main mb-6 text-2xl font-bold">Популярные рецепты:</h2>
       <AdSlot id="R-A-19056160-14" isFeed={true} />
     </Divider>
   </div>

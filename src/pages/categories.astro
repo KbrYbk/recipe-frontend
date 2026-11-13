@@ -40,10 +40,7 @@ const itemListJsonLd = sorted.length
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {sorted.map((cat) => (
-            <a
-              href={`/${cat.path}`}
-              class="glass-border-3d bg-card-bg/60 group rounded-card shadow-soft hover:shadow-soft flex items-center justify-between p-6 backdrop-blur-md transition-all hover:-translate-y-1"
-            >
+            <a href={`/${cat.path}`} class="glass-border-3d bg-card-bg group rounded-card shadow-soft hover:shadow-soft flex items-center justify-between p-6 transition-colors hover:-translate-y-1">
               <span class="text-text-main group-hover:text-brand-ink text-lg font-semibold transition-colors">{cat.title}</span>
               <Icon name="lucide:chevron-right" class="text-text-muted group-hover:text-brand-ink h-5 w-5 transition-colors" />
             </a>
