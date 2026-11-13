@@ -27,12 +27,12 @@ function initExpiryCalculator(): void {
       if (!result) {
         title.textContent = "Выберите дату";
         detail.textContent = "Калькулятор берёт нижнюю границу срока — так надёжнее.";
-        title.classList.remove("text-rose-500");
+        title.classList.remove("text-negative");
         return;
       }
       title.textContent = result.title;
       detail.textContent = result.detail;
-      title.classList.toggle("text-rose-500", result.expired);
+      title.classList.toggle("text-negative", result.expired);
     };
 
     if (!dateInput.value) dateInput.value = toIsoDate(todayPlain());

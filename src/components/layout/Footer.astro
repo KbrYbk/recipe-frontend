@@ -19,7 +19,7 @@ const infoLinks = [
   { href: "/contacts", label: "Контакты" },
   { href: "/privacy", label: "Политика конфиденциальности" },
 ];
-const linkClass = "text-text-muted hover:text-brand inline-block py-1 font-medium transition-colors";
+const linkClass = "text-text-muted hover:text-brand-ink inline-block py-1 font-medium transition-colors";
 ---
 
 <footer class="border-line bg-card-bg mt-20 border-t transition-colors print:hidden">
@@ -31,7 +31,7 @@ const linkClass = "text-text-muted hover:text-brand inline-block py-1 font-mediu
       ]}
     >
       <div class="sm:col-span-2 lg:col-span-1">
-        <a href="/" class="text-brand mb-4 flex items-center gap-2 text-2xl font-bold" aria-label="SwagEda — на главную">
+        <a href="/" class="text-brand-ink mb-4 flex items-center gap-2 text-2xl font-semibold" aria-label="SwagEda — на главную">
           <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
           SwagEda
         </a>
@@ -43,7 +43,7 @@ const linkClass = "text-text-muted hover:text-brand inline-block py-1 font-mediu
       {
         categories.length > 0 && (
           <nav aria-labelledby="footer-categories-heading">
-            <h2 id="footer-categories-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">
+            <h2 id="footer-categories-heading" class="text-text-main mb-3 text-sm font-semibold">
               Категории
             </h2>
             <ul class="space-y-1">
@@ -60,7 +60,7 @@ const linkClass = "text-text-muted hover:text-brand inline-block py-1 font-mediu
       }
 
       <nav aria-labelledby="footer-nav-heading">
-        <h2 id="footer-nav-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">Карта сайта</h2>
+        <h2 id="footer-nav-heading" class="text-text-main mb-3 text-sm font-semibold">Карта сайта</h2>
         <ul class="space-y-1">
           {
             siteLinks.map((l) => (
@@ -75,7 +75,7 @@ const linkClass = "text-text-muted hover:text-brand inline-block py-1 font-mediu
       </nav>
 
       <nav aria-labelledby="footer-info-heading">
-        <h2 id="footer-info-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">О сайте</h2>
+        <h2 id="footer-info-heading" class="text-text-main mb-3 text-sm font-semibold">О сайте</h2>
         <ul class="space-y-1">
           {
             infoLinks.map((l) => (

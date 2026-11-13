@@ -17,16 +17,16 @@ const { entry } = Astro.props;
 const methods = entry.methods.filter((m) => timerSeconds(m.minMin) !== null && timerSeconds(m.maxMin) !== null);
 const first = methods[0];
 const payload = JSON.stringify(methods.map((m) => ({ min: m.minMin, max: m.maxMin })));
-const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full cursor-pointer rounded-2xl border px-4 text-base focus:ring-4 focus:outline-none";
+const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full cursor-pointer rounded-card border px-4 text-base focus:ring-4 focus:outline-none";
 const boundClass =
-  "border-line text-text-main has-checked:border-brand has-checked:bg-accent-soft has-checked:text-brand has-focus-visible:ring-brand/30 flex h-12 flex-1 cursor-pointer items-center justify-center rounded-2xl border px-3 text-base font-semibold tabular-nums transition-colors has-focus-visible:ring-4";
+  "border-line text-text-main has-checked:border-brand has-checked:bg-accent-soft has-checked:text-brand-ink has-focus-visible:ring-brand/30 flex h-12 flex-1 cursor-pointer items-center justify-center rounded-card border px-3 text-base font-semibold tabular-nums transition-colors has-focus-visible:ring-4";
 ---
 
 {
   first && (
     <Surface as="section" padding="sm" aria-labelledby="cook-timer-heading" data-cook-timer data-methods={payload}>
-      <h2 id="cook-timer-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-bold md:text-2xl">
-        <Icon name="lucide:timer" class="text-brand h-6 w-6 shrink-0" aria-hidden="true" />
+      <h2 id="cook-timer-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-semibold md:text-2xl">
+        <Icon name="lucide:timer" class="text-brand-ink h-6 w-6 shrink-0" aria-hidden="true" />
         Таймер варки
       </h2>
 
@@ -58,7 +58,7 @@ const boundClass =
         </fieldset>
       </div>
 
-      <p class="text-text-main mt-6 text-center text-6xl font-bold tabular-nums md:text-7xl" role="timer" aria-live="off" data-timer-clock>
+      <p class="text-text-main mt-6 text-center text-6xl font-semibold tabular-nums md:text-7xl" role="timer" aria-live="off" data-timer-clock>
         {formatClock(timerSeconds(first.minMin) ?? 0)}
       </p>
       <p class="text-text-muted mt-2 min-h-6 text-center leading-relaxed" aria-live="polite" data-timer-status>

@@ -56,8 +56,8 @@ const itemLists = [
       </Fragment>
       <div class="mx-auto max-w-6xl px-4">
         <section class="py-12 text-center md:py-16">
-          <h1 class="text-text-main mb-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
-            Рецепты с фото пошагово: что <span class="text-brand">приготовить</span> сегодня?
+          <h1 class="text-text-main mb-6 text-4xl font-semibold tracking-tight md:text-5xl lg:text-6xl">
+            Рецепты с фото пошагово: что <span class="text-brand-ink">приготовить</span> сегодня?
           </h1>
           <p class="text-text-muted mx-auto mb-10 max-w-3xl text-xl md:text-2xl">
             Выбирай из наших лучших рецептов на SwagEda — пошаговые инструкции, которые помогут приготовить шедевр даже новичку.
@@ -82,12 +82,12 @@ const itemLists = [
         <section aria-labelledby="recipes-heading" class="mb-16 md:mb-20">
           <div class="mb-8 flex items-end justify-between gap-4 md:mb-10">
             <div>
-              <h2 id="recipes-heading" class="text-text-main text-3xl font-bold md:text-4xl">
+              <h2 id="recipes-heading" class="text-text-main text-3xl font-semibold md:text-4xl">
                 Новые рецепты
               </h2>
               <div class="bg-brand mt-2 h-1.5 w-20 rounded-full" />
             </div>
-            <a href="/recipes" class="text-brand shrink-0 py-2 font-semibold hover:underline">
+            <a href="/recipes" class="text-brand-ink shrink-0 py-2 font-semibold hover:underline">
               Все рецепты &rarr;
             </a>
           </div>
@@ -103,12 +103,12 @@ const itemLists = [
           <section aria-labelledby="popular-heading" class="mb-16 md:mb-20">
             <div class="mb-8 flex items-end justify-between gap-4 md:mb-10">
               <div>
-                <h2 id="popular-heading" class="text-text-main text-3xl font-bold md:text-4xl">
+                <h2 id="popular-heading" class="text-text-main text-3xl font-semibold md:text-4xl">
                   Популярное
                 </h2>
                 <div class="bg-brand mt-2 h-1.5 w-20 rounded-full" />
               </div>
-              <a href="/recipes?sort=likes" class="text-brand shrink-0 py-2 font-semibold hover:underline">
+              <a href="/recipes?sort=likes" class="text-brand-ink shrink-0 py-2 font-semibold hover:underline">
                 Смотреть все &rarr;
               </a>
             </div>
@@ -123,7 +123,7 @@ const itemLists = [
         {collections.length > 0 && (
           <section aria-labelledby="collections-heading" class="mb-16 md:mb-20">
             <div class="mb-8 md:mb-10">
-              <h2 id="collections-heading" class="text-text-main text-3xl font-bold md:text-4xl">
+              <h2 id="collections-heading" class="text-text-main text-3xl font-semibold md:text-4xl">
                 Подборки
               </h2>
               <div class="bg-brand mt-2 h-1.5 w-20 rounded-full" />
@@ -132,13 +132,13 @@ const itemLists = [
               {collections.map((c) => (
                 <section aria-labelledby={`collection-${c.id}-heading`}>
                   <div class="mb-5 flex items-center justify-between gap-4">
-                    <h3 id={`collection-${c.id}-heading`} class="text-text-main flex items-center gap-3 text-2xl font-bold">
-                      <span class="bg-accent-soft text-brand flex h-10 w-10 items-center justify-center rounded-xl">
+                    <h3 id={`collection-${c.id}-heading`} class="text-text-main flex items-center gap-3 text-2xl font-semibold">
+                      <span class="bg-accent-soft text-brand-ink rounded-control flex h-10 w-10 items-center justify-center">
                         <Icon name={c.icon} class="h-5 w-5" aria-hidden="true" />
                       </span>
                       {c.title}
                     </h3>
-                    <a href={`/collection/${c.id}`} class="text-brand shrink-0 py-2 font-semibold hover:underline" aria-label={`Смотреть все: ${c.title}`}>
+                    <a href={`/collection/${c.id}`} class="text-brand-ink shrink-0 py-2 font-semibold hover:underline" aria-label={`Смотреть все: ${c.title}`}>
                       Смотреть все &rarr;
                     </a>
                   </div>

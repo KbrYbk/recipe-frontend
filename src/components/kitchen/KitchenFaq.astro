@@ -24,12 +24,12 @@ const jsonLd =
   items.length > 0 && (
     <section aria-labelledby="kitchen-faq-heading">
       <script type="application/ld+json" is:inline set:html={jsonLd} />
-      <h2 id="kitchen-faq-heading" class="text-text-main mb-4 text-2xl font-bold">
+      <h2 id="kitchen-faq-heading" class="text-text-main mb-4 text-2xl font-semibold">
         {heading}
       </h2>
       <div class="space-y-3">
         {items.map((f) => (
-          <details class="glass-border-3d bg-card-bg/60 group rounded-2xl px-5 py-4 shadow-sm shadow-black/15">
+          <details class="glass-border-3d bg-card-bg/60 group rounded-card shadow-soft px-5 py-4">
             <summary class="text-text-main cursor-pointer list-none font-semibold">
               <span class="flex items-center justify-between gap-4">
                 {f.q}

@@ -29,7 +29,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
       <dialog class="cook-dialog bg-page-bg text-text-main m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden p-0 backdrop:bg-black/80" aria-labelledby="cook-title" data-cook-dialog>
         <div class="flex h-full flex-col">
           <header class="border-line flex items-center gap-3 border-b px-4 py-3">
-            <button type="button" class="hover:text-brand flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl" aria-label="Закрыть режим готовки" data-cook-close>
+            <button type="button" class="hover:text-brand-ink rounded-control flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center" aria-label="Закрыть режим готовки" data-cook-close>
               <Icon name="lucide:x" class="h-6 w-6" aria-hidden="true" />
             </button>
             <div class="min-w-0 flex-1">
@@ -47,7 +47,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
             {ingredients.length > 0 && (
               <button
                 type="button"
-                class="glass-border-3d hover:text-brand flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-semibold"
+                class="glass-border-3d hover:text-brand-ink rounded-control flex h-11 shrink-0 cursor-pointer items-center gap-2 px-3 text-sm font-semibold"
                 aria-expanded="false"
                 aria-controls="cook-ingredients"
                 data-cook-ingredients-toggle
@@ -66,31 +66,31 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
             <div class="h-full overflow-y-auto overscroll-contain px-5 py-6 md:px-10 md:py-10" data-cook-stage>
               {steps.map((step, index) => (
                 <section class="mx-auto hidden max-w-3xl" data-cook-step={index} aria-label={`Шаг ${index + 1}`}>
-                  <p class="text-brand mb-4 text-sm font-bold tracking-wider uppercase">Шаг {index + 1}</p>
+                  <p class="text-brand-ink mb-4 text-sm font-semibold">Шаг {index + 1}</p>
                   <p class="text-2xl leading-relaxed font-medium whitespace-pre-line md:text-4xl md:leading-snug">{plain(step.text)}</p>
-                  {step.image && <img src={step.image} alt="" loading="lazy" decoding="async" class="mt-6 max-h-[40vh] w-auto rounded-2xl object-contain" width="800" height="450" />}
-                  <label class="border-line hover:border-brand mt-8 inline-flex cursor-pointer items-center gap-3 rounded-2xl border px-5 py-3 text-lg font-semibold transition-colors has-checked:border-emerald-600/60 has-checked:bg-emerald-600/10">
+                  {step.image && <img src={step.image} alt="" loading="lazy" decoding="async" class="rounded-card mt-6 max-h-[40vh] w-auto object-contain" width="800" height="450" />}
+                  <label class="border-line hover:border-brand rounded-card mt-8 inline-flex cursor-pointer items-center gap-3 border px-5 py-3 text-lg font-semibold transition-colors has-checked:border-emerald-600/60 has-checked:bg-emerald-600/10">
                     <Checkbox data-cook-step-done={index} />
                     Шаг выполнен
                   </label>
                 </section>
               ))}
               <section class="mx-auto hidden max-w-3xl py-10 text-center" data-cook-finish aria-label="Готово" tabindex="-1">
-                <div class="bg-accent-soft text-brand mx-auto flex h-20 w-20 items-center justify-center rounded-full">
+                <div class="bg-accent-soft text-brand-ink mx-auto flex h-20 w-20 items-center justify-center rounded-full">
                   <Icon name="lucide:party-popper" class="h-10 w-10" aria-hidden="true" />
                 </div>
-                <p class="mt-6 text-3xl font-extrabold md:text-5xl">Готово!</p>
+                <p class="mt-6 text-3xl font-semibold md:text-5xl">Готово!</p>
                 <p class="text-text-muted mt-3 text-xl md:text-2xl">Приятного аппетита</p>
                 <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-                  <button
-                    type="button"
-                    class="bg-brand hover:bg-brand-hover flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl px-8 text-lg font-bold text-white"
-                    data-cook-finish-close
-                  >
+                  <button type="button" class="btn-primary rounded-card h-14 px-8 text-lg" data-cook-finish-close>
                     <Icon name="lucide:check" class="h-5 w-5" aria-hidden="true" />
                     Закрыть
                   </button>
-                  <button type="button" class="glass-border-3d hover:text-brand flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl px-8 text-lg font-bold" data-cook-restart>
+                  <button
+                    type="button"
+                    class="glass-border-3d hover:text-brand-ink rounded-card flex h-14 cursor-pointer items-center justify-center gap-2 px-8 text-lg font-semibold"
+                    data-cook-restart
+                  >
                     <Icon name="lucide:rotate-ccw" class="h-5 w-5" aria-hidden="true" />
                     Начать сначала
                   </button>
@@ -101,18 +101,18 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
             {ingredients.length > 0 && (
               <aside
                 id="cook-ingredients"
-                class="bg-card-bg border-line absolute inset-y-0 right-0 hidden w-full max-w-sm overflow-y-auto border-l p-5 shadow-2xl"
+                class="bg-card-bg border-line shadow-float absolute inset-y-0 right-0 hidden w-full max-w-sm overflow-y-auto border-l p-5"
                 aria-label="Ингредиенты"
                 data-cook-ingredients
               >
-                <h2 class="mb-4 text-xl font-bold">Ингредиенты</h2>
+                <h2 class="mb-4 text-xl font-semibold">Ингредиенты</h2>
                 {ingredients.some((i) => formatIngredientAmount(i)) && <ScaleControl recipeId={recipeId} servings={servings} class="mb-4" />}
                 <ul class="space-y-2">
                   {ingredients.map((item, i) => {
                     const amount = formatIngredientAmount(item);
                     return (
                       <li>
-                        <label class="hover:bg-page-bg/60 flex cursor-pointer items-start gap-3 rounded-xl p-2 text-lg">
+                        <label class="hover:bg-page-bg/60 rounded-control flex cursor-pointer items-start gap-3 p-2 text-lg">
                           <Checkbox class="mt-0.5" data-cook-ingredient={i} />
                           <span>
                             {item.name}
@@ -132,11 +132,11 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
           </div>
 
           <footer data-cook-footer class="border-line flex items-center gap-3 border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <button type="button" class="glass-border-3d flex h-14 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl text-lg font-bold disabled:opacity-40" data-cook-prev>
+            <button type="button" class="glass-border-3d rounded-card flex h-14 flex-1 cursor-pointer items-center justify-center gap-2 text-lg font-semibold disabled:opacity-40" data-cook-prev>
               <Icon name="lucide:arrow-left" class="h-5 w-5" aria-hidden="true" />
               Назад
             </button>
-            <button type="button" class="bg-brand hover:bg-brand-hover flex h-14 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl text-lg font-bold text-white" data-cook-next>
+            <button type="button" class="btn-primary rounded-card h-14 flex-1 text-lg" data-cook-next>
               <span data-cook-next-label>Далее</span>
               <Icon name="lucide:arrow-right" class="h-5 w-5" aria-hidden="true" />
             </button>

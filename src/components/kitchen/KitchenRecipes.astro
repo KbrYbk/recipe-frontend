@@ -35,10 +35,10 @@ const allHref = `/recipes?q=${encodeURIComponent(q)}`;
   recipes.length > 0 && (
     <section aria-labelledby="kitchen-recipes-heading">
       <div class="mb-6 flex items-end justify-between gap-4">
-        <h2 id="kitchen-recipes-heading" class="text-text-main text-2xl font-bold">
+        <h2 id="kitchen-recipes-heading" class="text-text-main text-2xl font-semibold">
           {heading}
         </h2>
-        <a href={allHref} rel="nofollow" class="text-brand shrink-0 text-sm font-semibold hover:underline">
+        <a href={allHref} rel="nofollow" class="text-brand-ink shrink-0 text-sm font-semibold hover:underline">
           Все рецепты &rarr;
         </a>
       </div>

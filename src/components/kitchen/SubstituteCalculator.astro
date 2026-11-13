@@ -18,14 +18,14 @@ const subs = calculableSubs(entry);
 const initialQuantity = 100;
 const initialUnit = SUBSTITUTE_UNITS[0];
 const payload = JSON.stringify(subs.map((s) => s.factor));
-const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full rounded-2xl border px-4 text-lg tabular-nums focus:ring-4 focus:outline-none";
+const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full rounded-card border px-4 text-lg tabular-nums focus:ring-4 focus:outline-none";
 ---
 
 {
   subs.length > 0 && (
     <Surface as="section" padding="sm" aria-labelledby="substitute-calc-heading" data-substitute-calculator data-factors={payload}>
-      <h2 id="substitute-calc-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-bold md:text-2xl">
-        <Icon name="lucide:calculator" class="text-brand h-6 w-6 shrink-0" aria-hidden="true" />
+      <h2 id="substitute-calc-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-semibold md:text-2xl">
+        <Icon name="lucide:calculator" class="text-brand-ink h-6 w-6 shrink-0" aria-hidden="true" />
         Сколько взять вместо {entry.forms.gen}
       </h2>
 
@@ -57,7 +57,7 @@ const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-
           return (
             <li class="border-line flex flex-col gap-x-4 border-t pt-2 first:border-t-0 first:pt-0 sm:flex-row sm:items-baseline sm:justify-between">
               <span class="text-text-main font-medium">{capitalize(s.name)}</span>
-              <span class="text-text-main text-xl font-bold tabular-nums" data-sc-result={i}>
+              <span class="text-text-main text-xl font-semibold tabular-nums" data-sc-result={i}>
                 {amount !== null ? formatAmount(amount, initialUnit) : "—"}
               </span>
             </li>

@@ -15,14 +15,14 @@ interface Props {
 const { entry } = Astro.props;
 const conditions = orderedConditions(entry).filter((c) => c.unit !== "h");
 const payload = JSON.stringify(conditions.map((c) => ({ where: c.where, min: c.min, max: c.max, unit: c.unit })));
-const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full rounded-2xl border px-4 text-base focus:ring-4 focus:outline-none";
+const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-12 w-full rounded-card border px-4 text-base focus:ring-4 focus:outline-none";
 ---
 
 {
   conditions.length > 0 && (
     <Surface as="section" padding="sm" aria-labelledby="expiry-heading" data-expiry-calculator data-conditions={payload}>
-      <h2 id="expiry-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-bold md:text-2xl">
-        <Icon name="lucide:calculator" class="text-brand h-6 w-6 shrink-0" aria-hidden="true" />
+      <h2 id="expiry-heading" class="text-text-main mb-5 flex items-center gap-2 text-xl font-semibold md:text-2xl">
+        <Icon name="lucide:calculator" class="text-brand-ink h-6 w-6 shrink-0" aria-hidden="true" />
         До какого числа съесть
       </h2>
 
@@ -48,7 +48,7 @@ const fieldClass = "bg-page-bg text-text-main border-line focus:ring-brand/30 h-
       </div>
 
       <div class="mt-5" aria-live="polite">
-        <p class="text-text-main text-2xl font-bold tabular-nums md:text-3xl" data-expiry-title>
+        <p class="text-text-main text-2xl font-semibold tabular-nums md:text-3xl" data-expiry-title>
           Выберите дату
         </p>
         <p class="text-text-muted mt-1 leading-relaxed" data-expiry-detail>

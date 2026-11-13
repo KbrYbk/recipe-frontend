@@ -18,12 +18,12 @@ const autofocus = Astro.url.searchParams.get("action") === "search";
 ---
 
 <div class:list={["mx-auto", compact ? "w-full" : "max-w-3xl"]}>
-  <form action={action} method="GET" role="search" class:list={["flex gap-2", compact ? "flex-row" : "flex-col gap-4 sm:flex-row"]}>
+  <form action={action} method="GET" role="search" class="flex flex-row gap-2">
     {Object.entries(preserveParams).map(([name, value]) => (value ? <input type="hidden" name={name} value={value} /> : null))}
     <div class="relative flex-1">
       <Icon
         name="lucide:search"
-        class:list={["text-text-muted pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 opacity-70", compact ? "left-4 h-5 w-5" : "left-5 h-6 w-6 md:left-6 md:h-7 md:w-7"]}
+        class:list={["text-text-muted pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 opacity-70", compact ? "left-4 h-5 w-5" : "left-4 h-5 w-5 md:left-5 md:h-6 md:w-6"]}
         aria-hidden="true"
       />
       <input
@@ -33,8 +33,8 @@ const autofocus = Astro.url.searchParams.get("action") === "search";
         placeholder={placeholder}
         maxlength="100"
         class:list={[
-          "glass-border-3d bg-card-bg/60 text-text-main placeholder:text-text-muted focus:ring-brand/20 w-full rounded-2xl shadow-md shadow-black/15 backdrop-blur-md transition-all focus:ring-4 focus:outline-none",
-          compact ? "py-3 pr-4 pl-11 text-base" : "py-4 pr-6 pl-14 text-lg md:py-5 md:pl-16 md:text-xl",
+          "glass-border-3d bg-card-bg text-text-main placeholder:text-text-muted focus:ring-brand/45 rounded-control shadow-soft w-full transition-shadow duration-150 focus:ring-2 focus:outline-none",
+          compact ? "py-3 pr-4 pl-11 text-base" : "py-3 pr-4 pl-11 text-base md:py-3.5 md:pl-14 md:text-lg",
         ]}
         aria-label="Поиск рецепта"
         autocomplete="off"
@@ -51,7 +51,7 @@ const autofocus = Astro.url.searchParams.get("action") === "search";
           <span class="hidden sm:inline">Найти</span>
         </Button>
       ) : (
-        <Button type="submit" size="lg" class="min-w-40">
+        <Button type="submit" size="lg" class="shrink-0">
           Найти
         </Button>
       )

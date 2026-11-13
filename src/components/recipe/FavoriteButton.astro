@@ -28,7 +28,7 @@ const { recipeId } = Astro.props;
       if (!btn || !recipeId) return;
 
       const apply = (active: boolean) => {
-        btn.classList.toggle("text-brand", active);
+        btn.classList.toggle("text-brand-ink", active);
         btn.classList.toggle("border-brand", active);
         btn.setAttribute("aria-pressed", String(active));
         icon?.classList.toggle("fill-current", active);

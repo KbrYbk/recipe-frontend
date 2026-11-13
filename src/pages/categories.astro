@@ -34,18 +34,18 @@ const itemListJsonLd = sorted.length
           <Breadcrumbs items={[{ name: "Категории", href: "/categories" }]} />
         </div>
 
-        <h1 class="text-text-main mb-8 text-3xl font-bold md:text-5xl">
-          Все <span class="text-brand">категории</span>
+        <h1 class="text-text-main mb-8 text-3xl font-semibold md:text-5xl">
+          Все <span class="text-brand-ink">категории</span>
         </h1>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {sorted.map((cat) => (
             <a
               href={`/${cat.path}`}
-              class="glass-border-3d bg-card-bg/60 hover:shadow-brand/20 group flex items-center justify-between rounded-2xl p-6 shadow-sm backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-md"
+              class="glass-border-3d bg-card-bg/60 group rounded-card shadow-soft hover:shadow-soft flex items-center justify-between p-6 backdrop-blur-md transition-all hover:-translate-y-1"
             >
-              <span class="text-text-main group-hover:text-brand text-lg font-bold transition-colors">{cat.title}</span>
-              <Icon name="lucide:chevron-right" class="text-text-muted group-hover:text-brand h-5 w-5 transition-colors" />
+              <span class="text-text-main group-hover:text-brand-ink text-lg font-semibold transition-colors">{cat.title}</span>
+              <Icon name="lucide:chevron-right" class="text-text-muted group-hover:text-brand-ink h-5 w-5 transition-colors" />
             </a>
           ))}
         </div>

@@ -24,18 +24,18 @@ const calories = recipe.nutrition?.calories;
 
 const difficultyLabel = difficulty === "hard" ? "Сложно" : difficulty === "medium" ? "Средне" : "Легко";
 const difficultyClass =
-  difficulty === "hard" ? "bg-red-500/15 text-red-500" : difficulty === "medium" ? "bg-amber-500/15 text-amber-600 dark:text-amber-500" : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-500";
+  difficulty === "hard" ? "bg-red-500/15 text-negative" : difficulty === "medium" ? "bg-amber-500/15 text-rating dark:text-rating" : "bg-emerald-500/15 text-positive dark:text-positive";
 // Автор и даты видимы на странице (E-E-A-T): то же, что в разметке Recipe.
 const dateFormat = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Moscow" });
 const published = isoDate(recipe.created_at);
 const updated = isoDate(recipe.updated_at);
 const showUpdated = !!published && !!updated && updated.slice(0, 10) !== published.slice(0, 10);
-const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rounded-2xl px-3 text-sm shadow-sm shadow-black/15 print:border-none print:px-0";
+const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rounded-card px-3 text-sm shadow-soft print:border-none print:px-0";
 ---
 
 <header class="mb-6 md:mb-10">
   <h1
-    class="text-text-main mb-4 text-3xl leading-tight font-bold text-balance md:mb-6 md:text-5xl lg:text-6xl print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-extrabold"
+    class="text-text-main mb-4 text-3xl leading-tight font-semibold text-balance md:mb-6 md:text-5xl lg:text-6xl print:mb-2 print:border-b print:border-black print:pb-1 print:text-[18pt] print:font-semibold"
   >
     {title}
   </h1>
@@ -67,9 +67,9 @@ const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rou
   </p>
 
   <nav class="mb-4 flex flex-wrap gap-2 text-sm font-semibold md:mb-6 print:hidden" aria-label="Разделы рецепта">
-    <a href="#ingredients" class="text-brand hover:underline">Ингредиенты</a>
+    <a href="#ingredients" class="text-brand-ink hover:underline">Ингредиенты</a>
     <span class="text-text-muted" aria-hidden="true">·</span>
-    <a href="#steps-heading" class="text-brand hover:underline">К рецепту</a>
+    <a href="#steps-heading" class="text-brand-ink hover:underline">К рецепту</a>
   </nav>
 
   <div class="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-3 print:mb-4">
@@ -78,14 +78,14 @@ const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rou
       {
         cooking_time > 0 && (
           <span class={`${chip} bg-card-bg/20 text-text-main font-medium backdrop-blur-md`} aria-label={`Время приготовления: ${formatTime(cooking_time)}`}>
-            <Icon name="lucide:clock" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
+            <Icon name="lucide:clock" class="text-brand-ink h-4 w-4 shrink-0" aria-hidden="true" />
             <span class="whitespace-nowrap tabular-nums">{formatTime(cooking_time)}</span>
           </span>
         )
       }
       {
         difficulty && (
-          <span class={`${chip} ${difficultyClass} text-xs font-bold tracking-wide uppercase print:bg-transparent print:text-black`} aria-label={`Сложность: ${difficultyLabel}`}>
+          <span class={`${chip} ${difficultyClass} text-xs font-semibold print:bg-transparent print:text-black`} aria-label={`Сложность: ${difficultyLabel}`}>
             <Icon name="lucide:flame" class="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{difficultyLabel}</span>
           </span>
@@ -94,7 +94,7 @@ const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rou
       {
         calories && (
           <span class={`${chip} bg-card-bg/20 text-text-main font-medium backdrop-blur-md`} aria-label={`Калорийность: ${calories} ккал на 100 граммов`} data-recipe-calories>
-            <Icon name="lucide:zap" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
+            <Icon name="lucide:zap" class="text-brand-ink h-4 w-4 shrink-0" aria-hidden="true" />
             <span class="whitespace-nowrap tabular-nums">
               {calories} ккал <span class="text-text-muted font-normal">/ 100 г</span>
             </span>
@@ -104,7 +104,7 @@ const chip = "glass-border-3d inline-flex h-10 shrink-0 items-center gap-1.5 rou
       {
         servings && (
           <span class={`${chip} bg-card-bg/20 text-text-main font-medium backdrop-blur-md`} aria-label={`Количество порций: ${servings}`} data-recipe-servings>
-            <Icon name="lucide:users" class="text-brand h-4 w-4 shrink-0" aria-hidden="true" />
+            <Icon name="lucide:users" class="text-brand-ink h-4 w-4 shrink-0" aria-hidden="true" />
             <span class="whitespace-nowrap tabular-nums">{servingsText(servings)}</span>
           </span>
         )

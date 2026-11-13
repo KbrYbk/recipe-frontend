@@ -5,11 +5,11 @@ import Surface from "../ui/Surface.astro";
 
 <Surface as="section" class="bg-accent-soft my-8" role="alert" aria-live="polite">
   <div class="flex flex-col gap-6 md:flex-row md:items-center">
-    <div class="bg-brand/10 text-brand flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl">
+    <div class="bg-brand/10 text-brand-ink rounded-card flex h-16 w-16 shrink-0 items-center justify-center">
       <Icon name="lucide:chef-hat" class="h-10 w-10" aria-hidden="true" />
     </div>
     <div class="grow">
-      <h1 class="text-text-main text-xl font-bold md:text-2xl">Ой, временные трудности на кухне!</h1>
+      <h1 class="text-text-main text-xl font-semibold md:text-2xl">Ой, временные трудности на кухне!</h1>
       <div class="text-text-muted mt-2 text-base leading-relaxed">
         <slot>Не получилось загрузить страницу. Мы уже разбираемся — попробуйте обновить её через минуту.</slot>
       </div>

@@ -13,7 +13,7 @@ const items: { href: string; label: string; icon: string; key: NavSection; short
 ---
 
 <nav
-  class="glass-border-3d bg-card-bg/70 fixed right-4 bottom-4 left-4 z-50 flex h-16 items-center justify-around rounded-3xl px-1 shadow-xl shadow-black/15 backdrop-blur-md md:hidden print:hidden"
+  class="glass-border-3d bg-card-bg/70 rounded-panel shadow-float fixed right-4 bottom-4 left-4 z-50 flex h-16 items-center justify-around px-1 backdrop-blur-md md:hidden print:hidden"
   aria-label="Нижняя навигация"
 >
   {
@@ -22,12 +22,12 @@ const items: { href: string; label: string; icon: string; key: NavSection; short
       return (
         <a
           href={item.href}
-          class={`flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl transition-colors ${active ? "text-brand" : "text-text-muted"} hover:text-brand active:text-brand`}
+          class={`rounded-card flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 transition-colors ${active ? "text-brand-ink" : "text-text-muted"} hover:text-brand-ink active:text-brand-ink`}
           aria-current={active ? "page" : undefined}
           {...item.extra}
         >
           <Icon name={item.icon} class="h-6 w-6" aria-hidden="true" />
-          <span class={`max-w-full truncate px-0.5 text-[10px] ${active ? "font-bold" : "font-medium"}`}>
+          <span class={`max-w-full truncate px-0.5 text-[10px] ${active ? "font-semibold" : "font-medium"}`}>
             {item.short ? (
               <>
                 <span class="min-[360px]:hidden">{item.short}</span>

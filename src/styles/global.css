@@ -36,6 +36,8 @@
      Значения задаются переменными ниже и меняются вместе с темой. */
   --color-brand: var(--brand-primary);
   --color-brand-hover: var(--brand-hover);
+  /* Наведение на свою акцентную заливку: чуть плотнее, тёмный текст остаётся читаемым. */
+  --color-brand-strong: var(--brand-strong);
   /* Акцент как текст/иконка на фоне страницы (контраст ≥ 4.5:1) и цвет текста на акцентной заливке. */
   --color-brand-ink: var(--brand-ink);
   --color-on-brand: var(--on-brand);
@@ -85,6 +87,7 @@
 
     --brand-primary: #ff6900;
     --brand-hover: #ca3500;
+    --brand-strong: #f25f00;
     --brand-ink: #ad4500;
     --on-brand: #1f1408;
     --bg-accent: #fbeedd;
@@ -112,6 +115,7 @@
 
     --brand-primary: #ff7b1a;
     --brand-hover: #ff9d4d;
+    --brand-strong: #ff9440;
     --brand-ink: #ff8f3d;
     --on-brand: #1f1408;
     --bg-accent: rgba(255, 123, 26, 0.12);
@@ -199,9 +203,36 @@
     }
   }
 
+  /* Основная кнопка — одна на весь сайт (её же использует ui/Button.astro, variant="primary").
+     Размеры и отступы уточняются утилитами в разметке. */
   .btn-primary {
-    /* Используем имена из @theme (без префикса --color) */
-    @apply bg-brand hover:bg-brand-hover shadow-brand/20 rounded-xl px-6 py-2 font-bold text-white shadow-lg transition-all;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-control);
+    background-color: var(--brand-primary);
+    color: var(--on-brand);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 0.15s var(--ease-soft),
+      transform 0.1s ease-out;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--brand-strong);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary:focus-visible {
+    outline: 2px solid var(--brand-ink);
+    outline-offset: 2px;
   }
 
   /* Рамка поверхности: тихая волосяная линия по контуру (имя класса историческое — его используют и промо-карточки). */
@@ -276,10 +307,6 @@
   }
 
   /* Отклик на нажатие — сразу, на pointer-down, а не после отпускания. */
-  .pressable {
-    transition: transform 0.1s ease-out;
-  }
-
   .pressable:active {
     transform: scale(0.97);
   }
@@ -492,6 +519,8 @@
     transition: none !important;
   }
 
+  .btn-primary,
+  .btn-primary:active,
   .pressable,
   .pressable:active {
     transition: none !important;

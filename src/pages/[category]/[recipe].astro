@@ -105,7 +105,7 @@ const breadcrumbs = recipe
 
         <Surface
           padding="none"
-          class="relative mb-10 aspect-video overflow-hidden shadow-2xl! md:mb-12 print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
+          class="shadow-float! relative mb-10 aspect-video overflow-hidden md:mb-12 print:mb-4 print:aspect-auto print:overflow-visible print:rounded-none print:border-0 print:bg-transparent print:shadow-none"
         >
           {recipe.main_image ? (
             <Image
@@ -137,7 +137,7 @@ const breadcrumbs = recipe
           <div class="min-w-0">
             {!isDescriptionRedundant(recipe) && (
               <section aria-labelledby="about-heading" class="mb-12">
-                <h2 id="about-heading" class="text-text-main mb-6 text-3xl font-bold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
+                <h2 id="about-heading" class="text-text-main print: mb-6 text-3xl font-semibold print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt]">
                   О рецепте
                 </h2>
                 <div class="relative">
@@ -161,7 +161,7 @@ const breadcrumbs = recipe
             <div id="textSteps" role={recipe.video_url ? "tabpanel" : undefined} aria-labelledby={recipe.video_url ? "tab-recipe-text" : "steps-heading"}>
               <h2
                 id="steps-heading"
-                class="text-text-main mt-12 mb-8 scroll-mt-24 text-3xl font-bold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase"
+                class="text-text-main print: mt-12 mb-8 scroll-mt-24 text-3xl font-semibold print:mt-4 print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt]"
               >
                 Приготовление
               </h2>
@@ -177,7 +177,7 @@ const breadcrumbs = recipe
         {similar && <SimilarRecipes recipes={similar} categoryHref={recipe.category?.href} categoryTitle={recipe.category?.title} />}
 
         <Divider>
-          <h3 class="text-text-main mb-6 text-2xl font-bold">Рекомендуем приготовить:</h3>
+          <h3 class="text-text-main mb-6 text-2xl font-semibold">Рекомендуем приготовить:</h3>
           <AdSlot id="R-A-19056160-14" isFeed={true} refreshInterval={60} />
         </Divider>
       </article>

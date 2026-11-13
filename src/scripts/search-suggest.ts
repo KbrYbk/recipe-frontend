@@ -18,7 +18,7 @@ function enhance(input: HTMLInputElement): void {
   list.id = listId;
   list.setAttribute("role", "listbox");
   list.setAttribute("aria-label", "Подсказки поиска");
-  list.className = "bg-card-bg border-line absolute top-full right-0 left-0 z-[60] mt-2 hidden max-h-80 overflow-y-auto rounded-2xl border py-2 text-left shadow-xl shadow-black/25";
+  list.className = "bg-card-bg border-line absolute top-full right-0 left-0 z-[60] mt-2 hidden max-h-80 overflow-y-auto rounded-card border py-2 text-left shadow-float ";
   host.classList.add("relative");
   host.appendChild(list);
 
@@ -46,7 +46,7 @@ function enhance(input: HTMLInputElement): void {
       const on = n === i;
       li.setAttribute("aria-selected", String(on));
       li.classList.toggle("bg-brand/10", on);
-      li.classList.toggle("text-brand", on);
+      li.classList.toggle("text-brand-ink", on);
       if (on) li.scrollIntoView({ block: "nearest" });
     });
     if (i >= 0) input.setAttribute("aria-activedescendant", `${listId}-${i}`);
