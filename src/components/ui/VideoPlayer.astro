@@ -12,12 +12,12 @@ import { Icon } from "astro-icon/components";
         class="glass-border-3d bg-accent-soft/40 relative mb-6 flex w-full max-w-[320px] rounded-[1.25rem] p-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] backdrop-blur-sm"
         id="recipeMediaTablist"
       >
-        <!-- Ползунок-плашка -->
+        {/* Ползунок-плашка */}
         <div
           id="tabIndicator"
-          class="bg-card-bg absolute bottom-1 left-1 top-1 w-[calc(50%-4px)] rounded-xl shadow-sm transition-transform duration-300 cubic-bezier(0.4, 0.0, 0.2, 1)"
+          class="bg-card-bg cubic-bezier(0.4, 0.0, 0.2, 1) absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-xl shadow-sm transition-transform duration-300"
           style="transform: translateX(0%);"
-        ></div>
+        />
 
         <button
           type="button"
@@ -27,7 +27,7 @@ import { Icon } from "astro-icon/components";
           aria-controls="textSteps"
           tabindex="0"
           data-tab="text"
-          class="relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors duration-300 text-text-main"
+          class="text-text-main relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors duration-300"
         >
           <Icon name="lucide:file-text" class="h-4.5 w-4.5 shrink-0" aria-hidden="true" /> Текст
         </button>
@@ -39,19 +39,13 @@ import { Icon } from "astro-icon/components";
           aria-controls="videoContainer"
           tabindex="-1"
           data-tab="video"
-          class="relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors duration-300 text-text-muted hover:text-text-main"
+          class="text-text-muted hover:text-text-main relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-colors duration-300"
         >
           <Icon name="lucide:play-circle" class="h-4.5 w-4.5 shrink-0" aria-hidden="true" /> Видео
         </button>
       </div>
 
-      <div
-        id="videoContainer"
-        role="tabpanel"
-        aria-labelledby="tab-recipe-video"
-        class="glass-border-3d hidden aspect-video overflow-hidden rounded-3xl bg-black shadow-xl shadow-black/15"
-        hidden
-      >
+      <div id="videoContainer" role="tabpanel" aria-labelledby="tab-recipe-video" class="glass-border-3d hidden aspect-video overflow-hidden rounded-3xl bg-black shadow-xl shadow-black/15" hidden>
         <iframe title="Видео приготовления блюда" width="100%" height="100%" src={videoUrl} allowfullscreen class="border-0" loading="lazy" />
       </div>
     </div>

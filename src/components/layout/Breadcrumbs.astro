@@ -32,12 +32,15 @@ const breadcrumbList = {
   })),
 };
 
-const jsonLd = JSON.stringify(breadcrumbList).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+const jsonLd = JSON.stringify(breadcrumbList).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
 ---
 
 <script type="application/ld+json" set:html={jsonLd} is:inline />
 
-<nav aria-label="Хлебные крошки" class="print:hidden glass-border-3d bg-card-bg/60 backdrop-blur-md shadow-sm shadow-black/15 flex w-fit flex-wrap items-center gap-2 rounded-2xl px-4 py-2 text-sm text-text-muted mb-6">
+<nav
+  aria-label="Хлебные крошки"
+  class="glass-border-3d bg-card-bg/60 text-text-muted mb-6 flex w-fit flex-wrap items-center gap-2 rounded-2xl px-4 py-2 text-sm shadow-sm shadow-black/15 backdrop-blur-md print:hidden"
+>
   <a href="/" class="hover:text-brand flex items-center transition-colors" aria-label="Главная">
     <Icon name="lucide:home" class="h-4 w-4" />
   </a>

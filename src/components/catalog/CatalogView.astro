@@ -13,6 +13,7 @@ import Button from "../ui/Button.astro";
 import Divider from "../ui/Divider.astro";
 import AdSlot from "../shared/AdSlot.astro";
 import MarketPromoCard from "../shared/MarketPromoCard.astro";
+import KitchenAsideLinks from "../kitchen/KitchenAsideLinks.astro";
 import {
   activeFilterCount,
   buildCatalogHref,
@@ -324,6 +325,7 @@ const searchParams: Record<string, string> = {
             </div>
           </div>
         </div>
+        <KitchenAsideLinks />
       </aside>
 
       <div class="min-w-0 grow">
