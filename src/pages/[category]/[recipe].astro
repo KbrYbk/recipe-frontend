@@ -100,8 +100,8 @@ const breadcrumbs = recipe
         {/* Первый экран: слева заголовок, мета и действия, справа — крупное фото. На узких экранах — друг под другом. */}
         <div class="mb-10 md:mb-12 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center lg:gap-10 xl:gap-14 print:mb-4 print:block">
           <div class="min-w-0">
-            <div class="mb-4 md:mb-5 print:hidden">
-              <Breadcrumbs items={breadcrumbs} variant="plain" />
+            <div class="print:hidden">
+              <Breadcrumbs items={breadcrumbs} />
             </div>
 
             <RecipeHeader recipe={recipe} />

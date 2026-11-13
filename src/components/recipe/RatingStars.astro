@@ -8,7 +8,7 @@ const { recipeId, averageRating } = Astro.props;
 
 <rating-stars data-id={recipeId} data-avg={averageRating} class="block shrink-0">
   <div
-    class="rating-container flex h-10 items-center justify-center gap-1 text-sm font-bold text-amber-500 sm:gap-2"
+    class="rating-container relative flex h-10 items-center justify-center gap-1 text-sm font-bold text-amber-500 sm:gap-2"
     role="group"
     aria-label={`Рейтинг: ${averageRating ? Number(averageRating).toFixed(1) : "0"} из 5`}
   >
@@ -40,7 +40,10 @@ const { recipeId, averageRating } = Astro.props;
     <div class="text-text-main ml-0.5 whitespace-nowrap sm:ml-1">
       <span class="avg-val font-bold">{averageRating ? Number(averageRating).toFixed(1) : "0"}</span>
       <span class="sr-only"> из 5</span>
-      <span class="user-val text-text-muted hidden text-xs">Ваша оценка: <span class="val text-text-main font-semibold"></span></span>
+      {/* Подпись стоит под звёздами и не занимает места в строке: иначе при наведении строка переносится и звёзды уезжают из-под курсора. */}
+      <span class="user-val text-text-muted absolute top-full left-0 -mt-2 hidden text-[0.6875rem] leading-none font-medium whitespace-nowrap"
+        >Ваша оценка: <span class="val text-text-main font-semibold"></span></span
+      >
     </div>
   </div>
 </rating-stars>
