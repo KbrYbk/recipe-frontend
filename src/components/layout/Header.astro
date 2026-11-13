@@ -7,6 +7,8 @@ const section = navSection(Astro.url.pathname, Astro.url.searchParams);
 const isHome = section === "home";
 const links = [
   { href: "/recipes", label: "Все рецепты", key: "recipes" },
+  // На 768–1023 px пятый пункт не помещается в одну строку — там ссылка на справочник остаётся в футере.
+  { href: "/spravochnik", label: "Справочник", key: "reference", wideOnly: true },
   { href: "/favorites", label: "Избранное", key: "favorites" },
   { href: "/shopping-list", label: "Покупки", key: "shopping" },
   { href: "/random", label: "Удиви меня", key: "random" },
@@ -29,7 +31,11 @@ const linkClass = (active: boolean) =>
     <nav class="hidden items-center gap-4 text-[15px] md:flex lg:gap-8 lg:text-base" aria-label="Основная навигация">
       {
         links.map((l) => (
-          <a href={l.href} class={linkClass(section === l.key || (l.key === "recipes" && section === "search"))} aria-current={section === l.key ? "page" : undefined}>
+          <a
+            href={l.href}
+            class:list={[linkClass(section === l.key || (l.key === "recipes" && section === "search")), "wideOnly" in l && "hidden lg:inline"]}
+            aria-current={section === l.key ? "page" : undefined}
+          >
             {l.label}
           </a>
         ))

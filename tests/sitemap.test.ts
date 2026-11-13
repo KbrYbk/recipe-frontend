@@ -8,7 +8,7 @@ describe("SITEMAP_PATTERN", () => {
     }
   });
   it("прочие пути не проксирует", () => {
-    for (const p of ["/sitemap_other.xml", "/sitemap_recipes_x.xml", "/sitemap.xml.gz", "/sitemap_landings.xml/", "/a/sitemap.xml"]) {
+    for (const p of ["/sitemap_kitchen.xml", "/sitemap_other.xml", "/sitemap_recipes_x.xml", "/sitemap.xml.gz", "/sitemap_landings.xml/", "/a/sitemap.xml"]) {
       expect(SITEMAP_PATTERN.test(p)).toBe(false);
     }
   });

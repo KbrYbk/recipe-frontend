@@ -16,6 +16,8 @@ export function buildRobotsTxt(origin: string): string {
     `Clean-param: ${CLEAN_PARAMS.join("&")} /`,
     "",
     `Sitemap: ${origin.replace(/\/+$/, "")}/sitemap.xml`,
+    // «Кухонный справочник»: отдельный файл, его отдаёт фронт (src/pages/sitemap_kitchen.xml.ts).
+    `Sitemap: ${origin.replace(/\/+$/, "")}/sitemap_kitchen.xml`,
     "",
   ].join("\n");
 }
