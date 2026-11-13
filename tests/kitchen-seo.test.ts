@@ -11,6 +11,7 @@ describe("справочник: SEO-шаблоны", () => {
         const seo = kitchenSectionSeo(section.key, count);
         expect(seo.title.length, seo.title).toBeLessThanOrEqual(TITLE_MAX);
         expect(seo.description.length, seo.description).toBeLessThanOrEqual(DESCRIPTION_MAX);
+        expect(seo.description.endsWith("…"), `описание оборвано: ${seo.description}`).toBe(false);
         expect(seo.h1).not.toBe("");
         expect(seo.intro.length).toBeGreaterThan(80);
       }
