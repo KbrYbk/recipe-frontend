@@ -18,6 +18,7 @@ import VideoPlayer from "../../components/ui/VideoPlayer.astro";
 import CookMode from "../../components/recipe/CookMode.astro";
 import FormattedText from "../../components/recipe/FormattedText.astro";
 import IngredientsList from "../../components/recipe/IngredientsList.astro";
+import RecipeRefLinks from "../../components/kitchen/RecipeRefLinks.astro";
 import ReadingProgress from "../../components/recipe/ReadingProgress.astro";
 import RecipeHeader from "../../components/recipe/RecipeHeader.astro";
 import NutritionFacts from "../../components/recipe/NutritionFacts.astro";
@@ -130,6 +131,7 @@ const breadcrumbs = recipe
         <div class="grid grid-cols-1 gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)] xl:gap-12">
           <aside class="lg:sticky lg:top-24 lg:flex lg:max-h-[calc(100vh-10rem)] lg:flex-col lg:gap-8 lg:pb-4 print:static print:block print:max-h-none print:overflow-visible">
             <IngredientsList ingredients={recipe.ingredients} recipeId={recipe.id} recipeTitle={recipe.title} recipeUrl={recipe.url} servings={recipe.servings} />
+            <RecipeRefLinks ingredients={recipe.ingredients} />
           </aside>
 
           <div class="min-w-0">

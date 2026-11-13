@@ -1,0 +1,32 @@
+---
+/** Ссылки со страницы рецепта на справочник (до трёх, по ингредиентам). Нет совпадений — блок не выводится. */
+import { Icon } from "astro-icon/components";
+import { getSection } from "../../lib/kitchen/data";
+import { recipeRefLinks } from "../../lib/kitchen/match";
+
+interface Props {
+  ingredients: ReadonlyArray<{ name: string }>;
+}
+
+const links = recipeRefLinks(Astro.props.ingredients, 3);
+---
+
+{
+  links.length > 0 && (
+    <nav aria-labelledby="recipe-ref-links-heading" class="glass-border-3d bg-card-bg/60 shrink-0 rounded-3xl p-5 shadow-md shadow-black/15 backdrop-blur-md print:hidden" data-recipe-ref-links>
+      <h2 id="recipe-ref-links-heading" class="text-text-main mb-2 text-base font-bold">
+        Пригодится
+      </h2>
+      <ul>
+        {links.map((link) => (
+          <li>
+            <a href={link.href} class="text-text-main hover:text-brand flex items-start gap-2 py-1.5 text-sm leading-snug font-medium transition-colors">
+              <Icon name={getSection(link.section).icon} class="text-brand mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              {link.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

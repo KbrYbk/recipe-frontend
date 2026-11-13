@@ -1,0 +1,52 @@
+---
+/**
+ * «Рецепты с этим продуктом»: 6 карточек из поиска по каталогу (поиск бэкенда ищет и по ингредиентам).
+ * Пустой результат или ошибка API — блок не выводится, страница справочника от API не зависит.
+ */
+import RecipeCard from "../RecipeCard.astro";
+import { DEFAULT_QUERY } from "../../lib/catalog";
+import { fetchRecipeList } from "../../lib/api/recipes";
+import type { RecipeCard as Card } from "../../types/recipe";
+
+interface Props {
+  /** Поисковый запрос: первый алиас продукта. */
+  query: string;
+  /** Продукт в творительном падеже не хранится — заголовок нейтральный. */
+  heading?: string;
+}
+
+const { query, heading = "Рецепты с этим продуктом" } = Astro.props;
+const LIMIT = 6;
+
+let recipes: Card[] = [];
+const q = query.trim();
+if (q) {
+  try {
+    const res = await fetchRecipeList({ ...DEFAULT_QUERY, q, page: 1 });
+    if (res.ok) recipes = res.data.list.slice(0, LIMIT);
+  } catch {
+    recipes = [];
+  }
+}
+const allHref = `/recipes?q=${encodeURIComponent(q)}`;
+---
+
+{
+  recipes.length > 0 && (
+    <section aria-labelledby="kitchen-recipes-heading">
+      <div class="mb-6 flex items-end justify-between gap-4">
+        <h2 id="kitchen-recipes-heading" class="text-text-main text-2xl font-bold">
+          {heading}
+        </h2>
+        <a href={allHref} rel="nofollow" class="text-brand shrink-0 text-sm font-semibold hover:underline">
+          Все рецепты &rarr;
+        </a>
+      </div>
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {recipes.map((r) => (
+          <RecipeCard recipe={r} headingLevel="h3" />
+        ))}
+      </div>
+    </section>
+  )
+}

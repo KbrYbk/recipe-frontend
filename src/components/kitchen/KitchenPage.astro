@@ -1,11 +1,12 @@
 ---
 /**
  * Оболочка страницы продукта в справочнике. Порядок блоков одинаков для всех подразделов:
- * H1 → прямой ответ → (слот: таблица, виджет, советы) → FAQ → (слот recipes) → перелинковка → источники.
+ * H1 → прямой ответ → (слот: таблица, виджет, советы) → FAQ → рецепты с продуктом → перелинковка → источники.
  */
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumbs from "../layout/Breadcrumbs.astro";
 import KitchenFaq from "./KitchenFaq.astro";
+import KitchenRecipes from "./KitchenRecipes.astro";
 import RelatedRefs from "./RelatedRefs.astro";
 import { KITCHEN_ROOT, entryHref, getSection, sectionHref } from "../../lib/kitchen/data";
 import { capitalize } from "../../lib/kitchen/seo";
@@ -44,7 +45,7 @@ const updatedText = Number.isFinite(updated.getTime()) ? new Intl.DateTimeFormat
     <div class="space-y-10">
       <slot />
       <KitchenFaq items={entry.faq} />
-      <slot name="recipes" />
+      <KitchenRecipes query={entry.aliases[0] ?? entry.forms.nom} />
       <RelatedRefs section={section} entry={entry} />
     </div>
 
