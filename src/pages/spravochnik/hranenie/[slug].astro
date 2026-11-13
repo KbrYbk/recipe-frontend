@@ -1,0 +1,59 @@
+---
+/** Страница продукта: сроки хранения в холодильнике, морозилке и при комнатной температуре, калькулятор «съесть до». */
+import { Icon } from "astro-icon/components";
+import NotFoundPage from "../../../components/errors/NotFoundPage.astro";
+import ExpiryCalculator from "../../../components/kitchen/ExpiryCalculator.astro";
+import KitchenPage from "../../../components/kitchen/KitchenPage.astro";
+import KitchenTable from "../../../components/kitchen/KitchenTable.astro";
+import { getBySlug } from "../../../lib/kitchen/data";
+import { conditionalResponse } from "../../../lib/kitchen/http";
+import { formatTerm, orderedConditions, placeLabel, storageLead, storageSeo, termPhrase } from "../../../lib/kitchen/storage";
+
+const entry = getBySlug("storage", String(Astro.params.slug ?? ""));
+if (!entry) Astro.response.status = 404;
+
+const notModified = entry ? conditionalResponse(Astro.request, Astro.response.headers, [entry.updatedAt]) : null;
+if (notModified) return notModified;
+
+const rows = entry ? orderedConditions(entry).map((c) => [{ text: placeLabel(c.where), note: c.note }, c.where === "room" ? termPhrase(c) : formatTerm(c)]) : [];
+---
+
+{
+  entry ? (
+    <KitchenPage section="storage" entry={entry} seo={storageSeo(entry)} lead={storageLead(entry)}>
+      <KitchenTable caption={`Сроки хранения: ${entry.forms.nom}`} head={["Где хранить", "Срок"]} rows={rows} />
+      <ExpiryCalculator entry={entry} />
+      <section aria-labelledby="spoil-heading">
+        <h2 id="spoil-heading" class="text-text-main mb-4 text-2xl font-bold">
+          {`Как понять, что ${entry.forms.nom} ${entry.forms.plural ? "испортились" : "уже нельзя есть"}`}
+        </h2>
+        <ul class="space-y-2">
+          {entry.spoilSigns.map((sign) => (
+            <li class="text-text-main flex items-start gap-3 leading-relaxed">
+              <Icon name="lucide:triangle-alert" class="mt-0.5 h-5 w-5 shrink-0 text-rose-500" aria-hidden="true" />
+              <span class="first-letter:uppercase">{sign}</span>
+            </li>
+          ))}
+        </ul>
+        <p class="text-text-muted mt-4 leading-relaxed">Если есть хотя бы один признак — продукт лучше выбросить, даже когда срок ещё не вышел.</p>
+      </section>
+      {entry.tips.length > 0 && (
+        <section aria-labelledby="storage-tips-heading">
+          <h2 id="storage-tips-heading" class="text-text-main mb-4 text-2xl font-bold">
+            Как хранить
+          </h2>
+          <ul class="space-y-2">
+            {entry.tips.map((tip) => (
+              <li class="text-text-main flex items-start gap-3 leading-relaxed">
+                <Icon name="lucide:check" class="text-brand mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </KitchenPage>
+  ) : (
+    <NotFoundPage />
+  )
+}
