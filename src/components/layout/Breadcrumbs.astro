@@ -8,9 +8,11 @@ interface BreadcrumbItem {
 
 interface Props {
   items: BreadcrumbItem[];
+  /** plain — строка без подложки (первый экран рецепта); по умолчанию — плашка. */
+  variant?: "pill" | "plain";
 }
 
-const { items } = Astro.props;
+const { items, variant = "pill" } = Astro.props;
 
 // 1. Более надежное получение origin
 const siteOrigin = Astro.site?.origin || "https://swageda.ru";
@@ -39,7 +41,10 @@ const jsonLd = JSON.stringify(breadcrumbList).replace(/</g, "\\u003c").replace(/
 
 <nav
   aria-label="Хлебные крошки"
-  class="glass-border-3d bg-card-bg/60 text-text-muted mb-6 flex w-fit flex-wrap items-center gap-2 rounded-2xl px-4 py-2 text-sm shadow-sm shadow-black/15 backdrop-blur-md print:hidden"
+  class:list={[
+    "text-text-muted flex flex-wrap items-center text-sm print:hidden",
+    variant === "plain" ? "gap-x-2 gap-y-1" : "glass-border-3d bg-card-bg/60 mb-6 w-fit gap-2 rounded-2xl px-4 py-2 shadow-sm shadow-black/15 backdrop-blur-md",
+  ]}
 >
   <a href="/" class="hover:text-brand flex items-center transition-colors" aria-label="Главная">
     <Icon name="lucide:home" class="h-4 w-4" />
