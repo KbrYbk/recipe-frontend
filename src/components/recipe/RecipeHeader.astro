@@ -119,7 +119,7 @@ const chip = "inline-flex h-10 shrink-0 items-center gap-1.5 text-sm";
     <!-- Вторичные действия: на мобильном — иконки (подписи в aria-label), с sm — с подписями -->
     <div class="flex items-center gap-2 print:hidden" role="group" aria-label="Действия с рецептом">
       <FavoriteButton recipeId={id} />
-      <LikeButton recipeId={id} />
+      <LikeButton recipeId={id} likes={recipe.likes_count} />
       <ShareButton />
       <div class="hidden sm:block">
         <Button variant="outline" size="sm" id="printRecipeBtn" class={ACTION_BUTTON_CLASS} aria-label="Печать рецепта">
