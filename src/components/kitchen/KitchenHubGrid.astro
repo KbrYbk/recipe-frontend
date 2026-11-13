@@ -33,7 +33,7 @@ const Heading = headingLevel;
           autocomplete="off"
           placeholder="Найти продукт: мука, курица, рис…"
           aria-label="Найти продукт в списке"
-          class="bg-card-bg text-text-main placeholder:text-text-muted focus:ring-brand/30 border-line rounded-card w-full border py-3 pr-4 pl-11 text-base focus:ring-4 focus:outline-none"
+          class="bg-card-bg text-text-main placeholder:text-text-muted focus:ring-brand/30 border-line w-full rounded-2xl border py-3 pr-4 pl-11 text-base focus:ring-4 focus:outline-none"
           data-kitchen-filter
         />
       </div>
@@ -44,11 +44,11 @@ const Heading = headingLevel;
     {
       groups.map((g) => (
         <section data-kitchen-group>
-          <Heading class="text-text-main border-line mb-3 border-b pb-2 text-lg font-semibold first-letter:md:text-xl">{g.group}</Heading>
+          <Heading class="text-text-main border-line mb-3 border-b pb-2 text-lg font-bold first-letter:uppercase md:text-xl">{g.group}</Heading>
           <ul class="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">
             {g.entries.map((e) => (
               <li data-kitchen-item={filterKey(e.title)}>
-                <a href={e.href} class="text-text-main hover:text-brand-ink first-letter: inline-block py-1.5 leading-snug font-medium transition-colors">
+                <a href={e.href} class="text-text-main hover:text-brand inline-block py-1.5 leading-snug font-medium transition-colors first-letter:uppercase">
                   {e.title}
                 </a>
               </li>

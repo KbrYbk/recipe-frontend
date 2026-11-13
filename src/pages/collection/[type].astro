@@ -51,7 +51,7 @@ const itemListJsonLd = data?.list.length ? serializeJsonLd(buildItemListJsonLd(d
               { name: title, href: basePath },
             ]}
           />
-          <h1 class="page-title text-text-main mt-2 md:mt-4">{seo.h1}</h1>
+          <h1 class="text-brand mt-2 text-3xl font-bold md:mt-4 md:text-5xl">{seo.h1}</h1>
           <p class="text-text-muted mt-2 text-base md:mt-4 md:text-lg">
             {total > 0 ? `Подборка «${title.toLowerCase()}»: ${formatCount(total)} ${pluralRecipes(total)}.` : "В этой подборке пока нет рецептов."}
           </p>

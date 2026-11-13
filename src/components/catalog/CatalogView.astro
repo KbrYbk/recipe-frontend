@@ -118,7 +118,7 @@ const faqJsonLd =
     : "";
 const filtersCount = activeFilterCount(query);
 
-const chip = (active: boolean) => (active ? "bg-brand/10! text-brand-ink! ring-brand/30 ring-1" : "text-text-main font-medium");
+const chip = (active: boolean) => (active ? "bg-brand/10! text-brand! ring-brand/30 ring-1" : "text-text-main font-medium");
 const searchParams: Record<string, string> = {
   ...(query.sort !== DEFAULT_SORT ? { sort: query.sort } : {}),
   ...(query.difficulty ? { difficulty: query.difficulty } : {}),
@@ -141,7 +141,7 @@ const searchParams: Record<string, string> = {
       <Breadcrumbs items={breadcrumbs} />
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
         <div class="min-w-0">
-          <h1 class="page-title text-text-main">{h1}</h1>
+          <h1 class="text-text-main text-2xl leading-tight font-bold md:text-5xl">{h1}</h1>
           <p class="text-text-muted mt-1 text-sm md:mt-4 md:text-lg">
             {total > 0 ? (query.q ? `Найдено ${countText}` : countText) : "Рецептов не найдено"}
             {
@@ -175,16 +175,16 @@ const searchParams: Record<string, string> = {
     }
 
     <!-- Сортировка (горизонтальная прокрутка на мобильных) + кнопка фильтров на мобильных -->
-    <div class="mb-5 flex items-center gap-2 md:mb-6">
+    <div class="mb-4 flex items-center gap-2 md:mb-6">
       <button
         type="button"
-        class="glass-border-3d bg-card-bg text-text-main rounded-control flex h-9 shrink-0 cursor-pointer items-center gap-1.5 px-3 text-sm font-semibold lg:hidden"
+        class="glass-border-3d bg-card-bg/40 text-text-main flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-sm font-semibold lg:hidden"
         aria-expanded="false"
         aria-controls="catalog-filters"
         data-filters-toggle
       >
         <Icon name="lucide:sliders-horizontal" class="h-4 w-4" aria-hidden="true" />
-        Фильтры{filtersCount > 0 && <span class="bg-brand text-on-brand rounded-full px-1.5 text-xs">{filtersCount}</span>}
+        Фильтры{filtersCount > 0 && <span class="bg-brand rounded-full px-1.5 text-xs text-white">{filtersCount}</span>}
       </button>
       <span class="text-text-muted hidden text-sm font-semibold lg:inline">Сортировка:</span>
       <nav class="-my-1 flex min-w-0 gap-2 overflow-x-auto py-1 [scrollbar-width:none]" aria-label="Сортировка">
@@ -207,15 +207,15 @@ const searchParams: Record<string, string> = {
 
     <div class="flex flex-col gap-6 lg:flex-row lg:gap-8">
       <aside id="catalog-filters" class="hidden w-full shrink-0 lg:block lg:w-72" data-filters-panel>
-        <div class="glass-border-3d bg-card-bg rounded-panel shadow-float p-5 lg:p-6">
-          <h2 class="text-text-main mb-4 flex items-center gap-2 text-xl font-semibold lg:mb-6">
-            <Icon name="lucide:filter" class="text-brand-ink h-5 w-5" aria-hidden="true" />
+        <div class="glass-border-3d bg-card-bg/60 rounded-3xl p-5 shadow-xl shadow-black/15 backdrop-blur-md lg:p-6">
+          <h2 class="text-text-main mb-4 flex items-center gap-2 text-xl font-bold lg:mb-6">
+            <Icon name="lucide:filter" class="text-brand h-5 w-5" aria-hidden="true" />
             Фильтры
           </h2>
 
           <div class="space-y-6" role="region" aria-label="Фильтры рецептов">
             <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold">Сложность</h3>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Сложность</h3>
               <div class="flex flex-wrap gap-2">
                 {
                   DIFFICULTY_OPTIONS.map((d) => (
@@ -228,7 +228,7 @@ const searchParams: Record<string, string> = {
             </div>
 
             <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold">Время</h3>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Время</h3>
               <div class="flex flex-wrap gap-2">
                 {
                   TIME_OPTIONS.map((t) => {
@@ -244,7 +244,7 @@ const searchParams: Record<string, string> = {
             </div>
 
             <div>
-              <h3 class="text-text-muted mb-3 text-sm font-semibold">Рейтинг</h3>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Рейтинг</h3>
               <div class="flex flex-wrap gap-2">
                 {
                   RATING_OPTIONS.map((r) => (
@@ -269,7 +269,7 @@ const searchParams: Record<string, string> = {
                   size="sm"
                   fullWidth
                   href={href({ difficulty: null, maxTime: null, minTime: null, minRating: null })}
-                  class="text-negative! bg-negative/10! hover:bg-negative/20! transition-colors"
+                  class="bg-rose-500/10! text-rose-500! transition-colors hover:bg-rose-500/20!"
                 >
                   <Icon name="lucide:x" class="h-4 w-4" slot="icon-left" />
                   Сбросить фильтры
@@ -277,10 +277,10 @@ const searchParams: Record<string, string> = {
               )
             }
             <div class="border-line border-t pt-5">
-              <h3 class="text-text-muted mb-3 text-sm font-semibold">Категории</h3>
+              <h3 class="text-text-muted mb-3 text-sm font-semibold tracking-wider uppercase">Категории</h3>
               <ul class="space-y-1" role="list">
                 <li>
-                  <Button href={categoryHref(null)} variant="ghost" class={`w-full justify-start text-left ${!section ? "bg-brand/10! text-brand-ink! font-semibold" : "text-text-muted"}`}>Все</Button>
+                  <Button href={categoryHref(null)} variant="ghost" class={`w-full justify-start text-left ${!section ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}>Все</Button>
                 </li>
                 {
                   visibleCategories.map((c) => (
@@ -288,7 +288,7 @@ const searchParams: Record<string, string> = {
                       <Button
                         href={categoryHref(c)}
                         variant="ghost"
-                        class={`w-full justify-start text-left whitespace-normal ${category?.id === c.id ? "bg-brand/10! text-brand-ink! font-semibold" : "text-text-muted"}`}
+                        class={`w-full justify-start text-left whitespace-normal ${category?.id === c.id ? "bg-brand/10! text-brand! font-bold" : "text-text-muted"}`}
                         aria-current={category?.id === c.id ? "page" : undefined}
                       >
                         {c.title}
@@ -302,7 +302,7 @@ const searchParams: Record<string, string> = {
                   <div class="mt-2">
                     <button
                       type="button"
-                      class="text-text-muted hover:text-brand-ink flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
+                      class="text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
                       data-category-toggle
                       aria-expanded="false"
                     >
@@ -344,10 +344,10 @@ const searchParams: Record<string, string> = {
           ) : (
             <div class="py-20 text-center">
               <Icon name="lucide:search-x" class="text-text-muted mx-auto mb-4 h-16 w-16 opacity-20" />
-              <h2 class="text-text-main text-xl font-semibold">Ничего не нашли</h2>
+              <h2 class="text-text-main text-xl font-bold">Ничего не нашли</h2>
               <p class="text-text-muted mt-2">Попробуйте изменить запрос или фильтры</p>
               {(query.q || hasActiveFilters(query)) && (
-                <a href={basePath} class="text-brand-ink mt-6 inline-block font-semibold hover:underline">
+                <a href={basePath} class="text-brand mt-6 inline-block font-semibold hover:underline">
                   Сбросить фильтры и поиск
                 </a>
               )}
@@ -368,7 +368,7 @@ const searchParams: Record<string, string> = {
             <section class="mt-12 max-w-4xl" aria-label={`О разделе «${sectionName}»`}>
               {intro.length > 1 && (
                 <div class="text-text-muted space-y-4 text-base leading-relaxed md:text-lg">
-                  <h2 class="section-title text-text-main">О разделе «{sectionName}»</h2>
+                  <h2 class="text-text-main text-2xl font-bold">О разделе «{sectionName}»</h2>
                   {intro.slice(1).map((paragraph) => (
                     <p>{paragraph}</p>
                   ))}
@@ -376,10 +376,10 @@ const searchParams: Record<string, string> = {
               )}
               {faq.length > 0 && (
                 <div class="mt-10">
-                  <h2 class="section-title text-text-main mb-4">Частые вопросы</h2>
+                  <h2 class="text-text-main mb-4 text-2xl font-bold">Частые вопросы</h2>
                   <div class="space-y-3">
                     {faq.map((f) => (
-                      <details class="glass-border-3d bg-card-bg group rounded-card shadow-soft px-5 py-4">
+                      <details class="glass-border-3d bg-card-bg/60 group rounded-2xl px-5 py-4 shadow-sm shadow-black/15">
                         <summary class="text-text-main cursor-pointer list-none font-semibold">
                           <span class="flex items-center justify-between gap-4">
                             {f.q}
@@ -421,16 +421,6 @@ const searchParams: Record<string, string> = {
     filtersToggle?.addEventListener("click", () => {
       const open = panel?.classList.toggle("hidden") === false;
       filtersToggle.setAttribute("aria-expanded", String(open));
-      // Панель появляется от своей кнопки: короткий подъём и проявление (без анимации при «уменьшении движения»).
-      if (open && panel && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        panel.animate(
-          [
-            { opacity: 0, transform: "translateY(-8px)" },
-            { opacity: 1, transform: "none" },
-          ],
-          { duration: 220, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
-        );
-      }
     });
   }
   initCatalog();

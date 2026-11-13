@@ -13,11 +13,9 @@ interface Props {
   headingLevel?: "h2" | "h3" | "h4";
   /** Кнопка «Убрать из избранного» поверх фото (страница избранного). */
   removable?: boolean;
-  /** Крупная карточка: занимает две колонки и два ряда сетки, фото заполняет всю свободную высоту. */
-  featured?: boolean;
 }
 
-const { recipe, priority = false, headingLevel = "h2", removable = false, featured = false } = Astro.props;
+const { recipe, priority = false, headingLevel = "h2", removable = false } = Astro.props;
 const { id, title, description, main_image, url: recipeUrl } = recipe;
 const cooking_time = recipe.cooking_time;
 const Heading = headingLevel;
@@ -28,12 +26,9 @@ const imageAlt = `Фото блюда: ${title}`;
 
 <article
   data-recipe-card={id}
-  class:list={[
-    "group glass-border-3d bg-card-bg rounded-card shadow-soft hover:shadow-float focus-within:ring-brand/60 relative flex h-full flex-col overflow-hidden transition-shadow duration-200 focus-within:ring-2",
-    featured && "md:col-span-2 lg:row-span-2",
-  ]}
+  class="group bg-card-bg/60 glass-border-3d focus-within:ring-brand relative flex h-full flex-col overflow-hidden rounded-4xl shadow-lg shadow-black/15 backdrop-blur-md transition-shadow focus-within:ring-2 focus-within:ring-offset-2 hover:shadow-xl hover:shadow-black/20"
 >
-  <div class:list={["bg-raised relative flex w-full items-center justify-center overflow-hidden", featured ? "aspect-[3/2] md:aspect-[2/1] lg:aspect-auto lg:min-h-80 lg:flex-1" : "aspect-[3/2]"]}>
+  <div class="bg-page-bg relative flex h-48 w-full items-center justify-center overflow-hidden">
     {
       main_image ? (
         <Image
@@ -44,11 +39,7 @@ const imageAlt = `Фото блюда: ${title}`;
           loading={priority ? "eager" : "lazy"}
           fetchpriority={priority ? "high" : undefined}
           decoding="async"
-          class:list={[
-            "ease-soft h-full w-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-[1.03]",
-            featured && "lg:absolute lg:inset-0",
-            !priority && "animate-fade-in opacity-0",
-          ]}
+          class:list={["h-full w-full object-cover transition-transform duration-500 group-hover:scale-110", !priority && "animate-fade-in opacity-0"]}
         />
       ) : null
     }
@@ -61,7 +52,7 @@ const imageAlt = `Фото блюда: ${title}`;
       removable && (
         <button
           type="button"
-          class="bg-card-bg/90 text-text-main rounded-control shadow-soft hover:bg-negative hover:text-page-bg absolute top-3 right-3 z-10 flex h-10 cursor-pointer items-center gap-1.5 px-3 text-sm font-semibold backdrop-blur-sm transition-colors"
+          class="bg-card-bg/90 text-text-main absolute top-3 right-3 z-10 flex h-10 cursor-pointer items-center gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-md shadow-black/20 backdrop-blur-sm transition-colors hover:bg-rose-500 hover:text-white"
           data-favorite-remove={id}
           aria-label={`Убрать из избранного: ${title}`}
         >
@@ -72,30 +63,21 @@ const imageAlt = `Фото блюда: ${title}`;
     }
   </div>
 
-  <div class:list={["flex flex-col p-4 md:p-5", featured ? "lg:p-7" : "grow"]}>
-    <Heading
-      class:list={[
-        "text-text-main group-hover:text-brand-ink mb-2 line-clamp-3 text-lg leading-snug font-semibold tracking-[-0.01em] transition-colors duration-150 md:text-xl",
-        featured && "lg:text-[1.75rem] lg:leading-tight lg:tracking-[-0.02em]",
-      ]}
-    >
+  <div class="flex grow flex-col p-6">
+    <Heading class="text-text-main group-hover:text-brand mb-3 line-clamp-3 text-xl leading-snug font-bold transition-colors md:text-2xl">
       <a href={recipeUrl} class="after:absolute after:inset-0 focus:outline-none">
         {title}
       </a>
     </Heading>
 
-    {
-      !isDescriptionRedundant({ title, description }) && (
-        <p class:list={["text-text-muted mb-4 line-clamp-2 text-sm leading-relaxed text-pretty break-words", featured && "lg:line-clamp-3 lg:max-w-[60ch] lg:text-base"]}>{description}</p>
-      )
-    }
+    {!isDescriptionRedundant({ title, description }) && <p class="text-text-muted mb-5 line-clamp-3 text-sm leading-relaxed text-pretty break-words">{description}</p>}
 
-    <div class="text-text-muted mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
+    <div class="text-text-muted mt-auto mb-4 flex flex-wrap items-center justify-between gap-3 text-sm">
       {
         recipe.author ? (
-          <div class="flex shrink-0 items-center gap-1.5">
-            <div class="flex items-center justify-center">
-              <Icon name="lucide:user" class="h-4 w-4" aria-hidden="true" />
+          <div class="flex shrink-0 items-center gap-1.5 font-medium">
+            <div class="bg-brand/10 text-brand flex h-6 w-6 items-center justify-center rounded-full">
+              <Icon name="lucide:user" class="h-3.5 w-3.5" aria-hidden="true" />
             </div>
             <span class="line-clamp-1">{recipe.author}</span>
           </div>
@@ -104,21 +86,25 @@ const imageAlt = `Фото блюда: ${title}`;
         )
       }
 
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         {
           recipe.difficulty && (
-            <div class={`flex items-center gap-1 text-xs font-medium ${recipe.difficulty === "hard" ? "text-negative" : recipe.difficulty === "medium" ? "text-rating" : "text-positive"}`}>
-              <Icon name="lucide:flame" class="h-3.5 w-3.5" aria-hidden="true" />
+            <div
+              class={`glass-border-3d flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-[10px] font-bold tracking-wide uppercase shadow-sm shadow-black/15 sm:text-xs ${
+                recipe.difficulty === "hard" ? "bg-red-500/10 text-red-500" : recipe.difficulty === "medium" ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"
+              }`}
+            >
+              <Icon name="lucide:flame" class="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
               {recipe.difficulty === "hard" ? "Сложно" : recipe.difficulty === "medium" ? "Средне" : "Легко"}
             </div>
           )
         }
 
         <div
-          class="bg-card-bg/90 text-text-main rounded-control shadow-soft absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md"
+          class="glass-border-3d bg-page-bg/60 text-text-main flex items-center gap-1.5 rounded-2xl px-2.5 py-1 text-[10px] font-bold shadow-sm shadow-black/15 sm:text-xs"
           aria-label={`Время приготовления: ${formatTime(cooking_time)}`}
         >
-          <Icon name="lucide:clock" class="text-text-muted h-3.5 w-3.5" aria-hidden="true" />
+          <Icon name="lucide:clock" class="text-brand h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
           <span class="tabular-nums">{formatTime(cooking_time)}</span>
         </div>
       </div>
@@ -126,19 +112,19 @@ const imageAlt = `Фото блюда: ${title}`;
 
     {
       (recipe.average_rating > 0 || recipe.likes_count > 0) && (
-        <div class="mt-3 flex items-center text-sm">
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div class="border-line flex items-center border-t pt-4 text-sm">
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
             {recipe.average_rating > 0 && (
-              <div class="text-rating flex items-center gap-1 font-medium" aria-label={`Рейтинг: ${recipe.average_rating}`}>
-                <Icon name="lucide:star" class="h-4 w-4 fill-current" aria-hidden="true" />
-                <span class="text-text-secondary text-sm tabular-nums">{recipe.average_rating.toFixed(1)}</span>
+              <div class="flex items-center gap-1.5 font-bold text-amber-500" aria-label={`Рейтинг: ${recipe.average_rating}`}>
+                <Icon name="lucide:star" class="h-5 w-5 fill-current" aria-hidden="true" />
+                <span class="text-base tabular-nums">{recipe.average_rating.toFixed(1)}</span>
               </div>
             )}
 
             {recipe.likes_count > 0 && (
-              <div class="text-negative flex items-center gap-1 font-medium" aria-label={`Лайков: ${recipe.likes_count}`}>
-                <Icon name="lucide:heart" class="h-4 w-4 fill-current" aria-hidden="true" />
-                <span class="text-text-secondary text-sm tabular-nums">{recipe.likes_count}</span>
+              <div class="flex items-center gap-1.5 font-bold text-rose-500" aria-label={`Лайков: ${recipe.likes_count}`}>
+                <Icon name="lucide:heart" class="h-5 w-5 fill-current" aria-hidden="true" />
+                <span class="text-base tabular-nums">{recipe.likes_count}</span>
               </div>
             )}
           </div>

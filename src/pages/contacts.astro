@@ -8,24 +8,24 @@ import Surface from "../components/ui/Surface.astro";
   title="Контакты — SwagEda"
   description="Свяжитесь с командой SwagEda: техподдержка support@swageda.ru, сотрудничество и реклама ads@swageda.ru. Мы реальные, отвечаем по-человечески и не кусаемся."
 >
-  <div class="mx-auto max-w-2xl px-4 py-12 text-center md:py-16">
-    <span class="bg-accent-soft text-brand-ink inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold">
+  <main class="mx-auto max-w-2xl px-4 py-12 text-center md:py-16">
+    <span class="bg-accent-soft text-brand inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold">
       <Icon name="lucide:message-circle" class="h-4 w-4" aria-hidden="true" />
       Мы реальные
     </span>
-    <h1 class="page-title text-text-main mt-4">Контакты</h1>
+    <h1 class="text-text-main mt-4 text-4xl font-extrabold">Контакты</h1>
     <p class="text-text-muted mx-auto mt-3 max-w-xl">
       Нашли баг, есть идея или просто хочется сказать «спасибо»? Пишите — мы не кусаемся и отвечаем по-человечески, а не автоответом «Ваше обращение принято».
     </p>
 
     <div class="mt-10 space-y-4 text-left">
-      <Surface as="a" href="mailto:support@swageda.ru" padding="sm" hoverable class="group hover:text-brand-ink flex items-center gap-4">
-        <div class="bg-brand rounded-card text-on-brand flex h-12 w-12 shrink-0 items-center justify-center">
+      <Surface as="a" href="mailto:support@swageda.ru" padding="sm" hoverable class="group hover:text-brand flex items-center gap-4">
+        <div class="bg-brand flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white">
           <Icon name="lucide:life-buoy" class="h-6 w-6" aria-hidden="true" />
         </div>
         <div>
           <p class="text-text-muted text-sm">Техподдержка и всё-всё-всё</p>
-          <p class="text-text-main group-hover:text-brand-ink text-lg font-semibold transition-colors">support@swageda.ru</p>
+          <p class="text-text-main group-hover:text-brand text-lg font-bold transition-colors">support@swageda.ru</p>
         </div>
       </Surface>
 
@@ -34,39 +34,38 @@ import Surface from "../components/ui/Surface.astro";
         href="mailto:ads@swageda.ru"
         padding="sm"
         hoverable
-        class="group flex items-center gap-4 hover:text-brand-ink"
+        class="group flex items-center gap-4 hover:text-brand"
       >
-        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-card bg-accent-soft text-brand-ink">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-brand">
           <Icon name="lucide:megaphone" class="h-6 w-6" aria-hidden="true" />
         </div >
         <div>
           <p class="text-sm text-text-muted">Сотрудничество и реклама</p>
-          <p class="text-lg font-semibold text-text-main transition-colors group-hover:text-brand-ink">ads@swageda.ru</p>
+          <p class="text-lg font-bold text-text-main transition-colors group-hover:text-brand">ads@swageda.ru</p>
         </div>
       </Surface> -->
     </div>
 
     <div class="mt-16 text-left">
-      <h2 class="section-title text-text-main">Частые вопросы</h2>
+      <h2 class="text-text-main text-2xl font-bold">Частые вопросы</h2>
       <div class="mt-6 space-y-6">
         <div>
-          <h3 class="text-text-main text-lg font-semibold">Можно ли добавить свой рецепт?</h3>
+          <h3 class="text-text-main text-lg font-bold">Можно ли добавить свой рецепт?</h3>
           <p class="text-text-muted mt-2">
             Пока что добавление рецептов пользователями находится в разработке, но скоро мы откроем эту возможность для всех желающих делиться своими кулинарными шедеврами.
           </p>
         </div>
         <div>
-          <h3 class="text-text-main text-lg font-semibold">Собираете ли вы личные данные?</h3>
+          <h3 class="text-text-main text-lg font-bold">Собираете ли вы личные данные?</h3>
           <p class="text-text-muted mt-2">
             Нет, мы за полную анонимность. Для просмотра рецептов не нужна регистрация, и мы не требуем ваш email. Мы используем только базовую обезличенную аналитику, чтобы делать сайт удобнее.
           </p>
         </div>
         <div>
-          <h3 class="text-text-main text-lg font-semibold">Сотрудничество с брендами</h3>
+          <h3 class="text-text-main text-lg font-bold">Сотрудничество с брендами</h3>
           <p class="text-text-muted mt-2">
-            Мы всегда открыты для интересных предложений, партнерских проектов и рекламы качественных продуктов. Используйте почту <a
-              href="mailto:ads@swageda.ru"
-              class="text-brand-ink hover:underline">ads@swageda.ru</a
+            Мы всегда открыты для интересных предложений, партнерских проектов и рекламы качественных продуктов. Используйте почту <a href="mailto:ads@swageda.ru" class="text-brand hover:underline"
+              >ads@swageda.ru</a
             > для связи с нашим отделом маркетинга.
           </p>
         </div>
@@ -74,5 +73,5 @@ import Surface from "../components/ui/Surface.astro";
     </div>
 
     <p class="text-text-muted mx-auto mt-16 max-w-md text-sm">Обычно отвечаем в течение 24 часов, в выходные и праздники — чуть дольше.</p>
-  </div>
+  </main>
 </Layout>

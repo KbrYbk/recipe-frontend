@@ -15,20 +15,20 @@ const links = [
 ] as const;
 const linkClass = (active: boolean) =>
   `relative py-1 font-medium whitespace-nowrap transition-colors after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:rounded-full after:transition-colors ${
-    active ? "text-brand-ink after:bg-brand" : "text-text-main hover:text-brand-ink after:bg-transparent"
+    active ? "text-brand after:bg-brand" : "text-text-main hover:text-brand after:bg-transparent"
   }`;
 ---
 
-<header class="site-header material border-line ease-soft sticky top-0 z-50 border-b transition-transform duration-300 will-change-transform print:hidden">
+<header class="site-header glass-border-3d bg-card-bg/60 sticky top-0 z-50 shadow-sm shadow-black/15 backdrop-blur-md transition-transform duration-300 will-change-transform print:hidden">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-    <a href="/" class="text-brand pressable focus-ring rounded-control flex shrink-0 items-center gap-2 text-2xl font-semibold lg:text-[1.75rem]" aria-label="SwagEda — на главную">
+    <a href="/" class="text-brand flex shrink-0 items-center gap-2 text-2xl font-bold transition-transform active:scale-95 lg:text-3xl" aria-label="SwagEda — на главную">
       <img src="/favicon.svg" alt="" class="h-7 w-7 lg:h-8 lg:w-8" aria-hidden="true" />
-      <span class="tracking-[-0.02em]">SwagEda</span>
+      <span class="tracking-tight">SwagEda</span>
     </a>
 
     <!-- Desktop Navigation -->
     <!-- 768–1023px: компактнее (меньше отступы и шрифт), чтобы пункты не переносились на две строки -->
-    <nav class="hidden items-center gap-4 text-[0.9375rem] md:flex lg:gap-8 lg:text-base" aria-label="Основная навигация">
+    <nav class="hidden items-center gap-4 text-[15px] md:flex lg:gap-8 lg:text-base" aria-label="Основная навигация">
       {
         links.map((l) => (
           <a
@@ -44,12 +44,12 @@ const linkClass = (active: boolean) =>
 
       {
         !isHome && (
-          <Button variant="ghost" size="icon" class="shrink-0" aria-label="Поиск рецептов" aria-expanded="false" aria-controls="header-search" data-header-search-toggle>
+          <Button variant="outline" size="icon" class="bg-page-bg shrink-0" aria-label="Поиск рецептов" aria-expanded="false" aria-controls="header-search" data-header-search-toggle>
             <Icon name="lucide:search" class="h-5 w-5" aria-hidden="true" />
           </Button>
         )
       }
-      <Button variant="ghost" size="icon" id="themeToggle" class="shrink-0" aria-label="Переключить тему">
+      <Button variant="outline" size="icon" id="themeToggle" class="bg-page-bg shrink-0" aria-label="Переключить тему">
         <Icon name="lucide:moon" class="theme-icon-moon h-5 w-5" aria-hidden="true" />
         <Icon name="lucide:sun" class="theme-icon-sun h-5 w-5" aria-hidden="true" />
       </Button>
@@ -57,7 +57,7 @@ const linkClass = (active: boolean) =>
 
     <!-- Mobile Controls -->
     <div class="flex items-center gap-1 md:hidden">
-      <a href="/shopping-list" class="text-text-main hover:text-brand-ink rounded-card flex h-10 w-10 items-center justify-center" aria-label="Список покупок">
+      <a href="/shopping-list" class="text-text-main hover:text-brand flex h-10 w-10 items-center justify-center rounded-2xl" aria-label="Список покупок">
         <Icon name="lucide:shopping-cart" class="h-6 w-6" aria-hidden="true" />
       </a>
       <Button variant="ghost" size="icon" id="themeToggleMobile" class="shrink-0" aria-label="Переключить тему">
@@ -80,7 +80,7 @@ const linkClass = (active: boolean) =>
               placeholder="Курица, картошка, суп..."
               aria-label="Поиск рецепта"
               autocomplete="off"
-              class="bg-page-bg text-text-main placeholder:text-text-muted focus:ring-brand/30 border-line rounded-card w-full border py-2.5 pr-4 pl-11 text-base focus:ring-4 focus:outline-none"
+              class="bg-page-bg text-text-main placeholder:text-text-muted focus:ring-brand/30 border-line w-full rounded-2xl border py-2.5 pr-4 pl-11 text-base focus:ring-4 focus:outline-none"
               data-search-suggest
             />
           </div>

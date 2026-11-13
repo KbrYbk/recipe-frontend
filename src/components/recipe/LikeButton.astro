@@ -38,12 +38,12 @@ const { recipeId } = Astro.props;
       if (!btn || !recipeId) return;
 
       const apply = (active: boolean) => {
-        btn.classList.toggle("text-negative", active);
-        btn.classList.toggle("border-negative", active);
-        btn.classList.toggle("bg-negative/10", active);
+        btn.classList.toggle("text-rose-500", active);
+        btn.classList.toggle("border-rose-500", active);
+        btn.classList.toggle("bg-rose-500/10", active);
         btn.setAttribute("aria-pressed", String(active));
-        icon?.classList.toggle("fill-negative", active);
-        icon?.classList.toggle("text-negative", active);
+        icon?.classList.toggle("fill-rose-500", active);
+        icon?.classList.toggle("text-rose-500", active);
       };
 
       apply(hasId(LIKES_KEY, recipeId));

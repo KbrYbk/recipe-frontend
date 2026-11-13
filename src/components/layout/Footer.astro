@@ -19,10 +19,10 @@ const infoLinks = [
   { href: "/contacts", label: "Контакты" },
   { href: "/privacy", label: "Политика конфиденциальности" },
 ];
-const linkClass = "text-text-muted hover:text-brand-ink inline-block py-1 font-medium transition-colors";
+const linkClass = "text-text-muted hover:text-brand inline-block py-1 font-medium transition-colors";
 ---
 
-<footer class="border-line bg-raised mt-20 border-t transition-colors print:hidden">
+<footer class="border-line bg-card-bg mt-20 border-t transition-colors print:hidden">
   <div class="mx-auto max-w-6xl px-4 py-12 md:px-8 lg:px-12">
     <div
       class:list={[
@@ -31,7 +31,7 @@ const linkClass = "text-text-muted hover:text-brand-ink inline-block py-1 font-m
       ]}
     >
       <div class="sm:col-span-2 lg:col-span-1">
-        <a href="/" class="text-brand mb-4 flex w-fit items-center gap-2 text-2xl font-semibold tracking-[-0.02em]" aria-label="SwagEda — на главную">
+        <a href="/" class="text-brand mb-4 flex items-center gap-2 text-2xl font-bold" aria-label="SwagEda — на главную">
           <img src="/favicon.svg" alt="" class="h-7 w-7" aria-hidden="true" />
           SwagEda
         </a>
@@ -43,7 +43,7 @@ const linkClass = "text-text-muted hover:text-brand-ink inline-block py-1 font-m
       {
         categories.length > 0 && (
           <nav aria-labelledby="footer-categories-heading">
-            <h2 id="footer-categories-heading" class="text-text-main mb-3 text-sm font-semibold">
+            <h2 id="footer-categories-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">
               Категории
             </h2>
             <ul class="space-y-1">
@@ -60,7 +60,7 @@ const linkClass = "text-text-muted hover:text-brand-ink inline-block py-1 font-m
       }
 
       <nav aria-labelledby="footer-nav-heading">
-        <h2 id="footer-nav-heading" class="text-text-main mb-3 text-sm font-semibold">Карта сайта</h2>
+        <h2 id="footer-nav-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">Карта сайта</h2>
         <ul class="space-y-1">
           {
             siteLinks.map((l) => (
@@ -75,7 +75,7 @@ const linkClass = "text-text-muted hover:text-brand-ink inline-block py-1 font-m
       </nav>
 
       <nav aria-labelledby="footer-info-heading">
-        <h2 id="footer-info-heading" class="text-text-main mb-3 text-sm font-semibold">О сайте</h2>
+        <h2 id="footer-info-heading" class="text-text-main mb-3 text-sm font-bold tracking-wider uppercase">О сайте</h2>
         <ul class="space-y-1">
           {
             infoLinks.map((l) => (

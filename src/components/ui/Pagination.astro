@@ -19,8 +19,8 @@ const items = responsivePaginationItems(currentPage, totalPages);
   <a
     href={currentPage > 1 ? baseUrlFunc(currentPage - 1) : "#"}
     class:list={[
-      "pressable focus-ring rounded-control flex h-10 w-9 shrink-0 items-center justify-center transition-colors duration-150 md:h-11 md:w-11",
-      currentPage <= 1 ? "pointer-events-none opacity-30" : "text-text-secondary hover:bg-raised hover:text-text-main",
+      "glass-border-3d flex h-10 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all md:h-11 md:w-11",
+      currentPage <= 1 ? "pointer-events-none opacity-30" : "hover:border-brand hover:text-brand bg-card-bg shadow-sm",
     ]}
     aria-disabled={currentPage <= 1}
   >
@@ -38,9 +38,9 @@ const items = responsivePaginationItems(currentPage, totalPages);
           <a
             href={baseUrlFunc(it.page)}
             class:list={[
-              "pressable focus-ring rounded-control h-10 min-w-9 items-center justify-center px-1.5 text-sm font-medium tabular-nums transition-colors duration-150 md:h-11 md:min-w-11 md:px-3 md:text-base",
+              "glass-border-3d h-10 min-w-9 items-center justify-center rounded-xl px-1.5 text-sm font-bold tabular-nums transition-all md:h-11 md:min-w-11 md:px-3 md:text-base",
               visibilityClass(it.levels),
-              currentPage === it.page ? "bg-brand text-on-brand font-semibold" : "text-text-secondary hover:bg-raised hover:text-text-main",
+              currentPage === it.page ? "bg-brand shadow-brand/30 text-white shadow-md" : "bg-card-bg text-text-muted hover:text-brand shadow-sm shadow-black/15 hover:shadow-md hover:shadow-black/20",
             ]}
             aria-current={currentPage === it.page ? "page" : undefined}
           >
@@ -54,8 +54,8 @@ const items = responsivePaginationItems(currentPage, totalPages);
   <a
     href={currentPage < totalPages ? baseUrlFunc(currentPage + 1) : "#"}
     class:list={[
-      "pressable focus-ring rounded-control flex h-10 w-9 shrink-0 items-center justify-center transition-colors duration-150 md:h-11 md:w-11",
-      currentPage >= totalPages ? "pointer-events-none opacity-30" : "text-text-secondary hover:bg-raised hover:text-text-main",
+      "glass-border-3d flex h-10 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm shadow-black/15 transition-all md:h-11 md:w-11",
+      currentPage >= totalPages ? "pointer-events-none opacity-30" : "hover:border-brand hover:text-brand bg-card-bg shadow-sm",
     ]}
     aria-disabled={currentPage >= totalPages}
   >

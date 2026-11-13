@@ -12,13 +12,13 @@ const { iconName, title, href } = Astro.props;
 
 <a
   href={href}
-  class="group pressable focus-ring glass-border-3d bg-page-bg rounded-card hover:bg-raised flex items-center gap-2.5 p-2.5 transition-[background-color,transform] duration-150 md:gap-3 md:p-4"
+  class="group glass-border-3d bg-card-bg/60 hover:bg-card-bg/80 flex flex-col items-center justify-center rounded-4xl p-6 shadow-md shadow-black/15 backdrop-blur-md transition-all hover:shadow-lg hover:shadow-black/20"
 >
-  <div class="bg-accent-soft text-brand-ink rounded-control flex h-9 w-9 shrink-0 items-center justify-center md:h-11 md:w-11">
-    <Icon name={iconName} class="h-5 w-5" aria-hidden="true" />
+  <div class="bg-accent-soft text-brand group-hover:bg-brand mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all group-hover:text-white">
+    <Icon name={iconName} class="h-8 w-8" aria-hidden="true" />
   </div>
 
-  <span class="text-text-main min-w-0 truncate text-[0.9375rem] font-semibold md:text-base">
+  <span class="text-text-main group-hover:text-brand text-lg font-bold transition-colors">
     {title}
   </span>
 </a>

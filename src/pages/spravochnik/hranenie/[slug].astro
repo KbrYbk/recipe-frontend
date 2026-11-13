@@ -24,14 +24,14 @@ const rows = entry ? orderedConditions(entry).map((c) => [{ text: placeLabel(c.w
       <KitchenTable caption={`Сроки хранения: ${entry.forms.nom}`} head={["Где хранить", "Срок"]} rows={rows} />
       <ExpiryCalculator entry={entry} />
       <section aria-labelledby="spoil-heading">
-        <h2 id="spoil-heading" class="section-title text-text-main mb-4">
+        <h2 id="spoil-heading" class="text-text-main mb-4 text-2xl font-bold">
           {`Как понять, что ${entry.forms.nom} ${entry.forms.plural ? "испортились" : "уже нельзя есть"}`}
         </h2>
         <ul class="space-y-2">
           {entry.spoilSigns.map((sign) => (
             <li class="text-text-main flex items-start gap-3 leading-relaxed">
-              <Icon name="lucide:triangle-alert" class="text-negative mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-              <span class="first-letter:">{sign}</span>
+              <Icon name="lucide:triangle-alert" class="mt-0.5 h-5 w-5 shrink-0 text-rose-500" aria-hidden="true" />
+              <span class="first-letter:uppercase">{sign}</span>
             </li>
           ))}
         </ul>
@@ -39,13 +39,13 @@ const rows = entry ? orderedConditions(entry).map((c) => [{ text: placeLabel(c.w
       </section>
       {entry.tips.length > 0 && (
         <section aria-labelledby="storage-tips-heading">
-          <h2 id="storage-tips-heading" class="section-title text-text-main mb-4">
+          <h2 id="storage-tips-heading" class="text-text-main mb-4 text-2xl font-bold">
             Как хранить
           </h2>
           <ul class="space-y-2">
             {entry.tips.map((tip) => (
               <li class="text-text-main flex items-start gap-3 leading-relaxed">
-                <Icon name="lucide:check" class="text-brand-ink mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                <Icon name="lucide:check" class="text-brand mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
                 <span>{tip}</span>
               </li>
             ))}

@@ -6,7 +6,7 @@ import { Icon } from "astro-icon/components";
 <Layout title="Избранные рецепты — SwagEda" description="Ваши избранные рецепты на SwagEda." noindex>
   <div class="mx-auto max-w-6xl md:px-4">
     <header class="mb-8 text-center">
-      <h1 class="page-title text-text-main">Избранные рецепты</h1>
+      <h1 class="text-text-main text-3xl font-bold md:text-4xl">Избранные рецепты</h1>
       <p class="text-text-muted mt-2">Ваша личная кулинарная книга</p>
     </header>
 
@@ -17,11 +17,11 @@ import { Icon } from "astro-icon/components";
 
     <div id="empty-favorites" class="hidden flex-col items-center justify-center py-20 text-center" role="status">
       <div class="bg-accent-soft mb-4 rounded-full p-6">
-        <Icon name="lucide:book-heart" class="text-brand-ink h-12 w-12" aria-hidden="true" />
+        <Icon name="lucide:book-heart" class="text-brand h-12 w-12" aria-hidden="true" />
       </div>
       <h2 class="text-text-main text-xl font-semibold">Тут пока пусто</h2>
       <p class="text-text-muted mt-2">Нажмите «Избранное» на странице рецепта — и он появится здесь</p>
-      <a href="/recipes" class="btn-primary mt-6 px-6 py-3">
+      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white transition-colors">
         <Icon name="lucide:cooking-pot" class="h-5 w-5" aria-hidden="true" />
         Перейти в каталог рецептов
       </a>

@@ -3,28 +3,18 @@ import { Icon } from "astro-icon/components";
 ---
 
 <recipe-lightbox>
-  <dialog class="fullscreen-modal m-auto h-full max-h-screen w-full max-w-[100vw] touch-none border-none bg-transparent p-0">
-    <button
-      type="button"
-      class="close-modal pressable absolute top-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white transition-colors duration-150 hover:bg-white/25"
-      aria-label="Закрыть"
-    >
-      <Icon name="lucide:x" class="h-6 w-6" />
+  <dialog class="fullscreen-modal m-auto h-full max-h-screen w-full max-w-[100vw] border-none bg-transparent p-0 backdrop:bg-black/90">
+    <button type="button" class="close-modal absolute top-4 right-4 z-50 p-2 text-white opacity-70 transition-opacity hover:opacity-100" aria-label="Закрыть">
+      <Icon name="lucide:x" class="h-8 w-8" />
     </button>
     <div class="flex h-full w-full items-center justify-center p-4">
-      <img src="" alt="Увеличенное фото" class="modal-img max-h-full max-w-full object-contain will-change-transform select-none" draggable="false" />
+      <img src="" alt="Увеличенное фото" class="modal-img max-h-full max-w-full object-contain" />
     </div>
-    <span class="lightbox-hint absolute bottom-6 left-1/2 -translate-x-1/2 text-sm text-white/50">Esc или клик вне фото для закрытия</span>
+    <span class="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm text-white/50">Esc или клик вне фото для закрытия</span>
   </dialog>
 </recipe-lightbox>
 
 <script>
-  import { animateSpring, prefersReducedMotion, project, releaseVelocity, type MotionSample, type SpringAnimation } from "../../lib/client/spring";
-
-  /** Положение фото: сдвиг от места в окне, масштаб и доля затемнения фона. */
-  type Pose = { x: number; y: number; scale: number; dim: number };
-  const REST: Pose = { x: 0, y: 0, scale: 1, dim: 1 };
-
   class RecipeLightbox extends HTMLElement {
     private cleanup?: () => void;
 
@@ -36,167 +26,37 @@ import { Icon } from "astro-icon/components";
       if (!dialog || !img) return;
 
       const triggers = document.querySelectorAll<HTMLImageElement>("img[data-zoomable]");
-      let source: HTMLImageElement | null = null;
-      let pose: Pose = { ...REST };
-      let anim: SpringAnimation | null = null;
-      let closing = false;
-
-      const paint = (p: Pose) => {
-        pose = p;
-        img.style.transform = p.x || p.y || p.scale !== 1 ? `translate3d(${p.x}px, ${p.y}px, 0) scale(${p.scale})` : "";
-        dialog.style.setProperty("--dim", String(Math.max(0, Math.min(1, p.dim))));
-      };
-
-      /** Поза, в которой большое фото совпадает с миниатюрой, из которой его открыли. */
-      const sourcePose = (): Pose => {
-        const from = source?.getBoundingClientRect();
-        const to = img.getBoundingClientRect();
-        if (!from || !from.width || !to.width) return { x: 0, y: 24, scale: 0.92, dim: 0 };
-        // Текущий transform уже учтён в `to` — приводим к положению без него.
-        const restX = to.left + to.width / 2 - pose.x;
-        const restY = to.top + to.height / 2 - pose.y;
-        const restWidth = to.width / pose.scale;
-        return { x: from.left + from.width / 2 - restX, y: from.top + from.height / 2 - restY, scale: Math.max(from.width / restWidth, 0.05), dim: 0 };
-      };
-
-      /** Одна пружина ведёт долю пути 0→1, поза интерполируется: вход и выход идут по одной траектории. */
-      const moveTo = (target: Pose, opts: { velocity?: number; response?: number; onRest?: () => void } = {}) => {
-        anim?.stop();
-        const start = pose;
-        anim = animateSpring({
-          from: 0,
-          to: 1,
-          velocity: opts.velocity ?? 0,
-          response: opts.response ?? 0.4,
-          precision: 0.002,
-          onUpdate: (t) =>
-            paint({
-              x: start.x + (target.x - start.x) * t,
-              y: start.y + (target.y - start.y) * t,
-              scale: start.scale + (target.scale - start.scale) * t,
-              dim: start.dim + (target.dim - start.dim) * t,
-            }),
-          onRest: () => {
-            anim = null;
-            opts.onRest?.();
-          },
-        });
-      };
 
       const openModal = (e: Event) => {
-        source = e.currentTarget as HTMLImageElement;
-        closing = false;
-        img.src = source.currentSrc || source.src;
-        paint({ ...REST });
+        const target = e.currentTarget as HTMLImageElement;
+        img.src = target.currentSrc || target.src;
         dialog.showModal();
         document.body.style.overflow = "hidden"; // Блокируем скролл страницы
-        if (prefersReducedMotion()) return;
-        // Фото «вырастает» из миниатюры: стартуем из её положения.
-        paint(sourcePose());
-        moveTo(REST);
       };
 
       const closeModal = () => {
-        if (closing) return;
-        if (prefersReducedMotion()) {
-          dialog.close();
-          return;
-        }
-        closing = true;
-        moveTo(sourcePose(), { response: 0.32, onRest: () => dialog.close() });
+        dialog.close();
       };
 
       // Слушаем нативное событие закрытия, чтобы надежно разблокировать скролл
       dialog.addEventListener("close", () => {
-        anim?.stop();
-        anim = null;
-        closing = false;
-        paint({ ...REST });
         document.body.style.overflow = "";
       });
-
-      // Esc: закрываем той же анимацией, а не мгновенно.
-      dialog.addEventListener("cancel", (e) => {
-        e.preventDefault();
-        closeModal();
-      });
-
-      const onTriggerKey = (e: KeyboardEvent) => {
-        if (e.key !== "Enter" && e.key !== " ") return;
-        e.preventDefault();
-        openModal(e);
-      };
 
       triggers.forEach((t) => {
         t.style.cursor = "zoom-in";
         t.addEventListener("click", openModal);
-        t.addEventListener("keydown", onTriggerKey);
       });
 
       closeBtn?.addEventListener("click", closeModal);
 
       dialog.addEventListener("click", (e) => {
-        if (e.target !== img && !(e.target as HTMLElement).closest(".close-modal")) closeModal();
+        if (e.target === dialog) closeModal();
       });
-
-      // Смахивание вниз: фото идёт за пальцем, фон светлеет; отпустили — закрываем или возвращаем по импульсу.
-      let pointerId: number | null = null;
-      let startY = 0;
-      let startX = 0;
-      let dragging = false;
-      let samples: MotionSample[] = [];
-      const dragPose = (dy: number): Pose => {
-        const k = Math.min(Math.abs(dy) / (window.innerHeight * 0.6), 1);
-        return { x: 0, y: dy, scale: 1 - k * 0.25, dim: 1 - k * 0.8 };
-      };
-
-      img.addEventListener("pointerdown", (e) => {
-        if (!e.isPrimary || closing) return;
-        pointerId = e.pointerId;
-        startX = e.clientX;
-        // Перехват анимации: продолжаем с текущего положения фото на экране.
-        if (anim) {
-          anim.stop();
-          anim = null;
-        }
-        startY = e.clientY - pose.y;
-        dragging = false;
-        samples = [];
-      });
-      img.addEventListener("pointermove", (e) => {
-        if (e.pointerId !== pointerId || prefersReducedMotion()) return;
-        const dy = e.clientY - startY;
-        if (!dragging) {
-          if (Math.abs(dy - pose.y) < 10 && Math.abs(e.clientX - startX) < 10) return;
-          dragging = true;
-          img.setPointerCapture(e.pointerId);
-        }
-        paint(dragPose(dy));
-        samples.push({ t: e.timeStamp, p: e.clientY });
-        if (samples.length > 8) samples.shift();
-      });
-      const release = (e: PointerEvent, cancelled: boolean) => {
-        if (e.pointerId !== pointerId) return;
-        pointerId = null;
-        if (!dragging) {
-          if (pose.y !== 0 || pose.scale !== 1) moveTo(REST);
-          return;
-        }
-        dragging = false;
-        const velocity = cancelled ? 0 : releaseVelocity(samples, e.timeStamp);
-        if (!cancelled && Math.abs(pose.y + project(velocity)) > window.innerHeight * 0.25) closeModal();
-        else moveTo(REST, { response: 0.3 });
-      };
-      img.addEventListener("pointerup", (e) => release(e, false));
-      img.addEventListener("pointercancel", (e) => release(e, true));
 
       // Очистка при View Transitions
       this.cleanup = () => {
-        triggers.forEach((t) => {
-          t.removeEventListener("click", openModal);
-          t.removeEventListener("keydown", onTriggerKey);
-        });
-        anim?.stop();
+        triggers.forEach((t) => t.removeEventListener("click", openModal));
         document.body.style.overflow = "";
       };
     }
@@ -210,13 +70,7 @@ import { Icon } from "astro-icon/components";
 </script>
 
 <style>
-  /* Затемнение фона управляется переменной --dim: фото «материализуется», а не просто проявляется. */
   dialog::backdrop {
-    background-color: rgb(0 0 0 / calc(0.9 * var(--dim, 1)));
-  }
-
-  .lightbox-hint,
-  .close-modal {
-    opacity: var(--dim, 1);
+    background-color: rgba(0, 0, 0, 0.9);
   }
 </style>

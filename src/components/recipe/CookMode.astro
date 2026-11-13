@@ -29,7 +29,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
       <dialog class="cook-dialog bg-page-bg text-text-main m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden p-0 backdrop:bg-black/80" aria-labelledby="cook-title" data-cook-dialog>
         <div class="flex h-full flex-col">
           <header class="border-line flex items-center gap-3 border-b px-4 py-3">
-            <button type="button" class="hover:text-brand-ink rounded-control flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center" aria-label="Закрыть режим готовки" data-cook-close>
+            <button type="button" class="hover:text-brand flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl" aria-label="Закрыть режим готовки" data-cook-close>
               <Icon name="lucide:x" class="h-6 w-6" aria-hidden="true" />
             </button>
             <div class="min-w-0 flex-1">
@@ -47,7 +47,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
             {ingredients.length > 0 && (
               <button
                 type="button"
-                class="glass-border-3d hover:text-brand-ink rounded-control flex h-11 shrink-0 cursor-pointer items-center gap-2 px-3 text-sm font-semibold"
+                class="glass-border-3d hover:text-brand flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-semibold"
                 aria-expanded="false"
                 aria-controls="cook-ingredients"
                 data-cook-ingredients-toggle
@@ -59,38 +59,38 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
           </header>
 
           <div class="bg-line h-1 w-full" aria-hidden="true">
-            <div class="bg-brand ease-soft h-1 w-full origin-left transition-transform duration-300" style="transform:scaleX(0)" data-cook-progress />
+            <div class="bg-brand h-1 transition-[width] duration-300" style="width:0%" data-cook-progress />
           </div>
 
           <div class="relative min-h-0 flex-1">
-            <div class="h-full touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-6 md:px-10 md:py-10" data-cook-stage>
+            <div class="h-full overflow-y-auto overscroll-contain px-5 py-6 md:px-10 md:py-10" data-cook-stage>
               {steps.map((step, index) => (
                 <section class="mx-auto hidden max-w-3xl" data-cook-step={index} aria-label={`Шаг ${index + 1}`}>
-                  <p class="text-brand-ink mb-4 text-sm font-semibold">Шаг {index + 1}</p>
+                  <p class="text-brand mb-4 text-sm font-bold tracking-wider uppercase">Шаг {index + 1}</p>
                   <p class="text-2xl leading-relaxed font-medium whitespace-pre-line md:text-4xl md:leading-snug">{plain(step.text)}</p>
-                  {step.image && <img src={step.image} alt="" loading="lazy" decoding="async" class="rounded-card mt-6 max-h-[40vh] w-auto object-contain" width="800" height="450" />}
-                  <label class="border-line hover:border-brand rounded-card has-checked:border-positive/60 has-checked:bg-positive/10 mt-8 inline-flex cursor-pointer items-center gap-3 border px-5 py-3 text-lg font-semibold transition-colors">
+                  {step.image && <img src={step.image} alt="" loading="lazy" decoding="async" class="mt-6 max-h-[40vh] w-auto rounded-2xl object-contain" width="800" height="450" />}
+                  <label class="border-line hover:border-brand mt-8 inline-flex cursor-pointer items-center gap-3 rounded-2xl border px-5 py-3 text-lg font-semibold transition-colors has-checked:border-emerald-600/60 has-checked:bg-emerald-600/10">
                     <Checkbox data-cook-step-done={index} />
                     Шаг выполнен
                   </label>
                 </section>
               ))}
               <section class="mx-auto hidden max-w-3xl py-10 text-center" data-cook-finish aria-label="Готово" tabindex="-1">
-                <div class="bg-accent-soft text-brand-ink mx-auto flex h-20 w-20 items-center justify-center rounded-full">
+                <div class="bg-accent-soft text-brand mx-auto flex h-20 w-20 items-center justify-center rounded-full">
                   <Icon name="lucide:party-popper" class="h-10 w-10" aria-hidden="true" />
                 </div>
-                <p class="mt-6 text-3xl font-semibold md:text-5xl">Готово!</p>
+                <p class="mt-6 text-3xl font-extrabold md:text-5xl">Готово!</p>
                 <p class="text-text-muted mt-3 text-xl md:text-2xl">Приятного аппетита</p>
                 <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-                  <button type="button" class="btn-primary rounded-card h-14 px-8 text-lg" data-cook-finish-close>
+                  <button
+                    type="button"
+                    class="bg-brand hover:bg-brand-hover flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl px-8 text-lg font-bold text-white"
+                    data-cook-finish-close
+                  >
                     <Icon name="lucide:check" class="h-5 w-5" aria-hidden="true" />
                     Закрыть
                   </button>
-                  <button
-                    type="button"
-                    class="glass-border-3d hover:text-brand-ink rounded-card flex h-14 cursor-pointer items-center justify-center gap-2 px-8 text-lg font-semibold"
-                    data-cook-restart
-                  >
+                  <button type="button" class="glass-border-3d hover:text-brand flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl px-8 text-lg font-bold" data-cook-restart>
                     <Icon name="lucide:rotate-ccw" class="h-5 w-5" aria-hidden="true" />
                     Начать сначала
                   </button>
@@ -101,18 +101,18 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
             {ingredients.length > 0 && (
               <aside
                 id="cook-ingredients"
-                class="bg-card-bg border-line shadow-float absolute inset-y-0 right-0 hidden w-full max-w-sm overflow-y-auto border-l p-5"
+                class="bg-card-bg border-line absolute inset-y-0 right-0 hidden w-full max-w-sm overflow-y-auto border-l p-5 shadow-2xl"
                 aria-label="Ингредиенты"
                 data-cook-ingredients
               >
-                <h2 class="mb-4 text-xl font-semibold">Ингредиенты</h2>
+                <h2 class="mb-4 text-xl font-bold">Ингредиенты</h2>
                 {ingredients.some((i) => formatIngredientAmount(i)) && <ScaleControl recipeId={recipeId} servings={servings} class="mb-4" />}
                 <ul class="space-y-2">
                   {ingredients.map((item, i) => {
                     const amount = formatIngredientAmount(item);
                     return (
                       <li>
-                        <label class="hover:bg-page-bg/60 rounded-control flex cursor-pointer items-start gap-3 p-2 text-lg">
+                        <label class="hover:bg-page-bg/60 flex cursor-pointer items-start gap-3 rounded-xl p-2 text-lg">
                           <Checkbox class="mt-0.5" data-cook-ingredient={i} />
                           <span>
                             {item.name}
@@ -132,11 +132,11 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
           </div>
 
           <footer data-cook-footer class="border-line flex items-center gap-3 border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <button type="button" class="glass-border-3d rounded-card flex h-14 flex-1 cursor-pointer items-center justify-center gap-2 text-lg font-semibold disabled:opacity-40" data-cook-prev>
+            <button type="button" class="glass-border-3d flex h-14 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl text-lg font-bold disabled:opacity-40" data-cook-prev>
               <Icon name="lucide:arrow-left" class="h-5 w-5" aria-hidden="true" />
               Назад
             </button>
-            <button type="button" class="btn-primary rounded-card h-14 flex-1 text-lg" data-cook-next>
+            <button type="button" class="bg-brand hover:bg-brand-hover flex h-14 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl text-lg font-bold text-white" data-cook-next>
               <span data-cook-next-label>Далее</span>
               <Icon name="lucide:arrow-right" class="h-5 w-5" aria-hidden="true" />
             </button>
@@ -156,7 +156,6 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
 <script>
   import { clampStep, firstUndoneStep, ingredientKey, stepKey, swipeDirection } from "../../lib/cookState";
   import { readString, writeString } from "../../lib/client/storage";
-  import { animateSpring, prefersReducedMotion, project, releaseVelocity, rubberband, type MotionSample, type SpringAnimation } from "../../lib/client/spring";
 
   type WakeLockSentinelLike = { release: () => Promise<void>; addEventListener: (t: "release", cb: () => void) => void };
   type NavigatorWithWakeLock = Navigator & { wakeLock?: { request: (type: "screen") => Promise<WakeLockSentinelLike> } };
@@ -213,7 +212,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         finishScreen?.classList.add("hidden");
         footer?.classList.remove("hidden");
         if (current) current.textContent = String(this.index + 1);
-        if (progress) progress.style.transform = `scaleX(${(this.index + 1) / total})`;
+        if (progress) progress.style.width = `${((this.index + 1) / total) * 100}%`;
         if (prevBtn) prevBtn.disabled = this.index === 0;
         if (nextLabel) nextLabel.textContent = this.index === total - 1 ? "Готово" : "Далее";
         stage?.scrollTo({ top: 0 });
@@ -224,7 +223,7 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         sections.forEach((s) => s.classList.add("hidden"));
         finishScreen?.classList.remove("hidden");
         footer?.classList.add("hidden");
-        if (progress) progress.style.transform = "scaleX(1)";
+        if (progress) progress.style.width = "100%";
         stage?.scrollTo({ top: 0 });
         finishScreen?.querySelector<HTMLElement>("[data-cook-finish-close]")?.focus();
       };
@@ -292,8 +291,8 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
       this.querySelector("[data-cook-close]")?.addEventListener("click", () => dialog.close());
       this.querySelector("[data-cook-finish-close]")?.addEventListener("click", () => dialog.close());
       this.querySelector("[data-cook-restart]")?.addEventListener("click", restart);
-      prevBtn?.addEventListener("click", () => turn("prev"));
-      nextBtn?.addEventListener("click", () => turn("next"));
+      prevBtn?.addEventListener("click", prev);
+      nextBtn?.addEventListener("click", next);
 
       ingToggle?.addEventListener("click", () => {
         const opened = ingPanel?.classList.toggle("hidden") === false;
@@ -305,154 +304,32 @@ const plain = (t: string) => t.replace(/<br\s*\/?>/gi, "\n").replace(/\\r\\n|\\n
         if (target?.tagName === "INPUT" && e.key === " ") return;
         if (e.key === "ArrowRight" || e.key === "PageDown") {
           e.preventDefault();
-          turn("next");
+          next();
         } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
           e.preventDefault();
-          turn("prev");
+          prev();
         }
       });
 
-      // --- Перелистывание шагов. Шаг идёт за пальцем 1:1; при отпускании цель выбирается по тому,
-      // куда «долетит» бросок, а анимация продолжает движение со скоростью пальца. Анимацию можно
-      // перехватить в любой момент — она остановится на текущем месте и пойдёт за пальцем дальше.
-      let x = 0;
-      let anim: SpringAnimation | null = null;
-      const visible = () => (this.finished ? finishScreen : sections[this.index]) ?? null;
-      const canPrev = () => this.finished || this.index > 0;
-      const stageWidth = () => stage?.clientWidth || 320;
-      const fadeDistance = () => Math.min(stageWidth() * 0.45, 260);
-      const paint = (el: HTMLElement | null, value: number) => {
-        if (!el) return;
-        el.style.transform = value ? `translate3d(${value}px, 0, 0)` : "";
-        el.style.opacity = value ? String(Math.max(0, 1 - Math.abs(value) / fadeDistance())) : "";
-      };
-      const settle = (velocity = 0) => {
-        const el = visible();
-        // Лёгкий отскок — только если был бросок; иначе спокойный возврат без перелёта.
-        anim = animateSpring({
-          from: x,
-          to: 0,
-          velocity,
-          response: 0.3,
-          damping: Math.abs(velocity) > 300 ? 0.8 : 1,
-          onUpdate: (v) => {
-            x = v;
-            paint(el, v);
-          },
-          onRest: () => (anim = null),
-        });
-      };
-      const turn = (dir: "next" | "prev", velocity = 0) => {
-        if (dir === "prev" && !canPrev()) return;
-        if (dir === "next" && this.finished) return;
-        const go = dir === "next" ? next : prev;
-        anim?.stop();
-        anim = null;
-        const leaving = visible();
-        if (prefersReducedMotion()) {
-          x = 0;
-          paint(leaving, 0);
-          go();
-          return;
-        }
-        // Уходит и приходит по одному пути: старый шаг — в сторону жеста, новый — с противоположной.
-        const sign = dir === "next" ? -1 : 1;
-        anim = animateSpring({
-          from: x,
-          to: sign * fadeDistance(),
-          velocity,
-          response: 0.22,
-          onUpdate: (v) => {
-            x = v;
-            paint(leaving, v);
-          },
-          onRest: () => {
-            paint(leaving, 0);
-            go();
-            x = -sign * fadeDistance() * 0.5;
-            paint(visible(), x);
-            settle();
-          },
-        });
-      };
-
-      dialog.addEventListener("close", () => {
-        anim?.stop();
-        anim = null;
-        x = 0;
-        sections.forEach((el) => paint(el, 0));
-        paint(finishScreen, 0);
-      });
-
-      let pointerId: number | null = null;
-      let tracking = false;
       let startX = 0;
       let startY = 0;
-      let grabX = 0;
-      let baseX = 0;
-      let samples: MotionSample[] = [];
-
-      stage?.addEventListener("pointerdown", (e) => {
-        if (e.pointerType === "mouse" || !e.isPrimary) return;
-        pointerId = e.pointerId;
-        tracking = false;
-        startX = e.clientX;
-        startY = e.clientY;
-        samples = [];
-        if (anim) {
-          // Перехват на лету: продолжаем с того места, где элемент сейчас на экране.
-          x = anim.stop().value;
-          anim = null;
-        }
-        baseX = x;
-      });
-
-      stage?.addEventListener("pointermove", (e) => {
-        if (e.pointerId !== pointerId || prefersReducedMotion()) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        if (!tracking) {
-          // Порог 10 px: сначала понимаем направление, вертикаль оставляем прокрутке.
-          if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-          if (Math.abs(dy) > Math.abs(dx)) {
-            pointerId = null;
-            if (x !== 0) settle();
-            return;
-          }
-          tracking = true;
-          grabX = dx;
-          stage.setPointerCapture(e.pointerId);
-        }
-        const raw = baseX + dx - grabX;
-        // Назад с первого шага листать некуда — упругая граница вместо жёсткой остановки.
-        x = raw > 0 && !canPrev() ? rubberband(raw, stageWidth()) : raw;
-        paint(visible(), x);
-        samples.push({ t: e.timeStamp, p: e.clientX });
-        if (samples.length > 8) samples.shift();
-      });
-
-      const release = (e: PointerEvent, cancelled: boolean) => {
-        if (e.pointerId !== pointerId) return;
-        pointerId = null;
-        if (prefersReducedMotion()) {
-          const dir = cancelled ? null : swipeDirection(e.clientX - startX, e.clientY - startY);
-          if (dir) turn(dir);
-          return;
-        }
-        if (!tracking) {
-          if (x !== 0) settle();
-          return;
-        }
-        tracking = false;
-        const velocity = cancelled ? 0 : releaseVelocity(samples, e.timeStamp);
-        const projected = x + project(velocity);
-        const threshold = stageWidth() * 0.3;
-        if (!cancelled && projected < -threshold && !this.finished) turn("next", velocity);
-        else if (!cancelled && projected > threshold && canPrev()) turn("prev", velocity);
-        else settle(velocity);
-      };
-      stage?.addEventListener("pointerup", (e) => release(e, false));
-      stage?.addEventListener("pointercancel", (e) => release(e, true));
+      stage?.addEventListener(
+        "touchstart",
+        (e) => {
+          startX = e.changedTouches[0].clientX;
+          startY = e.changedTouches[0].clientY;
+        },
+        { passive: true },
+      );
+      stage?.addEventListener(
+        "touchend",
+        (e) => {
+          const dir = swipeDirection(e.changedTouches[0].clientX - startX, e.changedTouches[0].clientY - startY);
+          if (dir === "next") next();
+          else if (dir === "prev" && (this.finished || this.index > 0)) prev();
+        },
+        { passive: true },
+      );
     }
   }
 

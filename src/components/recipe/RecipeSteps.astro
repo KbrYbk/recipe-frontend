@@ -15,24 +15,24 @@ interface Props {
 const { steps, recipeId, recipeTitle } = Astro.props;
 ---
 
-<ol class="space-y-8 md:space-y-10">
+<ol class="space-y-10 md:space-y-12">
   {
     steps.map((step, index) => {
       return (
         <>
           <li id={`step-${step.order ?? index + 1}`} class="group relative scroll-mt-24 transition-opacity duration-300 print:mb-3 print:break-inside-avoid print:border-b print:border-gray-200">
-            {index !== steps.length - 1 && <div class="step-connector bg-line absolute top-12 -bottom-8 left-5 hidden w-px sm:block md:-bottom-10 print:hidden" aria-hidden="true" />}
+            {index !== steps.length - 1 && <div class="step-connector bg-brand/40 dark:bg-brand/30 absolute top-12 -bottom-10 left-3.5 hidden w-3 sm:block print:hidden" aria-hidden="true" />}
 
             {/* Номер шага и компактная отметка «Готово» рядом с ним */}
             <div class="mb-3 flex items-center gap-3 print:mb-1">
               <div
-                class="text-brand group-has-checked:text-positive bg-page-bg relative z-10 flex h-10 w-10 shrink-0 items-center justify-center text-[2rem] leading-none font-semibold tracking-[-0.03em] tabular-nums transition-colors duration-200 print:h-6 print:w-6 print:min-w-6 print:border print:border-black print:bg-transparent print:text-[9pt] print:text-black"
+                class="bg-brand shadow-brand/30 relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white shadow-md group-has-checked:bg-emerald-600 group-has-checked:shadow-emerald-600/30 print:h-6 print:w-6 print:min-w-6 print:border print:border-black print:bg-transparent print:text-[9pt] print:text-black"
                 aria-hidden="true"
               >
                 {step.order ?? index + 1}
               </div>
               <span class="text-text-muted text-sm font-medium print:hidden">из {steps.length}</span>
-              <label class="border-line text-text-muted hover:text-text-main has-checked:text-positive rounded-control has-checked:border-positive/60 has-checked:bg-positive/10 ml-auto flex min-h-10 cursor-pointer items-center gap-2 border px-3 text-sm font-medium transition-colors duration-150 select-none sm:ml-2 print:hidden">
+              <label class="border-line text-text-muted hover:border-brand hover:text-text-main ml-auto flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3 text-sm font-semibold transition-colors select-none has-checked:border-emerald-600/60 has-checked:bg-emerald-600/10 has-checked:text-emerald-700 sm:ml-2 dark:has-checked:text-emerald-400 print:hidden">
                 <Checkbox data-step-checkbox data-recipe-id={recipeId} data-step-index={index} class="h-5 w-5" aria-label={`Шаг ${step.order ?? index + 1} выполнен`} />
                 <span aria-hidden="true">Готово</span>
               </label>
@@ -44,7 +44,7 @@ const { steps, recipeId, recipeTitle } = Astro.props;
               </div>
 
               {step.image && (
-                <div class="glass-border-3d rounded-card shadow-soft mt-5 max-w-3xl overflow-hidden group-has-checked:opacity-60 print:mt-2 print:max-w-75 print:rounded print:border-0 print:shadow-none">
+                <div class="glass-border-3d mt-5 max-w-3xl overflow-hidden rounded-2xl shadow-md shadow-black/15 group-has-checked:opacity-60 print:mt-2 print:max-w-75 print:rounded print:border-0 print:shadow-none">
                   <img
                     data-zoomable
                     tabindex="0"
@@ -74,6 +74,20 @@ const { steps, recipeId, recipeTitle } = Astro.props;
     })
   }
 </ol>
+
+<style>
+  /* Волнистая линия между шагами */
+  .step-connector {
+    --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24'%3E%3Cpath d='M6,0 Q0,6 6,12 T6,24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-image: var(--wave);
+    mask-size: 100% 24px;
+    mask-repeat: repeat-y;
+    -webkit-mask-image: var(--wave);
+    -webkit-mask-size: 100% 24px;
+    -webkit-mask-repeat: repeat-y;
+  }
+</style>
+
 <script>
   import { stepKey } from "../../lib/cookState";
   import { readString, writeString } from "../../lib/client/storage";

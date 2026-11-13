@@ -11,14 +11,14 @@ const { as: Tag = "div", padding = "md", hoverable = false, class: className, ..
 const paddingClasses: Record<"none" | "sm" | "md" | "lg", string> = {
   none: "",
   sm: "p-4 sm:p-5",
-  md: "p-5 md:p-6",
-  lg: "p-6 md:p-8",
+  md: "p-6 md:p-8",
+  lg: "p-8 md:p-10",
 };
 
 const baseClasses = [
-  "glass-border-3d bg-card-bg shadow-soft rounded-panel",
+  "glass-border-3d bg-card-bg shadow-md shadow-black/15 rounded-3xl",
   paddingClasses[padding as keyof typeof paddingClasses],
-  hoverable ? "transition-colors duration-150 hover:bg-raised" : "",
+  hoverable ? "transition-all duration-300 hover:shadow-lg hover:shadow-black/20 hover:bg-card-bg/80" : "",
   className,
 ]
   .filter(Boolean)

@@ -23,7 +23,7 @@ const rows = entry ? measureRows(entry).map((row) => [row.label, formatGrams(row
       <KitchenTable caption={`Масса ${entry.forms.gen} в стакане и ложке`} head={["Мера", "Граммы"]} rows={rows} />
       <MeasureConverter entry={entry} />
       <section aria-labelledby="measure-notes-heading" class="text-text-muted space-y-3 leading-relaxed">
-        <h2 id="measure-notes-heading" class="section-title text-text-main">
+        <h2 id="measure-notes-heading" class="text-text-main text-2xl font-bold">
           Как отмерять
         </h2>
         {entry.note && <p class="text-text-main">{entry.note}</p>}

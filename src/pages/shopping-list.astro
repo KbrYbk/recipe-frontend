@@ -7,7 +7,7 @@ import { Icon } from "astro-icon/components";
 <Layout title="Список покупок — SwagEda" description="Список покупок из ингредиентов рецептов SwagEda." noindex>
   <div class="mx-auto max-w-2xl">
     <header class="mb-6 md:mb-8">
-      <h1 class="page-title text-text-main">Список покупок</h1>
+      <h1 class="text-text-main text-3xl font-bold md:text-4xl">Список покупок</h1>
       <p class="text-text-muted mt-2 text-sm md:text-base">Добавляйте ингредиенты кнопкой «В список покупок» на странице рецепта. Список хранится только на этом устройстве.</p>
     </header>
 
@@ -20,62 +20,46 @@ import { Icon } from "astro-icon/components";
         maxlength="200"
         autocomplete="off"
         placeholder="Добавить: молоко, хлеб…"
-        class="glass-border-3d bg-card-bg text-text-main placeholder:text-text-muted focus:ring-brand/45 rounded-control w-full px-4 py-3 focus:ring-2 focus:outline-none"
+        class="glass-border-3d bg-card-bg/60 text-text-main placeholder:text-text-muted focus:ring-brand/20 w-full rounded-2xl px-4 py-3 focus:ring-4 focus:outline-none"
       />
-      <button type="submit" class="btn-primary shrink-0 px-4" aria-label="Добавить">
+      <button type="submit" class="bg-brand hover:bg-brand-hover shrink-0 cursor-pointer rounded-2xl px-4 font-bold text-white" aria-label="Добавить">
         <Icon name="lucide:plus" class="h-5 w-5" aria-hidden="true" />
       </button>
     </form>
 
     <div class="mb-6 flex flex-wrap gap-2" data-shopping-actions hidden>
-      <button
-        type="button"
-        class="glass-border-3d text-text-main hover:text-brand-ink rounded-control inline-flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-semibold"
-        data-shopping-share
-      >
+      <button type="button" class="glass-border-3d text-text-main hover:text-brand inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold" data-shopping-share>
         <Icon name="lucide:share-2" class="h-4 w-4" aria-hidden="true" />
         Поделиться
       </button>
-      <button
-        type="button"
-        class="glass-border-3d text-text-main hover:text-brand-ink rounded-control inline-flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-semibold"
-        data-shopping-copy
-      >
+      <button type="button" class="glass-border-3d text-text-main hover:text-brand inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold" data-shopping-copy>
         <Icon name="lucide:copy" class="h-4 w-4" aria-hidden="true" />
         Копировать
       </button>
-      <button
-        type="button"
-        class="glass-border-3d text-text-main hover:text-brand-ink rounded-control inline-flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-semibold"
-        data-shopping-clear-done
-      >
+      <button type="button" class="glass-border-3d text-text-main hover:text-brand inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold" data-shopping-clear-done>
         <Icon name="lucide:check-check" class="h-4 w-4" aria-hidden="true" />
         Убрать купленное
       </button>
-      <button
-        type="button"
-        class="rounded-control text-negative bg-negative/10 hover:bg-negative/20 inline-flex cursor-pointer items-center gap-1.5 px-3 py-2 text-sm font-semibold"
-        data-shopping-clear
-      >
+      <button type="button" class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-500 hover:bg-rose-500/20" data-shopping-clear>
         <Icon name="lucide:trash-2" class="h-4 w-4" aria-hidden="true" />
         Очистить всё
       </button>
     </div>
 
-    <div class="bg-raised border-line rounded-card mb-4 inline-grid grid-cols-2 gap-1 border p-1" role="group" aria-label="Вид списка" data-shopping-view hidden>
-      <button type="button" class="rounded-control h-9 cursor-pointer px-4 text-sm font-semibold transition-colors" data-view="merged" aria-pressed="true">Всё вместе</button>
-      <button type="button" class="rounded-control h-9 cursor-pointer px-4 text-sm font-semibold transition-colors" data-view="recipes" aria-pressed="false">По рецептам</button>
+    <div class="bg-page-bg/70 border-line mb-4 inline-grid grid-cols-2 gap-1 rounded-2xl border p-1" role="group" aria-label="Вид списка" data-shopping-view hidden>
+      <button type="button" class="h-9 cursor-pointer rounded-xl px-4 text-sm font-bold transition-colors" data-view="merged" aria-pressed="true">Всё вместе</button>
+      <button type="button" class="h-9 cursor-pointer rounded-xl px-4 text-sm font-bold transition-colors" data-view="recipes" aria-pressed="false">По рецептам</button>
     </div>
 
     <div data-shopping-list class="space-y-6" aria-live="polite"></div>
 
     <div class="hidden flex-col items-center py-16 text-center" data-shopping-empty>
       <div class="bg-accent-soft mb-4 rounded-full p-6">
-        <Icon name="lucide:shopping-cart" class="text-brand-ink h-12 w-12" aria-hidden="true" />
+        <Icon name="lucide:shopping-cart" class="text-brand h-12 w-12" aria-hidden="true" />
       </div>
       <h2 class="text-text-main text-xl font-semibold">Список пуст</h2>
       <p class="text-text-muted mt-2">Откройте рецепт и нажмите «В список покупок».</p>
-      <a href="/recipes" class="btn-primary mt-6 px-6 py-3">Найти рецепты</a>
+      <a href="/recipes" class="bg-brand hover:bg-brand-hover mt-6 inline-block rounded-xl px-6 py-3 font-bold text-white">Найти рецепты</a>
     </div>
   </div>
 </Layout>
@@ -124,7 +108,7 @@ import { Icon } from "astro-icon/components";
 
   /** Строка списка: чекбокс, название, количество, (рецепты), удалить. ids — позиции, которые строка объединяет. */
   function row(name: string, amount: string, done: boolean, ids: string[], sub?: string): HTMLLIElement {
-    const li = el("li", "flex items-center gap-3 rounded-control p-2 hover:bg-page-bg/50");
+    const li = el("li", "flex items-center gap-3 rounded-xl p-2 hover:bg-page-bg/50");
     const label = el("label", "flex min-w-0 flex-1 cursor-pointer items-start gap-3");
     const cb = el("input", `mt-0.5 h-5 w-5 ${CHECKBOX_CLASS}`);
     cb.type = "checkbox";
@@ -137,7 +121,7 @@ import { Icon } from "astro-icon/components";
     if (shownAmount) body.appendChild(el("span", "text-text-muted ml-2 text-sm whitespace-nowrap", shownAmount));
     if (sub) body.appendChild(el("span", "text-text-muted/80 block text-xs", sub));
     label.append(cb, body);
-    const del = el("button", "text-text-muted hover:text-negative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg", "✕");
+    const del = el("button", "text-text-muted hover:text-rose-500 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg", "✕");
     del.type = "button";
     del.setAttribute("aria-label", `Удалить «${name}»`);
     del.addEventListener("click", () => save(removeItems(load(), ids)));
@@ -150,7 +134,7 @@ import { Icon } from "astro-icon/components";
       const on = b.dataset.view === view;
       b.setAttribute("aria-pressed", String(on));
       b.classList.toggle("bg-brand", on);
-      b.classList.toggle("text-on-brand", on);
+      b.classList.toggle("text-white", on);
       b.classList.toggle("text-text-muted", !on);
     });
   }
@@ -168,7 +152,7 @@ import { Icon } from "astro-icon/components";
     if (isEmpty) return;
 
     if (view === "merged") {
-      const section = el("section", "glass-border-3d bg-card-bg rounded-panel p-4 md:p-6");
+      const section = el("section", "glass-border-3d bg-card-bg/60 rounded-3xl p-4 md:p-6");
       const ul = el("ul", "space-y-1");
       for (const item of mergeShoppingItems(list)) {
         ul.appendChild(row(item.name, item.amount, item.done, item.ids, item.recipes.length > 1 ? item.recipes.join(", ") : undefined));
@@ -179,13 +163,13 @@ import { Icon } from "astro-icon/components";
     }
 
     for (const group of groupByRecipe(list)) {
-      const section = el("section", "glass-border-3d bg-card-bg rounded-panel p-4 md:p-6");
+      const section = el("section", "glass-border-3d bg-card-bg/60 rounded-3xl p-4 md:p-6");
       const head = el("div", "mb-3 flex items-center justify-between gap-3");
-      const title = group.url ? el("a", "text-text-main hover:text-brand-ink text-lg font-semibold", group.title) : el("h2", "text-text-main text-lg font-semibold", group.title);
+      const title = group.url ? el("a", "text-text-main hover:text-brand text-lg font-bold", group.title) : el("h2", "text-text-main text-lg font-bold", group.title);
       if (group.url && title instanceof HTMLAnchorElement) title.href = group.url;
       head.appendChild(title);
       if (group.recipeId) {
-        const rm = el("button", "text-text-muted hover:text-negative shrink-0 cursor-pointer px-2 py-2 text-xs font-medium", "Убрать рецепт");
+        const rm = el("button", "text-text-muted hover:text-rose-500 shrink-0 cursor-pointer px-2 py-2 text-xs font-medium", "Убрать рецепт");
         rm.type = "button";
         rm.addEventListener("click", () => save(removeRecipe(load(), group.recipeId!)));
         head.appendChild(rm);

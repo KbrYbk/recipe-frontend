@@ -21,17 +21,19 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
 <!-- lg: карточка — flex-колонка внутри липкого сайдбара с max-h; список (flex-1, min-h-0) скроллится внутри,
      заголовок, множитель и кнопки всегда видны -->
 <div id="ingredients" class="group scroll-mt-24 lg:flex lg:min-h-0 lg:flex-col" data-ingredients data-recipe-id={recipeId} data-no-copy-signature>
-  <div class="glass-border-3d bg-card-bg rounded-panel shadow-soft p-5 lg:flex lg:min-h-0 lg:flex-col print:border-0 print:bg-transparent print:p-0 print:shadow-none">
+  <div
+    class="glass-border-3d bg-card-bg/60 rounded-3xl p-6 shadow-xl shadow-black/15 backdrop-blur-md transition-all hover:shadow-2xl hover:shadow-black/20 lg:flex lg:min-h-0 lg:flex-col print:border-0 print:bg-transparent print:p-0 print:shadow-none"
+  >
     <div class="mb-4 flex w-full flex-wrap items-baseline justify-between gap-y-2">
-      <h2 class="text-text-main flex items-center gap-2 text-lg font-semibold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt]">
-        <Icon name="lucide:shopping-basket" class="text-text-muted h-5 w-5" aria-hidden="true" />
+      <h2 class="text-text-main flex items-center gap-2 text-xl font-bold whitespace-nowrap print:mb-2 print:border-b print:border-gray-300 print:pb-1 print:text-[12pt] print:uppercase">
+        <Icon name="lucide:shopping-basket" class="text-brand h-6 w-6" aria-hidden="true" />
         Ингредиенты
       </h2>
       <button
         type="button"
         data-reset-ingredients
         hidden
-        class="text-text-muted hover:text-brand-ink -my-2 cursor-pointer rounded-lg px-2 py-2 text-xs font-medium transition-colors print:hidden"
+        class="text-text-muted hover:text-brand -my-2 cursor-pointer rounded-lg px-2 py-2 text-xs font-medium transition-colors print:hidden"
         aria-label="Снять все отметки с ингредиентов"
       >
         Сбросить
@@ -48,20 +50,20 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
         role="region"
         aria-label="Список ингредиентов"
       >
-        <ul class="space-y-0.5 pr-1 print:columns-2 print:space-y-1 print:gap-x-4">
+        <ul class="space-y-3 pr-1 print:columns-2 print:space-y-1 print:gap-x-4">
           {
             ingredients.map((item, i) => {
               const cbId = `ing-${recipeId}-${i}`;
               const amount = formatIngredientAmount(item);
               return (
-                <li class="group/item hover:bg-raised rounded-control flex items-start gap-3 px-2 py-2.5 transition-colors duration-150 print:gap-2 print:rounded-none print:border-b print:border-gray-200 print:py-1">
+                <li class="group/item hover:bg-page-bg/50 flex items-start gap-3 rounded-xl p-2 transition-colors print:gap-2 print:rounded-none print:border-b print:border-gray-200 print:py-1">
                   <div class="flex h-6 shrink-0 items-center">
                     <Checkbox id={cbId} data-ingredient-checkbox data-ingredient-index={i} />
                   </div>
-                  <label for={cbId} class="ingredient-label flex min-w-0 flex-1 cursor-pointer items-baseline justify-between gap-3">
-                    <span class="ingredient-name text-text-main min-w-0 leading-snug print:text-[10pt]">{item.name}</span>
+                  <label for={cbId} class="ingredient-label flex flex-1 cursor-pointer flex-col transition-all">
+                    <span class="ingredient-name text-text-main leading-tight font-medium print:text-[10pt]">{item.name}</span>
                     {amount && (
-                      <span class="ingredient-amount text-text-secondary shrink-0 text-right text-sm font-medium tabular-nums" data-amount-base={amount}>
+                      <span class="ingredient-amount text-text-muted text-xs font-semibold tabular-nums" data-amount-base={amount}>
                         {amount}
                       </span>
                     )}
@@ -76,17 +78,17 @@ const shoppingPayload = JSON.stringify(ingredients.map((i) => ({ name: i.name, a
       <div class="ingredients-scroll-hint absolute inset-x-0 bottom-0 z-10 flex items-end justify-center pb-2 print:hidden" data-scroll-hint aria-hidden="true">
         <button
           type="button"
-          class="ingredients-scroll-hint__btn glass-border-3d bg-card-bg text-text-secondary shadow-float hover:text-text-main flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+          class="ingredients-scroll-hint__btn glass-border-3d bg-card-bg/95 text-text-muted hover:text-brand flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-md shadow-black/15 backdrop-blur-sm transition-all hover:shadow-lg hover:shadow-black/20"
           data-scroll-down-btn
           tabindex="-1"
         >
           <span data-remaining-count>{ingredients.length}</span> ингредиентов внизу
-          <Icon name="lucide:chevron-down" class="h-3.5 w-3.5" />
+          <Icon name="lucide:chevron-down" class="h-3.5 w-3.5 animate-bounce" />
         </button>
       </div>
     </div>
 
-    <div class="mt-5 grid grid-cols-1 gap-2 print:hidden">
+    <div class="mt-6 grid grid-cols-1 gap-2 print:hidden">
       <Button variant="primary" fullWidth class="h-11 px-2! text-sm" data-add-to-shopping data-items={shoppingPayload} data-recipe-title={recipeTitle} data-recipe-url={recipeUrl}>
         <Icon name="lucide:list-plus" slot="icon-left" class="h-4 w-4 shrink-0" aria-hidden="true" />
         В список покупок
