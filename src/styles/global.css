@@ -32,49 +32,106 @@
 }
 
 @theme {
-  /* 1. Назначаем системные цвета Tailwind через наши переменные */
-  /* Теперь классы bg-page-bg, text-text-main и т.д. точно будут созданы */
+  /* Цвета: имена классов (bg-page-bg, text-text-main, bg-brand…) стабильны — на них опираются все компоненты.
+     Значения задаются переменными ниже и меняются вместе с темой. */
   --color-brand: var(--brand-primary);
   --color-brand-hover: var(--brand-hover);
+  /* Акцент как текст/иконка на фоне страницы (контраст ≥ 4.5:1) и цвет текста на акцентной заливке. */
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
 
   --color-page-bg: var(--bg-main);
   --color-card-bg: var(--bg-card);
+  --color-raised: var(--bg-raised);
 
   --color-text-main: var(--text-base);
+  --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-dim);
 
   --color-line: var(--border-subtle);
 
   --color-accent-soft: var(--bg-accent);
+
+  /* Смысловые цвета — вместо россыпи rose/emerald/green/amber из палитры Tailwind. */
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-rating: var(--rating);
+
+  /* Радиусы по размеру элемента. Вложенный радиус = внешний − отступ. */
+  --radius-control: 0.625rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.25rem;
+
+  /* Глубина: на светлой теме — мягкая тень, на тёмной — ступень поверхности и волосяная линия. */
+  --shadow-soft: var(--elev-1);
+  --shadow-float: var(--elev-2);
+
+  /* Одна кривая на весь сайт: быстрый старт, мягкая остановка. */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
-    /* Светлая тема */
-    --bg-main: #fdfdfd;
-    --bg-card: #ffffff;
-    --text-base: #111827;
-    --text-dim: #64748b;
-    --border-subtle: #e4e7eb;
+    /* Светлая тема: тёплая бумага */
+    --bg-main: #f7f4ee;
+    --bg-card: #fdfbf7;
+    --bg-raised: #efe9df;
+    --text-base: #1f1b16;
+    --text-secondary: #554c41;
+    --text-dim: #6a6156;
+    --border-subtle: rgb(31 27 22 / 0.11);
 
     --brand-primary: #ff6900;
     --brand-hover: #ca3500;
-    --bg-accent: #fff7ed;
+    --brand-ink: #ad4500;
+    --on-brand: #1f1408;
+    --bg-accent: #fbeedd;
+
+    --positive: #15803d;
+    --negative: #c2372d;
+    --rating: #b96b00;
+
+    --elev-1: 0 1px 2px rgb(31 27 22 / 0.06);
+    --elev-2: 0 1px 2px rgb(31 27 22 / 0.05), 0 10px 28px rgb(31 27 22 / 0.09);
+
+    /* Высота шапки: к ней привязаны липкие блоки и отступы якорей. */
+    --header-h: 4rem;
   }
 
   .dark {
-    /* Темная тема */
-    --bg-main: #0f1112;
-    --bg-card: #16191b;
-    --text-base: #f8fafc;
-    --text-dim: #94a3b8;
-    --border-subtle: #262a2d;
+    /* Тёмная тема: тёплый графит */
+    --bg-main: #161513;
+    --bg-card: #1c1a18;
+    --bg-raised: #262421;
+    --text-base: #efe9de;
+    --text-secondary: #c2bbaf;
+    --text-dim: #a59e93;
+    --border-subtle: rgb(239 233 222 / 0.1);
 
-    --brand-primary: #ff7b1a; /* Чуть светлее для темной темы */
+    --brand-primary: #ff7b1a;
     --brand-hover: #ff9d4d;
-    --bg-accent: rgba(255, 105, 0, 0.1);
+    --brand-ink: #ff8f3d;
+    --on-brand: #1f1408;
+    --bg-accent: rgba(255, 123, 26, 0.12);
+
+    --positive: #5cc98f;
+    --negative: #f0766b;
+    --rating: #f0a53a;
+
+    --elev-1: 0 0 0 0 transparent;
+    --elev-2: 0 14px 36px rgb(0 0 0 / 0.5);
+  }
+
+  @media (prefers-contrast: more) {
+    :root {
+      --text-dim: var(--text-secondary);
+      --border-subtle: rgb(31 27 22 / 0.45);
+    }
+    .dark {
+      --border-subtle: rgb(239 233 222 / 0.5);
+    }
   }
 
   body {
@@ -106,9 +163,9 @@
     left: 0;
     top: 0;
     z-index: 1000;
-    height: 3px;
+    height: 2px;
     width: 100%;
-    background: linear-gradient(90deg, var(--brand-primary), var(--brand-hover));
+    background: var(--brand-primary);
     transform-origin: left;
     transform: scaleX(0);
     opacity: 0;
@@ -147,6 +204,7 @@
     @apply bg-brand hover:bg-brand-hover shadow-brand/20 rounded-xl px-6 py-2 font-bold text-white shadow-lg transition-all;
   }
 
+  /* Рамка поверхности: тихая волосяная линия по контуру (имя класса историческое — его используют и промо-карточки). */
   .glass-border-3d {
     border: none !important;
     position: relative;
@@ -161,15 +219,75 @@
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    box-shadow:
-      inset 0 1.5px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 0 0 1px var(--border-subtle);
   }
 
-  .dark .glass-border-3d::after {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  /* === Типографика: размер, интерлиньяж и трекинг — одним набором.
+     Крупный текст плотнее (отрицательный трекинг, тесный интерлиньяж), мелкий — свободнее. === */
+  .page-title {
+    font-size: clamp(1.875rem, 1.35rem + 2.2vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  .section-title {
+    font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  .lead-text {
+    font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+    line-height: 1.55;
+    color: var(--text-secondary);
+    text-wrap: pretty;
+  }
+
+  /* Время, количество, рейтинг: цифры одной ширины, чтобы колонки не «дышали». */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* === Материал плавающего хрома (шапка, нижняя навигация): контент прокручивается под ним === */
+  .material {
+    background-color: color-mix(in srgb, var(--bg-main) 78%, transparent);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .material {
+      background-color: var(--bg-main);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  @media (prefers-contrast: more) {
+    .material {
+      background-color: var(--bg-main);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  /* Отклик на нажатие — сразу, на pointer-down, а не после отпускания. */
+  .pressable {
+    transition: transform 0.1s ease-out;
+  }
+
+  .pressable:active {
+    transform: scale(0.97);
+  }
+
+  /* Кольцо фокуса с клавиатуры — из палитры, одинаковое везде. */
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--brand-ink);
+    outline-offset: 2px;
   }
 
   /* Иконка луны видна по умолчанию (для светлой темы) */
@@ -193,107 +311,6 @@
 
   .image-zoom {
     cursor: zoom-in;
-  }
-
-  /* === Modern Lightbox === */
-  .image-lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(0 0 0 / 0.92);
-    backdrop-filter: blur(8px);
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity 0.3s ease,
-      visibility 0.3s ease;
-    overscroll-behavior: contain;
-    touch-action: none;
-  }
-
-  .image-lightbox.is-open {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .image-lightbox__img {
-    max-height: 100vh;
-    max-width: 100vw;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 0;
-    transform: scale(0.92);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .image-lightbox.is-open .image-lightbox__img {
-    transform: scale(1);
-  }
-
-  /* Close button — large touch target */
-  .image-lightbox__close {
-    position: absolute;
-    top: max(1rem, env(safe-area-inset-top, 1rem));
-    right: max(1rem, env(safe-area-inset-right, 1rem));
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: none;
-    border-radius: 50%;
-    color: #fff;
-    background: rgb(255 255 255 / 0.15);
-    backdrop-filter: blur(4px);
-    cursor: pointer;
-    transition: background 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .image-lightbox__close:hover,
-  .image-lightbox__close:active {
-    background: rgb(255 255 255 / 0.3);
-  }
-
-  .image-lightbox__close svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  /* Swipe-down hint on mobile */
-  .image-lightbox__hint {
-    position: absolute;
-    bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem));
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgb(255 255 255 / 0.5);
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    pointer-events: none;
-    transition: opacity 0.3s ease 0.5s;
-  }
-
-  .image-lightbox.is-open .image-lightbox__hint {
-    opacity: 1;
-  }
-
-  .image-lightbox__hint {
-    opacity: 0;
-  }
-
-  @media (min-width: 768px) {
-    .image-lightbox__hint {
-      display: none;
-    }
   }
 }
 
@@ -349,35 +366,8 @@
   }
 }
 
-/* === Reading progress bar === */
-.reading-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1001; /* выше page-progress */
-  height: 3px;
-  width: 100%;
-  background: var(--brand-primary);
-  opacity: 0;
-  transform-origin: left;
-  transform: scaleX(0);
-  pointer-events: none;
-  transition:
-    transform 0.1s linear,
-    opacity 0.2s ease;
-}
-
-/* На десктопе — под хедером, тоньше и полупрозрачный */
-@media (min-width: 768px) {
-  .reading-progress {
-    top: 4.25rem; /* ~68px, под хедером */
-    height: 2px;
-  }
-}
-
 /* === Thin scrollbars (общие для всех внутренних скроллеров) === */
-.ingredients-scroll-area,
-.filter-scroll-area {
+.ingredients-scroll-area {
   /* Стилизованный тонкий скроллбар */
   scrollbar-width: thin;
   scrollbar-color: var(--border-subtle) transparent;
@@ -386,24 +376,20 @@
 }
 
 /* Webkit-скроллбар для Chrome / Edge / Safari */
-.ingredients-scroll-area::-webkit-scrollbar,
-.filter-scroll-area::-webkit-scrollbar {
+.ingredients-scroll-area::-webkit-scrollbar {
   width: 4px;
 }
 
-.ingredients-scroll-area::-webkit-scrollbar-track,
-.filter-scroll-area::-webkit-scrollbar-track {
+.ingredients-scroll-area::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.ingredients-scroll-area::-webkit-scrollbar-thumb,
-.filter-scroll-area::-webkit-scrollbar-thumb {
+.ingredients-scroll-area::-webkit-scrollbar-thumb {
   background-color: var(--border-subtle);
   border-radius: 9999px;
 }
 
-.ingredients-scroll-area::-webkit-scrollbar-thumb:hover,
-.filter-scroll-area::-webkit-scrollbar-thumb:hover {
+.ingredients-scroll-area::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-dim);
 }
 
@@ -497,12 +483,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-
   .animate-fade-in {
     animation: none !important;
     opacity: 1 !important;
@@ -510,6 +490,12 @@
 
   .site-header {
     transition: none !important;
+  }
+
+  .pressable,
+  .pressable:active {
+    transition: none !important;
+    transform: none !important;
   }
 
   html {
